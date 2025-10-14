@@ -1,574 +1,159 @@
-# Melody Ninja - Claude Documentation
-
-## 🎯 Огляд проєкту
-
-**Melody Ninja** — це веб-додаток для геймифікованого музичного навчання та мотивації до фізичної активності. Користувач проходить "дерево розвитку" музичних жанрів (skill tree), відкриваючи нові жанри через щоденні прогулянки з прослуховуванням плейлистів.
-
-**Домен:** melody.ninja
-**Стиль:** Темний ніндзя-стиль з геймерською мультяшністю в японському стилі
-
----
-
-## 🛠 Технологічний стек
-
-### Backend
-- **Framework:** Laravel (остання стабільна версія)
-- **База даних:** PostgreSQL
-- **Cache/Queue:** Redis
-- **API аутентифікація:** Laravel Sanctum
-- **Шифрування:** Laravel Encryption для sensitive даних
-
-### Frontend
-- **Framework:** React
-- **Стиль:** CSS/SCSS + темна тема
-- **Бібліотеки:**
-  - `react-flow` / `vis-network` — візуалізація музичного дерева
-  - `react-zoom-pan-pinch` — pan/zoom функціонал
-  - Firebase SDK — для push-нотифікацій
-
-### Інфраструктура
-- **Контейнеризація:** Docker Compose
-  - app (Laravel/PHP-FPM)
-  - nginx
-  - postgres
-  - redis
-  - node (для збірки React)
-- **Хостинг:** Digital Ocean
-- **SSL:** Let's Encrypt (обов'язково для FCM та Service Workers)
-
-### Зовнішні API
-1. **Strava API** — трекінг активності, кроків, калорій
-2. **YouTube Data API** — інформація про плейлисти
-3. **Firebase Cloud Messaging (FCM)** — push-нотифікації
-4. **Anthropic Claude API** — розпізнавання їжі та підрахунок калорій
-
----
-
-## 📁 Структура проєкту
-
-```
-melody-ninja/
-├── backend/              # Laravel application
-│   ├── app/
-│   │   ├── Http/
-│   │   │   ├── Controllers/
-│   │   │   └── Middleware/
-│   │   ├── Models/
-│   │   ├── Services/
-│   │   ├── Jobs/
-│   │   └── Notifications/
-│   ├── database/
-│   │   ├── migrations/
-│   │   └── seeders/
-│   ├── routes/
-│   │   ├── api.php
-│   │   └── web.php
-│   ├── config/
-│   └── storage/
-│       └── app/
-│           └── public/  # uploaded images
-├── frontend/             # React application
-│   ├── public/
-│   │   ├── manifest.json
-│   │   └── firebase-messaging-sw.js
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   │   ├── api.js
-│   │   │   ├── auth.js
-│   │   │   └── firebase.js
-│   │   ├── utils/
-│   │   ├── App.jsx
-│   │   └── index.jsx
-│   ├── package.json
-│   └── vite.config.js
-├── docker/
-│   ├── nginx/
-│   │   └── default.conf
-│   ├── php/
-│   │   └── Dockerfile
-│   └── node/
-│       └── Dockerfile
-├── docker-compose.yml
-├── .env.example
-├── .gitignore
-├── README.md
-├── CLAUDE.md            # Цей файл
-└── docs/
-    └── TECHNICAL_SPEC.md
-```
-
----
-
-## 👥 Система ролей
-
-### Admin
-- Повний доступ до управління контентом
-- CRUD жанрів, активностей, нагород, челенджів
-- Перегляд статистики всіх користувачів
-- Управління лімітом калорій користувачів
-
-### User
-- Доступ до музичного дерева
-- Щоденник активностей
-- Щоденник харчування
-- Власна статистика
-- Порівняння з іншими гравцями
-
----
-
-## 🗄️ База даних
-
-### Основні таблиці
-
-#### Користувачі та аутентифікація
-- `users` — основна інформація про користувачів
-- `user_strava_tokens` — OAuth токени Strava (encrypted)
-- `user_profiles` — додаткова інформація (daily_calorie_limit)
-- `user_fcm_tokens` — токени для push-нотифікацій
-
-#### Музичне дерево
-- `genre_nodes` — жанри (parent_id, position_x, position_y, youtube_playlist_url, is_side_quest)
-- `user_genre_progress` — прогрес користувача по жанрах
-- `user_genre_comments` — коментарі користувачів до жанрів
-
-#### Активності
-- `activities` — типи активностей (daily_checkbox, permanent_rule, music_walk)
-- `user_daily_activities` — виконання щоденних активностей
-
-#### Фітнес дані
-- `user_fitness_data` — кроки, калорії, дистанція (з Strava)
-- `user_strava_activities` — детальний лог активностей Strava
-
-#### Щоденник харчування
-- `food_log_entries` — записи їжі (text/photo, calories, meal_type)
-
-#### Геймифікація
-- `user_points` — баланс та історія очок
-- `user_points_history` — детальна історія нарахувань
-- `user_streaks` — streak система
-- `user_levels` — рівні та титули
-- `challenges` — челенджі
-- `user_challenges` — прогрес користувачів по челенджам
-- `rewards` — доступні нагороди
-- `user_rewards` — придбані нагороди
-- `badges` — бейджі
-- `user_badges` — отримані бейджі
-
-#### Нотифікації
-- `user_notification_settings` — налаштування каналів нотифікацій
-
----
-
-## 🔑 API Endpoints
-
-### Аутентифікація
-```
-GET  /api/auth/strava              # redirect на Strava OAuth
-GET  /api/auth/strava/callback     # обробка callback
-POST /api/auth/logout
-POST /api/auth/strava/refresh      # оновлення access token
-```
-
-### Користувач
-```
-GET  /api/user/profile
-PUT  /api/user/profile
-GET  /api/user/stats
-GET  /api/user/fitness-data
-POST /api/user/fitness-data/sync   # ручна синхронізація Strava
-PUT  /api/user/notification-settings
-POST /api/user/fcm-token
-```
-
-### Щоденник харчування
-```
-GET    /api/food-log                    # записи з фільтрацією по даті
-POST   /api/food-log                    # додати запис
-PUT    /api/food-log/{id}
-DELETE /api/food-log/{id}
-GET    /api/food-log/today-summary      # підсумок за сьогодні
-POST   /api/food-log/analyze-text       # Claude API аналіз тексту
-POST   /api/food-log/analyze-image      # Claude API аналіз фото
-```
-
-### Музичне дерево
-```
-GET  /api/genres                    # всі жанри
-GET  /api/genres/{id}
-POST /api/genres/{id}/complete
-POST /api/genres/{id}/comment
-GET  /api/genres/{id}/comments
-
-# Admin
-POST   /api/admin/genres
-PUT    /api/admin/genres/{id}
-DELETE /api/admin/genres/{id}
-```
-
-### Активності
-```
-GET  /api/activities/daily
-POST /api/activities/{id}/complete
-
-# Admin
-POST   /api/admin/activities
-PUT    /api/admin/activities/{id}
-DELETE /api/admin/activities/{id}
-```
-
-### Очки та нагороди
-```
-GET  /api/points/balance
-GET  /api/points/history
-GET  /api/rewards
-POST /api/rewards/{id}/purchase
-
-# Admin
-POST   /api/admin/rewards
-PUT    /api/admin/rewards/{id}
-DELETE /api/admin/rewards/{id}
-```
-
-### Челенджі
-```
-GET /api/challenges
-GET /api/challenges/my
-
-# Admin
-POST   /api/admin/challenges
-PUT    /api/admin/challenges/{id}
-DELETE /api/admin/challenges/{id}
-```
-
-### Інше
-```
-GET  /api/comparisons              # порівняння гравців
-POST /api/webhooks/strava          # Strava webhook
-GET  /api/webhooks/strava/verify   # верифікація webhook
-```
-
----
-
-## ⏰ Laravel Schedule (Cron Jobs)
-
-```php
-// Кожні 10 хвилин
-- Синхронізація даних з Strava для всіх користувачів
-
-// Кожні 15 хвилин
-- Оновлення Strava access tokens (refresh)
-
-// О 6:00 щодня
-- Створення щоденних активностей
-- Розблокування нових жанрів
-- Оновлення streak
-- Нарахування бонусних очок за streak milestones
-
-// Кожну годину
-- Перевірка виконання челенджів
-
-// Щодня в час користувача
-- Щоденне нагадування про прогулянку (FCM)
-
-// О 20:00 щодня
-- Попередження про наближення до ліміту калорій (<200 ккал)
-
-// О 22:00 щодня
-- Нагадування про незавершені активності
-
-// О 23:00 щодня
-- Звіт адмінам про активність користувачів
-```
-
----
-
-## 🔔 Система нотифікацій
-
-### Firebase Cloud Messaging (FCM)
-- **Frontend:** Firebase SDK, Service Worker для background notifications
-- **Backend:** kreait/firebase-php для відправки
-- **iOS:** Потрібен HTTPS, PWA manifest
-- **Android:** Service Worker + manifest.json
-
-### Типи нотифікацій для користувача
-1. Щоденне нагадування про прогулянку (в час користувача)
-2. Нагадування про незавершені активності (22:00)
-3. Досягнення нового рівня
-4. Розблокування сайд-квесту
-5. Нагорода за streak (7, 14, 30 днів)
-6. Новий челендж
-7. Виконання челенджу
-8. Попередження про калорії (<200 ккал до ліміту)
-9. Перевищення ліміту калорій
-
-### Типи нотифікацій для адміна
-1. Щоденний звіт (23:00)
-2. Попередження про неактивність (2 дні)
-3. Попередження про перевищення калорій (3 дні поспіль)
-
-### Альтернативні канали
-- Email (fallback)
-- Strava коментарі (опціонально, через API)
-
----
-
-## 🎮 Геймифікація
-
-### Джерела очок
-- Виконання щоденних активностей (задається адміном)
-- Бонус за кроки: +10 очок за кожні 1000 кроків
-- Streak бонуси: 7 днів (+50), 14 днів (+100), 30 днів (+300)
-- Виконання челенджів
-- Щоденний бонус за вхід: +5 очок
-- Щоденний бонус за ведення щоденника харчування: +5 очок
-- Комбо (всі активності + жанр + >7000 кроків): 3x бонус
-
-### Streak система
-- Збільшується на 1 за кожен день виконання всіх активностей
-- При пропуску дня скидається на 0
-- 3 дні → розблокування сайд-квесту
-- 7, 14, 30 днів → бонусні очки
-
-### Рівні та титули
-- Базуються на кількості пройдених жанрів
-- 1-5 жанрів: Рівень 1 - "Новачок"
-- 6-15 жанрів: Рівень 2 - "Меломан"
-- 16-30 жанрів: Рівень 3 - "Рок-експерт"
-- 31+ жанрів: Рівень 4 - "Легенда"
-
-### Бейджі
-- 10 жанрів → "Початківець"
-- 50 жанрів → "Експерт"
-- 100,000 кроків → "Марафонець"
-- 7 днів без перевищення калорій → "Майстер дисципліни"
-- 30 днів ведення щоденника → "Відповідальний"
-
----
-
-## 🎵 Музичне дерево
-
-### Логіка прогресії
-1. Користувач починає з кореневого вузла
-2. При кліку на жанр відкривається детальна сторінка
-3. Жанр автоматично вважається "пройденим" при першому відкритті
-4. Наступного дня (після 6:00) відкриваються всі дочірні жанри
-5. Якщо пропущено день → нові жанри НЕ відкриваються
-
-### Сайд-квести
-- Розблокуються після 3-денного streak
-- Музичні групи/виконавці міксових стилів
-- `is_side_quest = true` в БД
-
-### Візуалізація
-- 2D інтерактивна карта (pan/zoom)
-- Статус: заблокований / доступний / пройдений
-- Історична прив'язка (year_from, year_to)
-
----
-
-## 🏃 Інтеграція з Strava
-
-### OAuth 2.0
-- Scopes: `activity:read_all`, `profile:read_all`
-- Tokens зберігаються encrypted в `user_strava_tokens`
-- Автоматичний refresh кожні 15 хв
-
-### Дані
-- Кроки (конвертовані з дистанції: ~1300 кроків/км)
-- Дистанція (метри)
-- Калорії спалені
-- Тривалість активності
-
-### Синхронізація
-- Автоматична: кожні 10 хв (Laravel Schedule)
-- Ручна: кнопка "Оновити дані" в профілі
-- Real-time: webhook від Strava (опціонально)
-
-### Deep Links
-- `strava://record` — запуск запису активності
-- Кнопка "Почати музичну прогулянку":
-  1. Відкриває YouTube Music плейліст
-  2. Відкриває Strava для запису
-
-### Webhook
-```
-POST /api/webhooks/strava
-GET  /api/webhooks/strava/verify
-```
-Події: `activity.created`, `activity.updated`
-
-### Rate Limits
-- 100 requests per 15 min
-- 1000 requests per day per user
-
----
-
-## 🍽 Щоденник харчування
-
-### Claude API Integration
-
-#### Текстовий аналіз
-```javascript
-POST https://api.anthropic.com/v1/messages
-Model: claude-3-5-sonnet-20241022
-
-Request: "Проаналізуй цю їжу та підрахуй калорії: [userInput]"
-Response: {"description": "...", "calories": число, "confidence": "high/medium/low"}
-```
-
-#### Аналіз фото
-```javascript
-POST https://api.anthropic.com/v1/messages
-Content: [
-  { type: 'image', source: { type: 'base64', data: base64Image } },
-  { type: 'text', text: 'Проаналізуй їжу на фото...' }
-]
-```
-
-### Камера в браузері
-- `navigator.mediaDevices.getUserMedia()` для web
-- `<input type="file" accept="image/*" capture="camera">` як альтернатива
-- Стиснення через Canvas API перед відправкою
-
-### Функціонал
-- Додавання текстом або фото
-- Типи прийому: сніданок, обід, вечеря, снек
-- Ручна корекція калорій після аналізу
-- Календар історії
-- Статистика та графіки за тиждень/місяць
-
-### Віджет балансу калорій
-```
-Ліміт на день: 2000 ккал
-Спожито:       1500 ккал (з щоденника)
-Спалено:       300 ккал (з Strava)
-Залишилось:    800 ккал
-```
-
----
-
-## 🎨 UI/UX
-
-### Дизайн
-- **Стиль:** Темний ніндзя-стиль з японськими мотивами
-- **Кольори:** Чорний, темно-синій + червоний, золотий акценти
-- **Шрифти:** Японська каліграфія для заголовків
-- **Анімації:** Плавні переходи, паралакс ефекти
-
-### Адаптивність
-- Mobile-first (primary use case)
-- Повністю responsive
-- PWA manifest для "add to home screen"
-
----
-
-## 🚀 Розгортання
-
-### Docker Compose
-```bash
-docker-compose up -d
-```
-
-Сервіси:
-- `app` — Laravel (PHP-FPM)
-- `nginx` — веб-сервер
-- `postgres` — база даних
-- `redis` — кеш/черги
-- `node` — збірка React (dev)
-
-### SSL (Let's Encrypt)
-```bash
-certbot --nginx -d melody.ninja -d www.melody.ninja
-```
-
-### Environment Variables
-```
-# Backend (.env)
-APP_URL=https://melody.ninja
-DB_CONNECTION=pgsql
-REDIS_HOST=redis
-
-STRAVA_CLIENT_ID=
-STRAVA_CLIENT_SECRET=
-STRAVA_REDIRECT_URI=
-
-YOUTUBE_API_KEY=
-
-FIREBASE_PROJECT_ID=
-FIREBASE_SERVER_KEY=
-
-ANTHROPIC_API_KEY=
-
-# Frontend (.env)
-VITE_API_URL=https://melody.ninja/api
-VITE_FIREBASE_CONFIG={}
-```
-
----
-
-## 📝 Важливі примітки
-
-### Security
-- Шифрування Strava tokens (Laravel Encryption)
-- Валідація Strava webhook signature
-- HTTPS обов'язковий (FCM, Service Workers)
-- Rate limiting для API endpoints
-
-### Performance
-- Redis для кешування (список жанрів, статистика)
-- Laravel Horizon для моніторингу черг
-- Оптимізація зображень при upload
-- Eager loading для запобігання N+1
-
-### Testing
-- Unit тести для бізнес-логіки
-- Feature тести для API endpoints
-- Seeders для тестових даних
-
-### Monitoring
-- Laravel Telescope (dev)
-- Laravel Horizon (queues)
-- Логування критичних операцій
-
----
-
-## 🔮 Майбутні можливості
-
-- Інтеграція з Spotify API
-- Спільні челенджі між користувачами
-- Система рейтингів жанрів
-- Експорт статистики в PDF
-- React Native мобільний додаток
-- Apple Health інтеграція
-- Баркод сканер для продуктів
-- Розпізнавання мови для харчування
-- AI рекомендації меню
-
----
-
-## 📚 Корисні посилання
-
-### API Documentation
-- [Strava API](https://developers.strava.com/)
-- [YouTube Data API](https://developers.google.com/youtube/v3)
-- [Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging)
-- [Anthropic Claude API](https://docs.anthropic.com/)
-
-### Laravel Resources
-- [Laravel Documentation](https://laravel.com/docs)
-- [Laravel Sanctum](https://laravel.com/docs/sanctum)
-- [Laravel Schedule](https://laravel.com/docs/scheduling)
-- [Laravel Horizon](https://laravel.com/docs/horizon)
-
-### React Resources
-- [React Documentation](https://react.dev/)
-- [React Flow](https://reactflow.dev/)
-- [Firebase JS SDK](https://firebase.google.com/docs/web/setup)
-
----
-
-**Версія документації:** 1.0
-**Дата оновлення:** 2025-10-14
-**Автор:** Vitaliy Omelchenko
+# Melody Ninja - Technical Specification
+
+## Project Overview
+Melody Ninja is a gamified music discovery and fitness tracking web application designed to motivate a 13-year-old to stay active through music exploration. Users progress through a skill-tree of music genres, earning points for completing daily activities and walks while listening to curated playlists.
+
+**Domain:** melody.ninja  
+**Target User:** Teenagers (13+) with focus on fitness motivation through music
+
+## Tech Stack
+- **Backend:** Laravel 11+ (PHP 8.2+)
+- **Frontend:** React 18+ with TypeScript
+- **Database:** MySQL 8+ (or PostgreSQL 15+)
+- **Infrastructure:** Docker Compose for local development and deployment
+- **Authentication:** Google OAuth 2.0
+- **External APIs:** Strava API, Google Fit/Health Connect, YouTube API, Claude AI API
+- **Deployment:** Digital Ocean
+
+## Core Features
+
+### 1. Music Genre Skill Tree
+- 2D interactive map with pan/zoom navigation (like Google Maps)
+- Tree-like structure where genres branch from parent genres
+- Each genre node contains: name, markdown/HTML description, YouTube playlist embed, year of origin
+- Users unlock new genres by completing the previous day's activity
+- Progress tracking per user (completed/available status)
+- Admin can create/edit/delete genres with parent-child relationships
+
+### 2. User Roles & Authentication
+- **User Role:** Tracks activities, explores music, earns points
+- **Admin Role:** Manages activities, genres, challenges, rewards, views all user stats
+- Login via Google OAuth (primary)
+- Strava connection optional (in profile settings)
+
+### 3. Activity Tracking System
+**Three activity types:**
+- **Daily Tasks** (checkbox): Morning exercise, breakfast, get fruit, music walk
+- **Ongoing Rules** (no checkbox, just reminders): No sugary drinks, water before meals, one portion per meal, max 1 sweet per day
+- **Music Walk** (special highlight): Main activity that unlocks genre progression
+
+**Activity Management:**
+- Admin can add/remove/edit activities
+- Admin can schedule activities to appear on specific dates
+- Activities reset daily at 6:00 AM
+- Streak tracking (consecutive days completed)
+
+### 4. Fitness Integration
+- **Google Fit/Health Connect** (Android): Real-time step count, calories burned (updates every 10 min)
+- **Strava** (optional): Activity tracking for walks/runs
+- Display in user profile: daily steps, calories, walk duration
+- Minimum goal: Complete playlist (40-60 minutes, ~15-20 songs)
+
+### 5. Food Diary & Calorie Tracking
+- Users log meals via text or photo (camera access from browser)
+- Photos/text sent to Claude AI API for calorie estimation
+- Daily calorie limit set by admin per user
+- Profile shows remaining calories for the day
+
+### 6. Gamification System
+**Points:**
+- Admin assigns point values per activity
+- Bonus: +10 points per 1,000 steps
+- Enhanced rewards for streaks (e.g., 3-day streak unlocks side quests)
+
+**Levels & Titles:**
+- User levels up based on completed genres
+- Each level has a title (Beginner → Music Lover → Rock Expert → Legend)
+- Avatar changes with each new title (ninja-themed)
+
+**Side Quests:**
+- Unlocked after 3-day streak
+- Feature genre-blending artists/groups
+- Same structure as regular genres (description, playlist, etc.)
+
+**Challenges:**
+- JSON-configurable challenge system
+- Types: streak-based, count-based, activity-based, combined
+- Admin assigns challenges to users
+
+**Rewards Shop:**
+- Users spend points on rewards (name, price, image)
+- Rewards can be purchased multiple times
+- Admin manages reward catalog
+
+### 7. Social Features
+- Multiple users can view each other's progress (2+ players compete)
+- Users can comment on genres they've explored
+- Leaderboard showing points, genres completed, streaks
+
+### 8. Notifications
+- **PWA** (Progressive Web App) with Web Push API
+- Notifications for: daily activity reminders, new genres unlocked, challenge completion
+- Fallback: Email notifications if push unavailable
+
+### 9. Admin Dashboard
+- Manage users, activities, genres, challenges, rewards
+- View all user statistics (steps, calories, completed genres, points)
+- Schedule activities for future dates
+- Edit genre tree structure
+
+## Design Guidelines
+**Theme:** Dark ninja aesthetic with gamified Japanese cartoon style
+- Dark color palette with accent colors
+- Ninja-themed avatars
+- Anime/manga-inspired UI elements
+- Mobile-first responsive design
+- Smooth animations and transitions
+
+## Database Schema Principles
+**Key tables:**
+- `users` (id, name, email, role, google_id, strava_id, avatar_level, total_points, daily_calorie_limit)
+- `genres` (id, parent_id, name, description, playlist_url, year, order_index)
+- `user_genre_progress` (user_id, genre_id, completed_at, is_available)
+- `activities` (id, name, type, points, active_from, active_to)
+- `user_activity_log` (user_id, activity_id, completed_at)
+- `daily_stats` (user_id, date, steps, calories_burned, calories_consumed)
+- `food_log` (user_id, entry_text, image_url, estimated_calories, created_at)
+- `rewards` (id, name, price, image_url)
+- `user_rewards` (user_id, reward_id, purchased_at)
+- `challenges` (id, name, type, config_json, points_reward)
+- `user_challenges` (user_id, challenge_id, progress, completed_at)
+- `genre_comments` (user_id, genre_id, comment, created_at)
+
+## Code Style & Conventions
+- **Laravel:** Follow PSR-12, use service classes for business logic, repositories for data access
+- **React:** Functional components with hooks, TypeScript strict mode, organized by feature folders
+- **Naming:** camelCase (JS/TS), snake_case (PHP/DB), PascalCase (components/classes)
+- **API:** RESTful endpoints, use Laravel API resources for responses
+- **State Management:** React Context API for global state, React Query for server state
+- **Components:** Atomic design (atoms/molecules/organisms)
+
+## Development Priorities
+1. **Iterative development:** Build features incrementally, starting with core functionality
+2. **Database-first:** Design schema to accommodate future features without major refactoring
+3. **Reusable components:** Build UI components that can be extended/styled rather than rewritten
+4. **API-first backend:** Design endpoints to support current and planned features
+5. **Mobile-first UI:** Ensure all features work seamlessly on mobile devices
+
+## Important Notes for Claude
+- Always consider the end-goal architecture when implementing features
+- Write code that can be extended without major refactoring
+- Prioritize mobile UX in all frontend decisions
+- Keep backend API endpoints flexible and well-documented
+- Use TypeScript interfaces that match Laravel API resources
+- Implement proper error handling and loading states
+- Consider offline functionality for PWA features
+- Write clean, self-documenting code with minimal comments
+- Focus on performance (lazy loading, code splitting, optimized queries)
+
+## External API Integration Notes
+- **YouTube:** Embed playlists via iframe, fetch metadata if needed
+- **Strava:** OAuth flow, webhook for activity updates
+- **Google Fit:** Health Connect API for Android step/calorie data
+- **Claude AI:** Vision API for food image analysis, structured output for calorie estimation
+
+## Deployment
+- Docker Compose with services: Laravel (PHP-FPM), Nginx, MySQL, Redis (queue/cache)
+- Environment variables for API keys and secrets
+- Laravel queue worker for background jobs (API calls, notifications)
+- Scheduled tasks (cron) for daily resets at 6:00 AM
