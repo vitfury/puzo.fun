@@ -1,0 +1,214 @@
+{
+    "app": {
+        "title": "Melody Ninja"
+    },
+    "auth": {
+        "login": "Login",
+        "register": "Register",
+        "logout": "Logout",
+        "email": "Email",
+        "password": "Password",
+        "name": "Name",
+        "confirmPassword": "Confirm Password",
+        "alreadyHaveAccount": "Already have an account?",
+        "dontHaveAccount": "Don't have an account?",
+        "loginButton": "Sign In",
+        "registerButton": "Sign Up",
+        "loginSuccess": "Logged in successfully!",
+        "registerSuccess": "Registration successful!"
+    },
+    "nav": {
+        "home": "Home",
+        "activities": "Activities",
+        "profile": "Profile",
+        "genres": "Genres",
+        "challenges": "Challenges",
+        "rewards": "Rewards",
+        "admin": "Admin Panel"
+    },
+    "activities": {
+        "title": "Daily Activities",
+        "today": "Today's Activities",
+        "completed": "Completed",
+        "pending": "Pending",
+        "dailyTasks": "Daily Tasks",
+        "ongoingRules": "Ongoing Rules",
+        "musicWalks": "Music Walks",
+        "points": "points",
+        "completeTask": "Complete Task",
+        "completedAt": "Completed at",
+        "history": "Activity History",
+        "streak": "🔥 {{count}} day streak",
+        "streak_other": "🔥 {{count}} days streak",
+        "noActivities": "No activities available",
+        "loading": "Loading activities...",
+        "musicWalkCard": {
+            "title": "Music Walk",
+            "description": "Explore music genres and go for a walk while listening to curated playlists. Complete your journey through the world of music!",
+            "currentGenre": "Current Genre",
+            "notStarted": "Not Started",
+            "streak": "Walk Streak",
+            "explore": "Start Walk"
+        },
+        "items": {
+            "Morning Stretch": {
+                "name": "Morning Stretch",
+                "description": "Start your day with a 5-minute stretching routine"
+            },
+            "Log Breakfast": {
+                "name": "Log Breakfast",
+                "description": "Record what you ate for breakfast"
+            },
+            "Log Lunch": {
+                "name": "Log Lunch",
+                "description": "Record what you ate for lunch"
+            },
+            "Log Dinner": {
+                "name": "Log Dinner",
+                "description": "Record what you ate for dinner"
+            },
+            "Evening Reflection": {
+                "name": "Evening Reflection",
+                "description": "Reflect on your day and plan for tomorrow"
+            },
+            "Stay Under Calorie Limit": {
+                "name": "Stay Under Calorie Limit",
+                "description": "Keep your daily calorie intake within your target"
+            },
+            "Hit 10,000 Steps": {
+                "name": "Hit 10,000 Steps",
+                "description": "Reach your daily step goal"
+            },
+            "Music Walk": {
+                "name": "Music Walk",
+                "description": "Go for a walk while listening to your current genre playlist"
+            }
+        }
+    },
+    "profile": {
+        "title": "Profile",
+        "totalPoints": "Total Points",
+        "avatarLevel": "Avatar Level",
+        "currentStreak": "Current Streak",
+        "longestStreak": "Longest Streak",
+        "days": "days",
+        "memberSince": "Member Since",
+        "stats": "Statistics",
+        "achievements": "Achievements"
+    },
+    "points": {
+        "title": "Points",
+        "history": "Points History",
+        "historyDescription": "Track all points earned through activities and bonuses",
+        "viewHistory": "View History",
+        "balance": "Balance",
+        "transactions": "Transactions",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "lastDays": "Last {{count}} Days",
+        "periodTotal": "Period Total",
+        "noTransactions": "No transactions yet",
+        "completeActivities": "Complete activities to start earning points!",
+        "loading": "Loading...",
+        "errorLoading": "Failed to load transactions"
+    },
+    "common": {
+        "save": "Save",
+        "saving": "Saving...",
+        "cancel": "Cancel",
+        "edit": "Edit",
+        "delete": "Delete",
+        "confirm": "Confirm",
+        "close": "Close",
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success"
+    },
+    "genres": {
+        "title": "Music Genres",
+        "subtitle": "Explore the world of music through different genres",
+        "comingSoon": "Coming Soon",
+        "comingSoonDesc": "The genre skill tree is under development. Soon you'll be able to explore music genres and earn rewards!",
+        "openPlaylist": "Open Playlist",
+        "completed": "Completed",
+        "available": "Available",
+        "locked": "Locked",
+        "completedWithUnlock": "Genre completed! {{count}} new genre unlocked!",
+        "completedWithUnlock_other": "Genre completed! {{count}} new genres unlocked!",
+        "loadError": "Failed to load genres. Please try again.",
+        "completeError": "Failed to complete genre. Please try again.",
+        "noGenres": "No genres available yet.",
+        "totalGenres": "Total Genres",
+        "completedGenres": "Completed",
+        "availableGenres": "Available",
+        "description": "Description",
+        "playlist": "Playlist",
+        "subgenres": "Subgenres",
+        "comments": "comments",
+        "completedOn": "Completed on",
+        "lockedMessage": "Complete the parent genre and maintain your streak to unlock this genre.",
+        "markComplete": "Start Walk",
+        "completing": "Completing...",
+        "howItWorks": {
+            "title": "How it works",
+            "step1": "Click on an available genre to complete it and unlock its subgenres",
+            "step2": "Only the first root genre is available initially",
+            "step3": "Complete a music walk today and maintain your streak to unlock new genres",
+            "step4": "Listen to the genre's playlist during your walk to fully experience it"
+        }
+    },
+    "admin": {
+        "title": "Admin Panel",
+        "subtitle": "Manage system settings and content",
+        "activitiesManagement": "Activities Management",
+        "activitiesManagementDesc": "Schedule and manage daily activities",
+        "genreManagement": "Genre Management",
+        "genreManagementDesc": "Manage the music genre skill tree",
+        "localizationEditor": "Localization Editor",
+        "localizationEditorDesc": "Edit translations for English and Ukrainian languages",
+        "activities": {
+            "title": "Activities Management",
+            "subtitle": "Schedule activities with calendar dates",
+            "name": "Activity Name",
+            "type": "Type",
+            "description": "Description",
+            "points": "Points",
+            "activeFrom": "Active From",
+            "activeTo": "Active To",
+            "isActive": "Is Active",
+            "orderIndex": "Order Index",
+            "order": "Order",
+            "selectDate": "Select Date",
+            "noDate": "No date set",
+            "inactive": "Inactive",
+            "createNew": "Create New Activity",
+            "create": "Create",
+            "update": "Update",
+            "confirmDelete": "Are you sure you want to delete this activity?",
+            "noActivities": "No activities found. Create your first activity!"
+        },
+        "genres": {
+            "title": "Genre Manager",
+            "subtitle": "Create and manage the music genre skill tree",
+            "createGenre": "Create Genre",
+            "editGenre": "Edit Genre",
+            "parentGenre": "Parent Genre",
+            "name": "Name",
+            "description": "Description",
+            "playlistUrl": "Playlist URL",
+            "year": "Year",
+            "creatingChildOf": "Creating child genre for"
+        },
+        "localization": {
+            "title": "Localization Editor",
+            "subtitle": "Edit translations for English and Ukrainian languages",
+            "language": "Language",
+            "key": "Key",
+            "value": "Value",
+            "addKey": "Add Translation Key",
+            "deleteKey": "Delete Key",
+            "saveChanges": "Save Changes",
+            "saved": "Changes saved successfully"
+        }
+    }
+}

@@ -1,296 +1,338 @@
-# 🥷 Melody Ninja
+# Melody Ninja
 
-Веб-додаток для геймифікованого музичного навчання та мотивації до фізичної активності.
+Gamified music discovery and fitness tracking web application built with Laravel 11 and React 18.
 
-## 🚀 Швидкий старт
+## Features
 
-### Вимоги
-- Docker Desktop
-- Git
+- **Music Genre Skill Tree**: Interactive 2D map with pan/zoom navigation
+- **Activity Tracking**: Daily tasks, music walks, and fitness goals
+- **Fitness Integration**: Google Fit, Health Connect, and Strava support
+- **Food Diary**: AI-powered calorie tracking with Claude API
+- **Gamification**: Points, levels, streaks, side quests, and rewards
+- **Social Features**: Leaderboards, comments, and multi-user progress tracking
+- **PWA Support**: Progressive Web App with push notifications
 
-### Встановлення
+## Tech Stack
 
-1. **Клонуйте репозиторій**
+### Backend
+- Laravel 11 (PHP 8.2+)
+- MySQL 8.0
+- Redis (Cache & Queue)
+- Laravel Sanctum (API Authentication)
+- Laravel Socialite (OAuth)
+
+### Frontend
+- React 18 with TypeScript
+- Vite (Build tool with HMR)
+- TailwindCSS (Styling)
+- React Query (Server state)
+- Framer Motion (Animations)
+- PWA Support
+
+### Infrastructure
+- Docker & Docker Compose
+- Nginx (Reverse proxy)
+- PHP-FPM 8.3
+
+## Prerequisites
+
+- Docker Desktop (20.10+)
+- Docker Compose (2.0+)
+- Make (optional, for convenience commands)
+
+## Quick Start
+
+### 1. Clone the repository
+
 ```bash
 git clone <repository-url>
 cd music.ninja
 ```
 
-2. **Налаштуйте environment змінні**
+### 2. Automated setup (recommended)
+
 ```bash
-# Основні налаштування Docker
+make install
+```
+
+This will:
+- Copy environment files
+- Start MySQL and Redis
+- Install backend dependencies (Composer)
+- Generate application key
+- Run database migrations
+- Install frontend dependencies (npm)
+- Start all services
+
+### 3. Manual setup (alternative)
+
+If you don't have `make`, follow these steps:
+
+```bash
+# Copy environment files
 cp .env.example .env
-
-# Backend налаштування
 cp backend/.env.example backend/.env
-
-# Frontend налаштування
 cp frontend/.env.example frontend/.env
-```
 
-3. **Відредагуйте .env файли**
-- Змініть паролі бази даних та Redis
-- Додайте API ключі (Strava, YouTube, Firebase, Anthropic)
-
-4. **Запустіть проєкт**
-```bash
-# Перший запуск - побудова контейнерів
-docker-compose up -d --build
-
-# Подальші запуски
+# Start Docker containers
 docker-compose up -d
+
+# Install backend dependencies
+docker-compose exec php composer install
+
+# Generate Laravel application key
+docker-compose exec php php artisan key:generate
+
+# Run database migrations
+docker-compose exec php php artisan migrate
+
+# Install frontend dependencies
+docker-compose exec frontend npm install
 ```
 
-5. **Перевірте роботу**
-- Backend API: http://localhost/api
-- Frontend: http://localhost:5173
-- Postgres: localhost:5432
-- Redis: localhost:6379
+## Access the Application
 
-### Зупинка проєкту
-```bash
-docker-compose down
-```
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost/api
+- **API Health Check**: http://localhost/api/health
 
-### Зупинка з видаленням даних
-```bash
-docker-compose down -v
-```
+## Docker Services
 
-## 📋 Доступні команди
+The application runs the following services:
 
-### Backend (Laravel)
+| Service | Port | Description |
+|---------|------|-------------|
+| nginx | 80, 443 | Web server & reverse proxy |
+| php | 9000 | PHP-FPM for Laravel |
+| mysql | 3306 | MySQL database |
+| redis | 6379 | Cache & queue backend |
+| frontend | 5173 | Vite dev server with HMR |
+| queue | - | Laravel queue worker |
+| scheduler | - | Laravel task scheduler |
 
-```bash
-# Увійти в контейнер
-docker-compose exec app bash
+## Development Commands
 
-# Міграції
-docker-compose exec app php artisan migrate
-
-# Створити міграцію
-docker-compose exec app php artisan make:migration create_table_name
-
-# Seeders
-docker-compose exec app php artisan db:seed
-
-# Composer
-docker-compose exec app composer install
-docker-compose exec app composer require package-name
-
-# Artisan
-docker-compose exec app php artisan [command]
-
-# Очистити кеш
-docker-compose exec app php artisan cache:clear
-docker-compose exec app php artisan config:clear
-docker-compose exec app php artisan route:clear
-
-# Перегляд черг (Horizon)
-docker-compose exec app php artisan horizon
-
-# Перегляд логів
-docker-compose logs -f app
-```
-
-### Frontend (React)
+### Using Make (recommended)
 
 ```bash
-# Увійти в контейнер
-docker-compose exec node sh
+make up              # Start all containers
+make down            # Stop all containers
+make restart         # Restart all containers
+make logs            # View logs from all containers
+make clean           # Remove all containers and volumes
 
-# NPM команди
-docker-compose exec node npm install
-docker-compose exec node npm install package-name
-docker-compose exec node npm run build
+make backend-shell   # Access PHP container shell
+make frontend-shell  # Access Node container shell
+make db-shell        # Access MySQL shell
+make redis-cli       # Access Redis CLI
 
-# Перегляд логів
-docker-compose logs -f node
+make migrate         # Run database migrations
+make migrate-fresh   # Drop all tables and re-run migrations
+make seed            # Run database seeders
+make test            # Run backend tests
+make build           # Rebuild Docker images
 ```
 
-### База даних
+### Using Docker Compose directly
 
 ```bash
-# Підключитися до PostgreSQL
-docker-compose exec postgres psql -U melody_ninja -d melody_ninja
-
-# Бекап бази даних
-docker-compose exec postgres pg_dump -U melody_ninja melody_ninja > backup.sql
-
-# Відновити бекап
-docker-compose exec -T postgres psql -U melody_ninja melody_ninja < backup.sql
+docker-compose up -d                    # Start containers
+docker-compose down                     # Stop containers
+docker-compose logs -f                  # View logs
+docker-compose exec php sh              # Access PHP container
+docker-compose exec php php artisan migrate  # Run migrations
 ```
 
-### Redis
-
-```bash
-# Підключитися до Redis CLI
-docker-compose exec redis redis-cli -a changeme_secure_redis_password
-
-# Очистити весь кеш
-docker-compose exec redis redis-cli -a changeme_secure_redis_password FLUSHALL
-```
-
-## 🏗 Структура проєкту
+## Project Structure
 
 ```
 music.ninja/
-├── backend/              # Laravel application
-│   ├── app/              # Application logic
-│   ├── database/         # Migrations, seeders
-│   ├── routes/           # API routes
-│   └── ...
-├── frontend/             # React application
-│   ├── src/              # Source code
-│   │   ├── components/   # React components
-│   │   ├── pages/        # Page components
-│   │   └── services/     # API services
-│   └── ...
-├── docker/               # Docker configuration
-│   ├── nginx/           # Nginx config
-│   ├── php/             # PHP-FPM Dockerfile
-│   └── node/            # Node.js Dockerfile
-├── docs/                # Documentation
-├── docker-compose.yml   # Docker services
-└── README.md           # This file
+├── backend/                 # Laravel application
+│   ├── app/                # Application code
+│   ├── config/             # Configuration files
+│   ├── database/           # Migrations, seeders, factories
+│   ├── routes/             # API routes
+│   └── storage/            # File storage, logs, cache
+├── frontend/               # React application
+│   ├── src/
+│   │   ├── components/    # Reusable UI components
+│   │   ├── pages/         # Page components
+│   │   ├── hooks/         # Custom React hooks
+│   │   ├── services/      # API services
+│   │   ├── types/         # TypeScript types
+│   │   └── utils/         # Utility functions
+│   └── public/            # Static assets
+├── docker/                 # Docker configuration
+│   ├── nginx/             # Nginx config
+│   ├── php/               # PHP-FPM Dockerfile
+│   ├── node/              # Node Dockerfile
+│   └── mysql/             # MySQL config
+└── docker-compose.yml      # Docker services definition
 ```
 
-## 🔧 Розробка
+## Environment Variables
 
-### Перший запуск після клонування
-
-```bash
-# 1. Встановити залежності
-docker-compose -f docker-compose.init.yml up
-
-# 2. Запустити міграції
-docker-compose exec app php artisan migrate
-
-# 3. Створити символічне посилання для storage
-docker-compose exec app php artisan storage:link
-
-# 4. Запустити seeders (якщо є)
-docker-compose exec app php artisan db:seed
+### Root `.env`
+```env
+DB_DATABASE=melody_ninja
+DB_USERNAME=melody_user
+DB_PASSWORD=melody_pass
+DB_ROOT_PASSWORD=root_secret
+VITE_API_URL=http://localhost/api
 ```
 
-### Hot Reload
+### Backend `.env`
+See [backend/.env.example](backend/.env.example) for all available options including:
+- Database credentials
+- Redis configuration
+- OAuth credentials (Google, Strava)
+- External API keys (YouTube, Claude AI)
+- Application settings
 
-- **Frontend**: Vite автоматично перезавантажує зміни (http://localhost:5173)
-- **Backend**: Змініть файли в `backend/` - зміни застосовуються автоматично
-
-### Debugging
-
-**Backend (Laravel Telescope)**
-```bash
-# Встановити Telescope
-docker-compose exec app composer require laravel/telescope --dev
-docker-compose exec app php artisan telescope:install
-docker-compose exec app php artisan migrate
-
-# Доступ: http://localhost/telescope
+### Frontend `.env`
+```env
+VITE_API_URL=http://localhost/api
+VITE_APP_NAME=Melody Ninja
 ```
 
-**Backend (Logs)**
+## Hot Module Replacement (HMR)
+
+The frontend automatically reloads when you make changes to:
+- React components (`.tsx`, `.jsx`)
+- TypeScript files (`.ts`)
+- CSS files (`.css`)
+
+The backend requires container restart for changes:
 ```bash
-# Подивитись логи Laravel
-docker-compose exec app tail -f storage/logs/laravel.log
+make restart
+# or
+docker-compose restart php
 ```
 
-## 🌐 Зовнішні API
+## Database Management
 
-### Strava API
-1. Зареєструйте додаток: https://www.strava.com/settings/api
-2. Додайте в `backend/.env`:
-   - `STRAVA_CLIENT_ID`
-   - `STRAVA_CLIENT_SECRET`
-
-### YouTube Data API
-1. Створіть проєкт в Google Cloud Console
-2. Увімкніть YouTube Data API v3
-3. Створіть API ключ
-4. Додайте в `backend/.env`: `YOUTUBE_API_KEY`
-
-### Firebase Cloud Messaging
-1. Створіть проєкт в Firebase Console
-2. Додайте Web App
-3. Завантажте service account credentials
-4. Додайте конфігурацію в `backend/.env` та `frontend/.env`
-
-### Anthropic Claude API
-1. Отримайте API ключ: https://console.anthropic.com/
-2. Додайте в `backend/.env`: `ANTHROPIC_API_KEY`
-
-## 🔐 Безпека
-
-### Production налаштування
-
-1. **Змініть паролі**
-   - Database password
-   - Redis password
-   - APP_KEY (згенеруйте новий: `php artisan key:generate`)
-
-2. **Налаштуйте SSL**
-   - Встановіть Let's Encrypt сертифікати
-   - Розкоментуйте HTTPS блок в `docker/nginx/default.conf`
-
-3. **Environment**
-   - Встановіть `APP_ENV=production`
-   - Встановіть `APP_DEBUG=false`
-
-4. **CORS**
-   - Налаштуйте дозволені домени в `config/cors.php`
-
-## 📚 Документація
-
-- [Технічна специфікація](docs/TECHNICAL_SPEC.md)
-- [Claude Documentation](CLAUDE.md)
-- [Laravel Documentation](https://laravel.com/docs)
-- [React Documentation](https://react.dev/)
-
-## 🐛 Troubleshooting
-
-### Проблема: "Connection refused" до PostgreSQL
+### Run migrations
 ```bash
-# Перевірте чи запущений контейнер
+make migrate
+# or
+docker-compose exec php php artisan migrate
+```
+
+### Reset database
+```bash
+make migrate-fresh
+# or
+docker-compose exec php php artisan migrate:fresh
+```
+
+### Seed database
+```bash
+make seed
+# or
+docker-compose exec php php artisan db:seed
+```
+
+### Access MySQL shell
+```bash
+make db-shell
+# or
+docker-compose exec mysql mysql -u melody_user -pmelody_pass melody_ninja
+```
+
+## Queue & Scheduled Tasks
+
+The application includes two background services:
+
+### Queue Worker
+Processes background jobs (API calls, notifications, etc.)
+```bash
+docker-compose logs -f queue
+```
+
+### Scheduler
+Runs scheduled tasks (daily activity reset at 6:00 AM)
+```bash
+docker-compose logs -f scheduler
+```
+
+## Testing
+
+### Backend tests
+```bash
+make test
+# or
+docker-compose exec php php artisan test
+```
+
+### Frontend tests (to be configured)
+```bash
+docker-compose exec frontend npm run test
+```
+
+## Production Deployment
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for production deployment instructions.
+
+## Troubleshooting
+
+### Containers won't start
+```bash
+# Check container logs
+docker-compose logs
+
+# Rebuild images
+make build
+```
+
+### Permission errors
+```bash
+# Fix Laravel storage permissions
+docker-compose exec php chmod -R 775 storage bootstrap/cache
+docker-compose exec php chown -R www-data:www-data storage bootstrap/cache
+```
+
+### Database connection errors
+```bash
+# Ensure MySQL is healthy
 docker-compose ps
 
-# Перезапустіть
-docker-compose restart postgres
+# Wait for MySQL to initialize (first run)
+docker-compose logs -f mysql
 ```
 
-### Проблема: "Permission denied" в Laravel
+### Frontend not loading
 ```bash
-# Надайте права на запис
-docker-compose exec app chmod -R 777 storage bootstrap/cache
+# Check frontend logs
+docker-compose logs -f frontend
+
+# Reinstall dependencies
+docker-compose exec frontend npm install
 ```
 
-### Проблема: Node modules помилки
+### Port already in use
 ```bash
-# Перевстановіть залежності
-docker-compose exec node rm -rf node_modules
-docker-compose exec node npm install
+# Change ports in docker-compose.yml
+# Default ports: 80 (nginx), 3306 (mysql), 5173 (frontend)
 ```
 
-### Проблема: Redis connection failed
-```bash
-# Перевірте пароль в .env
-# Перевірте чи запущений Redis
-docker-compose restart redis
-```
+## API Documentation
 
-## 📝 Ліцензія
+API endpoints are documented at `/api/docs` (to be implemented).
 
-[Вкажіть вашу ліцензію]
+Health check: http://localhost/api/health
 
-## 👥 Автори
+## Contributing
 
-- Vitaliy Omelchenko
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
-## 🙏 Подяки
+## License
 
-- Laravel Framework
-- React
-- Strava API
-- YouTube API
-- Firebase
-- Anthropic Claude
+MIT License - see LICENSE file for details
+
+## Support
+
+For issues and feature requests, please use the GitHub issue tracker.

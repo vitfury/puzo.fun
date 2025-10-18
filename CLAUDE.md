@@ -7,95 +7,17 @@ Melody Ninja is a gamified music discovery and fitness tracking web application 
 **Target User:** Teenagers (13+) with focus on fitness motivation through music
 
 ## Tech Stack
-- **Backend:** Laravel 11+ (PHP 8.2+)
-- **Frontend:** React 18+ with TypeScript
-- **Database:** MySQL 8+ (or PostgreSQL 15+)
-- **Infrastructure:** Docker Compose for local development and deployment
-- **Authentication:** Google OAuth 2.0
-- **External APIs:** Strava API, Google Fit/Health Connect, YouTube API, Claude AI API
+- **Backend:** Laravel 11.46.1 (PHP 8.3-FPM) ✅
+- **Frontend:** React 18 + TypeScript + Vite ✅
+- **Internationalization:** i18next + react-i18next (EN/UK) ✅
+- **Database:** MySQL 8.0 ✅
+- **Cache/Queue:** Redis 7 ✅
+- **Web Server:** Nginx (reverse proxy) ✅
+- **Infrastructure:** Docker Compose (7 services) ✅
+- **Authentication:** Laravel Sanctum (ready for Google OAuth)
+- **External APIs:** Strava, Google Fit, YouTube, Claude AI
 - **Deployment:** Digital Ocean
 
-## Core Features
-
-### 1. Music Genre Skill Tree
-- 2D interactive map with pan/zoom navigation (like Google Maps)
-- Tree-like structure where genres branch from parent genres
-- Each genre node contains: name, markdown/HTML description, YouTube playlist embed, year of origin
-- Users unlock new genres by completing the previous day's activity
-- Progress tracking per user (completed/available status)
-- Admin can create/edit/delete genres with parent-child relationships
-
-### 2. User Roles & Authentication
-- **User Role:** Tracks activities, explores music, earns points
-- **Admin Role:** Manages activities, genres, challenges, rewards, views all user stats
-- Login via Google OAuth (primary)
-- Strava connection optional (in profile settings)
-
-### 3. Activity Tracking System
-**Three activity types:**
-- **Daily Tasks** (checkbox): Morning exercise, breakfast, get fruit, music walk
-- **Ongoing Rules** (no checkbox, just reminders): No sugary drinks, water before meals, one portion per meal, max 1 sweet per day
-- **Music Walk** (special highlight): Main activity that unlocks genre progression
-
-**Activity Management:**
-- Admin can add/remove/edit activities
-- Admin can schedule activities to appear on specific dates
-- Activities reset daily at 6:00 AM
-- Streak tracking (consecutive days completed)
-
-### 4. Fitness Integration
-- **Google Fit/Health Connect** (Android): Real-time step count, calories burned (updates every 10 min)
-- **Strava** (optional): Activity tracking for walks/runs
-- Display in user profile: daily steps, calories, walk duration
-- Minimum goal: Complete playlist (40-60 minutes, ~15-20 songs)
-
-### 5. Food Diary & Calorie Tracking
-- Users log meals via text or photo (camera access from browser)
-- Photos/text sent to Claude AI API for calorie estimation
-- Daily calorie limit set by admin per user
-- Profile shows remaining calories for the day
-
-### 6. Gamification System
-**Points:**
-- Admin assigns point values per activity
-- Bonus: +10 points per 1,000 steps
-- Enhanced rewards for streaks (e.g., 3-day streak unlocks side quests)
-
-**Levels & Titles:**
-- User levels up based on completed genres
-- Each level has a title (Beginner → Music Lover → Rock Expert → Legend)
-- Avatar changes with each new title (ninja-themed)
-
-**Side Quests:**
-- Unlocked after 3-day streak
-- Feature genre-blending artists/groups
-- Same structure as regular genres (description, playlist, etc.)
-
-**Challenges:**
-- JSON-configurable challenge system
-- Types: streak-based, count-based, activity-based, combined
-- Admin assigns challenges to users
-
-**Rewards Shop:**
-- Users spend points on rewards (name, price, image)
-- Rewards can be purchased multiple times
-- Admin manages reward catalog
-
-### 7. Social Features
-- Multiple users can view each other's progress (2+ players compete)
-- Users can comment on genres they've explored
-- Leaderboard showing points, genres completed, streaks
-
-### 8. Notifications
-- **PWA** (Progressive Web App) with Web Push API
-- Notifications for: daily activity reminders, new genres unlocked, challenge completion
-- Fallback: Email notifications if push unavailable
-
-### 9. Admin Dashboard
-- Manage users, activities, genres, challenges, rewards
-- View all user statistics (steps, calories, completed genres, points)
-- Schedule activities for future dates
-- Edit genre tree structure
 
 ## Design Guidelines
 **Theme:** Dark ninja aesthetic with gamified Japanese cartoon style
@@ -104,6 +26,15 @@ Melody Ninja is a gamified music discovery and fitness tracking web application 
 - Anime/manga-inspired UI elements
 - Mobile-first responsive design
 - Smooth animations and transitions
+
+**Internationalization (CRITICAL!):**
+- **ALL UI must be bilingual: English (EN) and Ukrainian (UK)**
+- Use i18next/react-i18next for translations
+- All user-facing text MUST come from translation files
+- Language switcher with flag icons (🇬🇧 / 🇺🇦) in navigation
+- Store language preference in localStorage
+- Translation files: `/frontend/src/i18n/locales/{en,uk}.json`
+- NEVER hardcode user-facing strings - always use `t('key')`
 
 ## Database Schema Principles
 **Key tables:**
@@ -146,14 +77,109 @@ Melody Ninja is a gamified music discovery and fitness tracking web application 
 - Write clean, self-documenting code with minimal comments
 - Focus on performance (lazy loading, code splitting, optimized queries)
 
-## External API Integration Notes
-- **YouTube:** Embed playlists via iframe, fetch metadata if needed
-- **Strava:** OAuth flow, webhook for activity updates
-- **Google Fit:** Health Connect API for Android step/calorie data
-- **Claude AI:** Vision API for food image analysis, structured output for calorie estimation
+## API Conventions (IMPORTANT!)
+⚠️ **See [API_CHECKLIST.md](API_CHECKLIST.md) for detailed reference**
 
-## Deployment
-- Docker Compose with services: Laravel (PHP-FPM), Nginx, MySQL, Redis (queue/cache)
-- Environment variables for API keys and secrets
-- Laravel queue worker for background jobs (API calls, notifications)
-- Scheduled tasks (cron) for daily resets at 6:00 AM
+**Frontend API Client:**
+- `apiClient` baseURL is `http://localhost/api/v1` (includes `/api/v1`)
+- All API methods should use paths WITHOUT `/v1/` prefix
+- ✅ Correct: `apiClient.get('/activities/today')`
+- ❌ Wrong: `apiClient.get('/v1/activities/today')` → causes `/api/v1/v1/` double prefix
+
+**Backend Routes:**
+- All routes in `routes/api.php` are wrapped in `Route::prefix('v1')`
+- Define routes WITHOUT `/v1/` prefix
+- ✅ Correct: `Route::get('/activities/today', ...)`
+- ❌ Wrong: `Route::get('/v1/activities/today', ...)`
+
+
+## Current Setup (Features 1.1, 1.2, 2.1-2.3, 3.1-3.5 Complete)
+
+### Docker Services (All Running ✅)
+1. **nginx** - Reverse proxy (ports 80, 443)
+2. **php** - Laravel 11 with PHP 8.3-FPM
+3. **mysql** - MySQL 8.0 database
+4. **redis** - Cache and queue backend
+5. **frontend** - Vite dev server with HMR (port 5173)
+6. **queue** - Laravel queue worker
+7. **scheduler** - Cron tasks (daily reset at 6:00 AM)
+
+### API Structure ✅
+- **Base URL:** `/api/v1/...`
+- **Health Check:** GET `/api/v1/health` (checks DB, Redis, API)
+- **CORS:** Configured for React frontend (localhost:5173)
+- **Authentication:** Laravel Sanctum (email/password login) ✅
+  - POST `/api/v1/auth/register` - Register new user
+  - POST `/api/v1/auth/login` - Login with email/password
+  - POST `/api/v1/auth/logout` - Logout (protected)
+  - GET `/api/v1/auth/me` - Get current user (protected)
+- **Protected Routes:** Use `auth:sanctum` middleware
+
+### Quick Start
+```bash
+make install  # First time setup
+make up       # Start services
+make logs     # View logs
+```
+
+### Access Points
+- Frontend: http://localhost:5173
+- Backend API: http://localhost/api/v1/health
+
+### Authentication & User System ✅
+**Backend:**
+- User model with roles (user/admin), avatar_level, total_points
+- Sanctum authentication (Bearer tokens)
+- Auth endpoints: register, login, logout, me
+- Validation: LoginRequest, RegisterRequest
+- UserResource for API responses
+
+**Frontend:**
+- AuthContext for global auth state
+- ProtectedRoute component for route guards
+- Pages: LoginPage, RegisterPage, ProfilePage
+- API client with axios interceptors
+- Dark ninja-themed UI with Tailwind CSS
+- Bilingual UI with language switcher (EN/UK) ✅
+
+**Test Accounts:**
+- Regular User: test@melody.ninja / password
+- Admin User: admin@melody.ninja / admin123
+
+### Activity System ✅
+**Backend:**
+- Models: Activity, UserActivityLog, DailyStat
+- Activity types: daily_task, ongoing_rule, music_walk
+- Endpoints: `/api/v1/activities/today`, `/api/v1/activities/{id}/complete`, `/api/v1/activities/history`
+- Admin CRUD: `/api/v1/admin/activities` (index, store, show, update, destroy)
+- Points tracking, daily stats aggregation
+- 8 seeded activities (5 daily tasks, 2 ongoing rules, 1 music walk)
+- **Streak tracking**: current_streak, longest_streak, last_activity_date
+- **Daily reset command**: `activities:daily-reset` runs at 6:00 AM
+- Automatic streak calculation and break detection
+- **Activity scheduling**: `active_from` and `active_to` date fields for time-based availability
+- Automatic filtering by date in `/activities/today` endpoint
+
+**Frontend:**
+- ActivitiesPage with daily checklist
+- Components: ActivityCheckbox, ActivityGroup, DailyActivityChecklist
+- Real-time points update on completion
+- Grouped by type with progress stats
+- **Streak display**: 🔥 indicator on activities and profile pages
+- Route: /activities
+
+**Admin Panel:** ✅
+- AdminActivitiesPage with full CRUD
+- Calendar-based scheduling with native HTML5 date inputs
+- Date range picker (active_from, active_to) with validation
+- Dark-themed date picker UI
+- Inline editing and creation forms
+- Clear date buttons for easy reset
+- Bilingual interface (EN/UK)
+- Route: /admin/activities
+- See [ADMIN_ACTIVITIES_GUIDE.md](ADMIN_ACTIVITIES_GUIDE.md) for details
+
+## Next Development Steps
+- Feature 2.4: Google OAuth Integration
+- Feature 4.x: Genre System (skill tree)
+- Feature 5.x: Food Diary & Calorie Tracking

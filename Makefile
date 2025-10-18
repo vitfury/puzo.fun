@@ -1,161 +1,125 @@
-.PHONY: help init up down restart build logs shell-app shell-node psql redis clean
+.PHONY: help up down restart logs install clean
 
-# Кольори для виводу
-GREEN  := \033[0;32m
-YELLOW := \033[0;33m
-NC     := \033[0m # No Color
+help: ## Show this help message
+	@echo 'Usage: make [target]'
+	@echo ''
+	@echo 'Available targets:'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
 
-help: ## Показати це повідомлення
-	@echo "$(GREEN)Melody Ninja - Доступні команди:$(NC)"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(YELLOW)%-20s$(NC) %s\n", $$1, $$2}'
+up: ## Start all Docker containers
+	docker compose up -d
 
-init: ## Ініціалізація проєкту (перший запуск)
-	@echo "$(GREEN)Копіювання .env файлів...$(NC)"
-	@cp -n .env.example .env 2>/dev/null || true
-	@cp -n backend/.env.example backend/.env 2>/dev/null || true
-	@cp -n frontend/.env.example frontend/.env 2>/dev/null || true
-	@echo "$(GREEN)Запуск Docker контейнерів...$(NC)"
-	@docker-compose up -d --build
-	@echo "$(GREEN)Очікування запуску PostgreSQL...$(NC)"
-	@sleep 5
-	@echo "$(GREEN)Запуск міграцій...$(NC)"
-	@docker-compose exec app php artisan migrate
-	@echo "$(GREEN)Створення символічного посилання для storage...$(NC)"
-	@docker-compose exec app php artisan storage:link
-	@echo "$(GREEN)✓ Проєкт ініціалізовано!$(NC)"
-	@echo "Backend API: http://localhost/api"
-	@echo "Frontend: http://localhost:5173"
+down: ## Stop all Docker containers
+	docker compose down
 
-up: ## Запустити всі сервіси
-	@echo "$(GREEN)Запуск Docker контейнерів...$(NC)"
-	@docker-compose up -d
+restart: ## Restart all Docker containers
+	docker compose restart
 
-down: ## Зупинити всі сервіси
-	@echo "$(YELLOW)Зупинка Docker контейнерів...$(NC)"
-	@docker-compose down
+logs: ## Show logs from all containers
+	docker compose logs -f
 
-restart: ## Перезапустити всі сервіси
-	@echo "$(YELLOW)Перезапуск Docker контейнерів...$(NC)"
-	@docker-compose restart
+install: ## Install dependencies and set up the project
+	@echo "================================================"
+	@echo "  🎵 Melody Ninja - Setup Starting..."
+	@echo "================================================"
+	@echo ""
+	@echo "⚙️  Step 1: Checking Docker..."
+	@command -v docker >/dev/null 2>&1 || { echo "❌ Docker not found. Please install Docker first."; exit 1; }
+	@docker compose version >/dev/null 2>&1 || { echo "❌ Docker Compose not found. Please update Docker."; exit 1; }
+	@echo "✅ Docker is ready"
+	@echo ""
+	@echo "⚙️  Step 2: Setting up environment files..."
+	@cp .env.example .env 2>/dev/null || echo "  → .env already exists"
+	@cp backend/.env.example backend/.env 2>/dev/null || echo "  → backend/.env already exists"
+	@cp frontend/.env.example frontend/.env 2>/dev/null || echo "  → frontend/.env already exists"
+	@echo "✅ Environment files ready"
+	@echo ""
+	@echo "⚙️  Step 3: Starting MySQL and Redis..."
+	@docker compose up -d mysql redis
+	@echo "✅ Database services starting"
+	@echo ""
+	@echo "⚙️  Step 4: Waiting for MySQL to be ready..."
+	@until docker compose exec mysql mysqladmin ping -h localhost --silent 2>/dev/null; do \
+		echo "  → Waiting for MySQL..."; \
+		sleep 3; \
+	done
+	@echo "✅ MySQL is ready"
+	@echo ""
+	@echo "⚙️  Step 5: Installing backend dependencies..."
+	@docker compose run --rm php composer install --no-interaction --prefer-dist
+	@echo "✅ Backend dependencies installed"
+	@echo ""
+	@echo "⚙️  Step 6: Generating application key..."
+	@docker compose run --rm php php artisan key:generate --force
+	@echo "✅ Application key generated"
+	@echo ""
+	@echo "⚙️  Step 7: Running database migrations..."
+	@docker compose run --rm php php artisan migrate --force
+	@echo "✅ Database migrated"
+	@echo ""
+	@echo "⚙️  Step 8: Installing frontend dependencies..."
+	@docker compose run --rm frontend npm install
+	@echo "✅ Frontend dependencies installed"
+	@echo ""
+	@echo "⚙️  Step 9: Starting all services..."
+	@docker compose up -d
+	@echo "✅ All services running"
+	@echo ""
+	@echo "================================================"
+	@echo "  ✅ Setup Complete!"
+	@echo "================================================"
+	@echo ""
+	@echo "🌐 Access the application:"
+	@echo "   Frontend: http://localhost:5173"
+	@echo "   Backend:  http://localhost/api/health"
+	@echo ""
+	@echo "📝 Useful commands:"
+	@echo "   make logs      - View all logs"
+	@echo "   make down      - Stop services"
+	@echo "   make restart   - Restart services"
+	@echo ""
 
-build: ## Побудувати Docker образи
-	@echo "$(GREEN)Побудова Docker образів...$(NC)"
-	@docker-compose build
+clean: ## Remove all containers, volumes, and generated files
+	docker compose down -v
+	rm -rf backend/vendor backend/.env
+	rm -rf frontend/node_modules frontend/.env
+	rm -f .env
 
-logs: ## Показати логи всіх сервісів
-	@docker-compose logs -f
+backend-shell: ## Access backend container shell
+	docker compose exec php sh
 
-logs-app: ## Показати логи Laravel
-	@docker-compose logs -f app
+frontend-shell: ## Access frontend container shell
+	docker compose exec frontend sh
 
-logs-node: ## Показати логи React
-	@docker-compose logs -f node
+db-shell: ## Access MySQL shell
+	docker compose exec mysql mysql -u melody_user -pmelody_pass melody_ninja
 
-logs-nginx: ## Показати логи Nginx
-	@docker-compose logs -f nginx
+redis-cli: ## Access Redis CLI
+	docker compose exec redis redis-cli
 
-shell-app: ## Увійти в контейнер Laravel
-	@docker-compose exec app bash
+migrate: ## Run database migrations
+	docker compose run --rm php php artisan migrate
 
-shell-node: ## Увійти в контейнер Node
-	@docker-compose exec node sh
+migrate-fresh: ## Drop all tables and re-run migrations
+	docker compose run --rm php php artisan migrate:fresh
 
-psql: ## Підключитися до PostgreSQL
-	@docker-compose exec postgres psql -U melody_ninja -d melody_ninja
+seed: ## Run database seeders
+	docker compose run --rm php php artisan db:seed
 
-redis: ## Підключитися до Redis CLI
-	@docker-compose exec redis redis-cli -a changeme_secure_redis_password
+test: ## Run backend tests
+	docker compose run --rm php php artisan test
 
-migrate: ## Запустити міграції
-	@echo "$(GREEN)Запуск міграцій...$(NC)"
-	@docker-compose exec app php artisan migrate
+build: ## Rebuild all Docker images
+	docker compose build --no-cache
 
-migrate-fresh: ## Пересоздати базу даних з міграціями
-	@echo "$(YELLOW)Пересоздання бази даних...$(NC)"
-	@docker-compose exec app php artisan migrate:fresh
+translations: ## View all translations
+	docker compose exec php php artisan translations:view
 
-seed: ## Запустити seeders
-	@echo "$(GREEN)Запуск seeders...$(NC)"
-	@docker-compose exec app php artisan db:seed
+translations-uk: ## View Ukrainian translations only
+	docker compose exec php php artisan translations:view --locale=uk
 
-migrate-seed: ## Міграції + seeders
-	@make migrate
-	@make seed
+translations-en: ## View English translations only
+	docker compose exec php php artisan translations:view --locale=en
 
-fresh-seed: ## Пересоздати БД + seeders
-	@make migrate-fresh
-	@make seed
-
-cache-clear: ## Очистити кеш Laravel
-	@echo "$(YELLOW)Очистка кешу...$(NC)"
-	@docker-compose exec app php artisan cache:clear
-	@docker-compose exec app php artisan config:clear
-	@docker-compose exec app php artisan route:clear
-	@docker-compose exec app php artisan view:clear
-
-composer-install: ## Встановити Composer залежності
-	@echo "$(GREEN)Встановлення Composer залежностей...$(NC)"
-	@docker-compose exec app composer install
-
-npm-install: ## Встановити NPM залежності
-	@echo "$(GREEN)Встановлення NPM залежностей...$(NC)"
-	@docker-compose exec node npm install
-
-npm-build: ## Побудувати frontend для production
-	@echo "$(GREEN)Побудова frontend...$(NC)"
-	@docker-compose exec node npm run build
-
-test: ## Запустити тести Laravel
-	@echo "$(GREEN)Запуск тестів...$(NC)"
-	@docker-compose exec app php artisan test
-
-test-coverage: ## Запустити тести з coverage
-	@docker-compose exec app php artisan test --coverage
-
-artisan: ## Запустити artisan команду (використання: make artisan cmd="route:list")
-	@docker-compose exec app php artisan $(cmd)
-
-tinker: ## Відкрити Laravel Tinker
-	@docker-compose exec app php artisan tinker
-
-queue-work: ## Запустити queue worker вручну
-	@docker-compose exec app php artisan queue:work
-
-horizon: ## Запустити Laravel Horizon
-	@docker-compose exec app php artisan horizon
-
-backup-db: ## Створити бекап бази даних
-	@echo "$(GREEN)Створення бекапу...$(NC)"
-	@docker-compose exec postgres pg_dump -U melody_ninja melody_ninja > backup_$(shell date +%Y%m%d_%H%M%S).sql
-	@echo "$(GREEN)✓ Бекап створено!$(NC)"
-
-restore-db: ## Відновити базу з бекапу (використання: make restore-db file=backup.sql)
-	@echo "$(YELLOW)Відновлення з бекапу...$(NC)"
-	@docker-compose exec -T postgres psql -U melody_ninja melody_ninja < $(file)
-	@echo "$(GREEN)✓ База відновлена!$(NC)"
-
-clean: ## Очистити всі дані (volumes, containers)
-	@echo "$(YELLOW)Видалення контейнерів та volumes...$(NC)"
-	@docker-compose down -v
-	@echo "$(GREEN)✓ Очищено!$(NC)"
-
-stats: ## Показати статистику контейнерів
-	@docker-compose stats
-
-ps: ## Показати запущені контейнери
-	@docker-compose ps
-
-install-telescope: ## Встановити Laravel Telescope
-	@docker-compose exec app composer require laravel/telescope --dev
-	@docker-compose exec app php artisan telescope:install
-	@docker-compose exec app php artisan migrate
-	@echo "$(GREEN)✓ Telescope встановлено! Доступ: http://localhost/telescope$(NC)"
-
-install-horizon: ## Встановити Laravel Horizon
-	@docker-compose exec app composer require laravel/horizon
-	@docker-compose exec app php artisan horizon:install
-	@echo "$(GREEN)✓ Horizon встановлено! Запустіть: make horizon$(NC)"
-
-install-sanctum: ## Встановити Laravel Sanctum
-	@docker-compose exec app php artisan install:api
-	@echo "$(GREEN)✓ Sanctum встановлено!$(NC)"
+translations-edit: ## Edit translations interactively
+	docker compose exec php php artisan translations:edit

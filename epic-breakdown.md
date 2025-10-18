@@ -1145,3 +1145,100 @@ REDIS_PORT=6379
 6. **Playlist Generation** - AI-curated playlists based on user taste
 7. **Community Features** - Forums, genre discussions
 8. **Merchandise Shop** - Real merch with virtual currency
+
+
+
+
+
+
+
+FOR CLAUDE
+
+
+## Core Features
+
+### 1. Music Genre Skill Tree
+- 2D interactive map with pan/zoom navigation (like Google Maps)
+- Tree-like structure where genres branch from parent genres
+- Each genre node contains: name, markdown/HTML description, YouTube playlist embed, year of origin
+- Users unlock new genres by completing the previous day's activity
+- Progress tracking per user (completed/available status)
+- Admin can create/edit/delete genres with parent-child relationships
+
+### 2. User Roles & Authentication
+- **User Role:** Tracks activities, explores music, earns points, use points to buy prizes
+- **Admin Role:** Manages activities, genres, challenges, rewards, views all user stats
+- Login via Google OAuth (primary)
+- Strava connection optional (in profile settings)
+
+### 3. Activity Tracking System
+**Three activity types:**
+- **Daily Tasks** (checkbox): Morning exercise, breakfast, get fruit, music walk
+- **Ongoing Rules** (no checkbox, just reminders): No sugary drinks, water before meals, one portion per meal, max 1 sweet per day
+- **Music Walk** (special highlight): Main activity that unlocks genre progression
+
+**Activity Management:**
+- Admin can add/remove/edit activities
+- Admin can schedule activities to appear on specific dates
+- Activities reset daily at 6:00 AM
+- Streak tracking (consecutive days completed)
+
+### 4. Fitness Integration
+- **Google Fit/Health Connect** (Android): Real-time step count, calories burned (updates every 10 min)
+- **Strava** (optional): Activity tracking for walks/runs
+- Display in user profile: daily steps, calories, walk duration
+- Minimum goal: Complete playlist (40-60 minutes, ~15-20 songs)
+
+### 5. Food Diary & Calorie Tracking
+- Users log meals via text or photo (camera access from browser)
+- Photos/text sent to Claude AI API for calorie estimation
+- Daily calorie limit set by admin per user
+- Profile shows remaining calories for the day
+
+### 6. Gamification System
+**Points:**
+- Admin assigns point values per activity
+- Bonus: +10 points per 1,000 steps
+- Enhanced rewards for streaks (e.g., 3-day streak unlocks side quests)
+
+**Levels & Titles:**
+- User levels up based on completed genres
+- Each level has a title (Beginner → Music Lover → Rock Expert → Legend)
+- Avatar changes with each new title (ninja-themed)
+
+**Side Quests:**
+- Unlocked after 3-day streak
+- Feature genre-blending artists/groups
+- Same structure as regular genres (description, playlist, etc.)
+
+**Challenges:**
+- JSON-configurable challenge system
+- Types: streak-based, count-based, activity-based, combined
+- Admin assigns challenges to users
+
+**Rewards Shop:**
+- Users spend points on rewards (name, price, image)
+- Rewards can be purchased multiple times
+- Admin manages reward catalog
+
+### 7. Social Features
+- Multiple users can view each other's progress (2+ players compete)
+- Users can comment on genres they've explored
+- Leaderboard showing points, genres completed, streaks
+
+### 8. Notifications
+- **PWA** (Progressive Web App) with Web Push API
+- Notifications for: daily activity reminders, new genres unlocked, challenge completion
+- Fallback: Email notifications if push unavailable
+
+### 9. Admin Dashboard
+- Manage users, activities, genres, challenges, rewards
+- View all user statistics (steps, calories, completed genres, points)
+- Schedule activities for future dates
+- Edit genre tree structure
+
+## External API Integration Notes
+- **YouTube:** Embed playlists via iframe, fetch metadata if needed
+- **Strava:** OAuth flow, webhook for activity updates
+- **Google Fit:** Health Connect API for Android step/calorie data
+- **Claude AI:** Vision API for food image analysis, structured output for calorie estimation

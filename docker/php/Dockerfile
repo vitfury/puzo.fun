@@ -2,51 +2,55 @@ FROM php:8.3-fpm-alpine
 
 # Install system dependencies
 RUN apk add --no-cache \
-    git \
+    bash \
     curl \
-    libpng-dev \
-    libjpeg-turbo-dev \
     freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
     libzip-dev \
+    oniguruma-dev \
+    postgresql-dev \
     zip \
     unzip \
-    postgresql-dev \
-    oniguruma-dev \
-    icu-dev \
-    linux-headers \
-    $PHPIZE_DEPS
+    git \
+    mysql-client
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-    pdo \
-    pdo_pgsql \
-    pgsql \
-    mbstring \
-    exif \
-    pcntl \
+    && docker-php-ext-install \
     bcmath \
+    exif \
     gd \
+    mbstring \
+    mysqli \
+    pdo \
+    pdo_mysql \
+    pdo_pgsql \
     zip \
-    intl \
     opcache
 
 # Install Redis extension
-RUN pecl install redis \
-    && docker-php-ext-enable redis
+RUN apk add --no-cache pcre-dev $PHPIZE_DEPS \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del pcre-dev $PHPIZE_DEPS
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
-WORKDIR /var/www/html
+WORKDIR /var/www/backend
 
-# Copy PHP configuration
-COPY local.ini /usr/local/etc/php/conf.d/local.ini
+# Note: Files will be mounted as volumes in docker-compose
+# We just set up the environment here
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+# Create required directories
+RUN mkdir -p /var/www/backend/storage/framework/{sessions,views,cache} \
+    && mkdir -p /var/www/backend/storage/logs \
+    && mkdir -p /var/www/backend/bootstrap/cache
+
+# Set permissions for web server
+RUN chown -R www-data:www-data /var/www/backend
 
 # Expose port 9000 for PHP-FPM
 EXPOSE 9000
