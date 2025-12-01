@@ -5,6 +5,7 @@ import type { User, LoginCredentials, RegisterCredentials } from '../types/user'
 interface AuthContextType {
   user: User | null;
   setUser: (user: User) => void;
+  updateUser: (user: User) => void;
   loading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
@@ -65,9 +66,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (updatedUser: User) => {
+    setUser(updatedUser);
+  };
+
   const value: AuthContextType = {
     user,
     setUser,
+    updateUser,
     loading,
     login,
     register,

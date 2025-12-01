@@ -75,20 +75,20 @@ class GenreUnlockService
      */
     public function hasStreakContinuity(User $user): bool
     {
-        // New user or first activity - no streak to check
-        if (!$user->last_activity_date) {
+        // New user or first music walk - no streak to check
+        if (!$user->last_music_walk_date) {
             return true;
         }
 
-        $lastActivityDate = Carbon::parse($user->last_activity_date);
+        $lastMusicWalkDate = Carbon::parse($user->last_music_walk_date);
         $yesterday = Carbon::yesterday()->startOfDay();
 
-        // If last activity was yesterday or today, streak is intact
-        if ($lastActivityDate->isSameDay($yesterday) || $lastActivityDate->isToday()) {
+        // If last music walk was yesterday or today, streak is intact
+        if ($lastMusicWalkDate->isSameDay($yesterday) || $lastMusicWalkDate->isToday()) {
             return true;
         }
 
-        // If last activity was before yesterday, streak is broken
+        // If last music walk was before yesterday, streak is broken
         return false;
     }
 

@@ -38,7 +38,7 @@ Melody Ninja is a gamified music discovery and fitness tracking web application 
 
 ## Database Schema Principles
 **Key tables:**
-- `users` (id, name, email, role, google_id, strava_id, avatar_level, total_points, daily_calorie_limit)
+- `users` (id, name, email, role, google_id, strava_id, avatar_level, total_points, daily_calorie_limit, current_music_walk_streak, longest_music_walk_streak, last_music_walk_date)
 - `genres` (id, parent_id, name, description, playlist_url, year, order_index)
 - `user_genre_progress` (user_id, genre_id, completed_at, is_available)
 - `activities` (id, name, type, points, active_from, active_to)
@@ -154,9 +154,10 @@ make logs     # View logs
 - Admin CRUD: `/api/v1/admin/activities` (index, store, show, update, destroy)
 - Points tracking, daily stats aggregation
 - 8 seeded activities (5 daily tasks, 2 ongoing rules, 1 music walk)
-- **Streak tracking**: current_streak, longest_streak, last_activity_date
+- **Music Walk Streak tracking**: current_music_walk_streak, longest_music_walk_streak, last_music_walk_date
 - **Daily reset command**: `activities:daily-reset` runs at 6:00 AM
-- Automatic streak calculation and break detection
+- Automatic music walk streak calculation and break detection
+- Streak updates ONLY for music_walk activities (not all activities)
 - **Activity scheduling**: `active_from` and `active_to` date fields for time-based availability
 - Automatic filtering by date in `/activities/today` endpoint
 

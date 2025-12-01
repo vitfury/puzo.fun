@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\UpdateUserHealthRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\GenreUnlockService;
@@ -23,9 +24,10 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         $user = User::create([
-            'name' => $request->name,
+            'nickname' => $request->nickname,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'date_of_birth' => $request->date_of_birth,
         ]);
 
         // Initialize root genres for new user
@@ -69,6 +71,23 @@ class AuthController extends Controller
     {
         return response()->json([
             'user' => new UserResource($request->user()),
+        ]);
+    }
+
+    public function updateHealth(UpdateUserHealthRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $data = $request->validated();
+
+        if (isset($data['weight'])) {
+            $data['weight_updated_at'] = now();
+        }
+
+        $user->update($data);
+
+        return response()->json([
+            'user' => new UserResource($user->fresh()),
+            'message' => 'Health data updated successfully',
         ]);
     }
 }

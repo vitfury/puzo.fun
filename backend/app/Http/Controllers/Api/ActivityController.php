@@ -101,10 +101,10 @@ class ActivityController extends Controller
 
             $dailyStat->incrementActivitiesCompleted($activity->points);
 
-            // Update streak on first activity of the day
-            if ($dailyStat->activities_completed === 1) {
+            // Update music walk streak only for music_walk activities
+            if ($activity->type === 'music_walk') {
                 $user->refresh();
-                $user->updateStreak($today);
+                $user->updateMusicWalkStreak($today);
             }
         });
 

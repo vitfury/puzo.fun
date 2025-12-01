@@ -16,14 +16,24 @@ class UserResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
+            'nickname' => $this->nickname,
             'email' => $this->email,
             'role' => $this->role,
             'avatar_level' => $this->avatar_level,
             'total_points' => $this->total_points,
             'daily_calorie_limit' => $this->daily_calorie_limit,
-            'current_streak' => $this->current_streak,
-            'longest_streak' => $this->longest_streak,
+            'current_music_walk_streak' => $this->current_music_walk_streak,
+            'longest_music_walk_streak' => $this->longest_music_walk_streak,
+            'date_of_birth' => $this->date_of_birth?->format('Y-m-d'),
+            'birth_date' => $this->birth_date?->format('Y-m-d'),
+            'height' => $this->height,
+            'weight' => $this->weight,
+            'weight_updated_at' => $this->weight_updated_at?->format('Y-m-d H:i:s'),
+            'waist_circumference' => $this->waist_circumference,
+            'body_fat_percentage' => $this->body_fat_percentage,
+            'age' => $this->age,
+            'bmi' => $this->bmi,
+            'needs_weight_update' => $this->needsWeightUpdate(),
             'created_at' => $this->created_at,
         ];
     }

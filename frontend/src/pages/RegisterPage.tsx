@@ -6,10 +6,11 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export const RegisterPage: React.FC = () => {
   const { t } = useTranslation();
-  const [name, setName] = useState('');
+  const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -28,10 +29,11 @@ export const RegisterPage: React.FC = () => {
 
     try {
       await register({
-        name,
+        nickname,
         email,
         password,
         password_confirmation: passwordConfirmation,
+        date_of_birth: dateOfBirth,
       });
       navigate('/profile');
     } catch (err: any) {
@@ -73,18 +75,18 @@ export const RegisterPage: React.FC = () => {
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-300">
-                {t('auth.name')}
+              <label htmlFor="nickname" className="block text-sm font-medium text-gray-300">
+                {t('auth.nickname')}
               </label>
               <input
-                id="name"
-                name="name"
+                id="nickname"
+                name="nickname"
                 type="text"
                 required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Your name"
+                placeholder="NinjaMaster"
               />
             </div>
 
@@ -102,6 +104,22 @@ export const RegisterPage: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="your@email.com"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="date_of_birth" className="block text-sm font-medium text-gray-300">
+                {t('auth.dateOfBirth')}
+              </label>
+              <input
+                id="date_of_birth"
+                name="date_of_birth"
+                type="date"
+                required
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                max={new Date().toISOString().split('T')[0]}
+                className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
 

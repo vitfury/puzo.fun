@@ -3,6 +3,7 @@ import type {
   AuthResponse,
   LoginCredentials,
   RegisterCredentials,
+  UpdateHealthData,
   User
 } from '../types/user';
 
@@ -23,6 +24,11 @@ export const authApi = {
 
   async me(): Promise<{ user: User }> {
     const { data } = await apiClient.get<{ user: User }>('/auth/me');
+    return data;
+  },
+
+  async updateHealth(healthData: UpdateHealthData): Promise<{ user: User; message: string }> {
+    const { data } = await apiClient.put<{ user: User; message: string }>('/auth/health', healthData);
     return data;
   },
 };

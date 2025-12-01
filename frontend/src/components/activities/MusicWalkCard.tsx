@@ -33,11 +33,11 @@ export function MusicWalkCard() {
             <span className="text-gray-400">{t('activities.musicWalkCard.currentGenre')}</span>
             <span className="text-purple-300 font-semibold">{t('activities.musicWalkCard.notStarted')}</span>
           </div>
-          {user && user.current_streak > 0 && (
+          {user && user.current_music_walk_streak > 0 && (
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-400">{t('activities.musicWalkCard.streak')}</span>
               <span className="text-orange-400 font-semibold">
-                🔥 {user.current_streak} {t('profile.days')}
+                🔥 {user.current_music_walk_streak} {t('profile.days')}
               </span>
             </div>
           )}

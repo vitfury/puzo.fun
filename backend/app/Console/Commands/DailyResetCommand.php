@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Activity;
 use App\Models\User;
+use App\Models\UserActivityLog;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -10,35 +12,43 @@ use Illuminate\Support\Facades\Log;
 class DailyResetCommand extends Command
 {
     protected $signature = 'activities:daily-reset';
-    protected $description = 'Reset daily activities and check streaks at 6 AM';
+    protected $description = 'Reset daily activities and check music walk streaks at 6 AM';
 
     public function handle(): int
     {
         $yesterday = Carbon::yesterday();
         $this->info("Running daily reset for {$yesterday->toDateString()}");
 
+        // Get music walk activity
+        $musicWalkActivity = Activity::where('type', 'music_walk')->first();
+
+        if (!$musicWalkActivity) {
+            $this->warn("No music walk activity found");
+            return Command::SUCCESS;
+        }
+
         $users = User::all();
-        $usersWithActivity = 0;
+        $usersWithMusicWalk = 0;
         $usersWithBrokenStreak = 0;
 
         foreach ($users as $user) {
-            // Check if user had any activity yesterday
-            $hadActivityYesterday = $user->dailyStats()
-                ->where('date', $yesterday)
-                ->where('activities_completed', '>', 0)
+            // Check if user completed music walk yesterday
+            $hadMusicWalkYesterday = UserActivityLog::where('user_id', $user->id)
+                ->where('activity_id', $musicWalkActivity->id)
+                ->whereDate('date', $yesterday)
                 ->exists();
 
-            if ($hadActivityYesterday) {
-                $usersWithActivity++;
-                $this->info("✓ User {$user->name} completed activities yesterday");
+            if ($hadMusicWalkYesterday) {
+                $usersWithMusicWalk++;
+                $this->info("✓ User {$user->name} completed music walk yesterday");
             } else {
-                // User had no activity yesterday - check if streak should break
-                if ($user->current_streak > 0 && $user->last_activity_date) {
-                    $daysSinceLastActivity = $user->last_activity_date->diffInDays(Carbon::today());
+                // User had no music walk yesterday - check if streak should break
+                if ($user->current_music_walk_streak > 0 && $user->last_music_walk_date) {
+                    $daysSinceLastMusicWalk = $user->last_music_walk_date->diffInDays(Carbon::today());
 
-                    if ($daysSinceLastActivity > 1) {
-                        $this->warn("✗ User {$user->name} streak broken ({$user->current_streak} days)");
-                        $user->resetStreak();
+                    if ($daysSinceLastMusicWalk > 1) {
+                        $this->warn("✗ User {$user->name} music walk streak broken ({$user->current_music_walk_streak} days)");
+                        $user->resetMusicWalkStreak();
                         $usersWithBrokenStreak++;
                     }
                 }
@@ -46,13 +56,13 @@ class DailyResetCommand extends Command
         }
 
         $this->info("Daily reset completed:");
-        $this->info("- Users with activity: {$usersWithActivity}");
-        $this->info("- Streaks broken: {$usersWithBrokenStreak}");
+        $this->info("- Users with music walk: {$usersWithMusicWalk}");
+        $this->info("- Music walk streaks broken: {$usersWithBrokenStreak}");
 
         Log::info('Daily reset completed', [
             'date' => $yesterday->toDateString(),
-            'users_with_activity' => $usersWithActivity,
-            'streaks_broken' => $usersWithBrokenStreak,
+            'users_with_music_walk' => $usersWithMusicWalk,
+            'music_walk_streaks_broken' => $usersWithBrokenStreak,
         ]);
 
         return Command::SUCCESS;

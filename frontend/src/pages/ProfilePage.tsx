@@ -1,16 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { Layout } from '../components/Layout';
+import { HealthDataModal } from '../components/profile/HealthDataModal';
 
 export const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
+  const [isFullHealthModalOpen, setIsFullHealthModalOpen] = useState(false);
 
   if (!user) {
     return null;
   }
+
+  const getBMICategory = (bmi: number): { label: string; color: string } => {
+    if (bmi < 18.5) return { label: t('profile.health.bmiUnderweight'), color: 'text-blue-400' };
+    if (bmi < 25) return { label: t('profile.health.bmiNormal'), color: 'text-green-400' };
+    if (bmi < 30) return { label: t('profile.health.bmiOverweight'), color: 'text-yellow-400' };
+    return { label: t('profile.health.bmiObese'), color: 'text-red-400' };
+  };
 
   return (
     <Layout>
@@ -22,27 +32,70 @@ export const ProfilePage: React.FC = () => {
             <div className="flex items-center mb-6">
               <div className="flex items-center space-x-4">
                 <div className="w-24 h-24 bg-purple-500 rounded-full flex items-center justify-center text-white text-4xl font-bold -mt-16 border-4 border-gray-800">
-                  {user.name.charAt(0).toUpperCase()}
+                  {user.nickname.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-white">{user.name}</h1>
+                  <h1 className="text-3xl font-bold text-white">{user.nickname}</h1>
                   <p className="text-gray-400">{user.email}</p>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-              <div className="bg-gray-700 rounded-lg p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">Role</p>
-                    <p className="text-white text-xl font-semibold capitalize">{user.role}</p>
+              <div
+                className="bg-gray-700 rounded-lg p-6 cursor-pointer hover:bg-gray-600 transition-colors relative"
+                onClick={() => setIsFullHealthModalOpen(true)}
+              >
+                <div>
+                  <p className="text-gray-400 text-sm mb-3">{t('profile.health.title')}</p>
+                  <div className="space-y-2 text-sm">
+                    {user.age && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">{t('profile.health.age')}:</span>
+                        <span className="text-white font-semibold">{user.age}</span>
+                      </div>
+                    )}
+                    {user.height && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">{t('profile.health.height')}:</span>
+                        <span className="text-white font-semibold">{user.height} см</span>
+                      </div>
+                    )}
+                    {user.weight && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">{t('profile.health.weight')}:</span>
+                        <span className="text-white font-semibold">{user.weight} кг</span>
+                      </div>
+                    )}
+                    {user.waist_circumference && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">{t('profile.health.waist')}:</span>
+                        <span className="text-white font-semibold">{user.waist_circumference} см</span>
+                      </div>
+                    )}
+                    {user.bmi && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">{t('profile.health.bmi')}:</span>
+                        <span className={`font-semibold ${getBMICategory(user.bmi).color}`}>
+                          {user.bmi}
+                        </span>
+                      </div>
+                    )}
+                    {user.body_fat_percentage && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">{t('profile.health.bodyFat')}:</span>
+                        <span className="text-white font-semibold">{user.body_fat_percentage}%</span>
+                      </div>
+                    )}
+                    {!user.age && !user.height && !user.weight && !user.waist_circumference && !user.body_fat_percentage && (
+                      <p className="text-gray-500 text-center py-2">
+                        {t('profile.health.noData')}
+                      </p>
+                    )}
                   </div>
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    user.role === 'admin' ? 'bg-yellow-500' : 'bg-blue-500'
-                  }`}>
-                    {user.role === 'admin' ? '👑' : '🎵'}
-                  </div>
+                  <p className="text-purple-400 text-xs mt-3 text-center">
+                    {t('profile.health.clickToEdit')}
+                  </p>
                 </div>
               </div>
 
@@ -76,10 +129,10 @@ export const ProfilePage: React.FC = () => {
                   <div>
                     <p className="text-gray-400 text-sm">{t('profile.currentStreak')}</p>
                     <p className="text-white text-xl font-semibold">
-                      {user.current_streak} {t('profile.days')}
+                      {user.current_music_walk_streak} {t('profile.days')}
                     </p>
                     <p className="text-gray-500 text-xs mt-1">
-                      {t('profile.longestStreak')}: {user.longest_streak} {t('profile.days')}
+                      {t('profile.longestStreak')}: {user.longest_music_walk_streak} {t('profile.days')}
                     </p>
                   </div>
                   <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-2xl">
@@ -90,7 +143,19 @@ export const ProfilePage: React.FC = () => {
             </div>
 
             <div className="mt-8 bg-gray-700 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">{t('profile.stats')}</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-white">{t('profile.stats')}</h2>
+                <button
+                  onClick={() => setIsWeightModalOpen(true)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    user.needs_weight_update
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 animate-pulse'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  📊 {t('profile.health.updateMetrics')}
+                </button>
+              </div>
               <div className="space-y-4">
                 <div className="flex justify-between items-center border-b border-gray-600 pb-3">
                   <span className="text-gray-400">{t('profile.memberSince')}</span>
@@ -111,6 +176,17 @@ export const ProfilePage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <HealthDataModal
+        isOpen={isWeightModalOpen}
+        onClose={() => setIsWeightModalOpen(false)}
+        mode="weight"
+      />
+      <HealthDataModal
+        isOpen={isFullHealthModalOpen}
+        onClose={() => setIsFullHealthModalOpen(false)}
+        mode="all"
+      />
     </Layout>
   );
 };
