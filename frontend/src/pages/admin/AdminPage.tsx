@@ -19,6 +19,12 @@ export const AdminPage = () => {
       icon: '🎵',
     },
     {
+      title: t('admin.settings.title', 'Налаштування гри'),
+      description: t('admin.settings.subtitle', 'Керуй винагородами та параметрами гри'),
+      path: '/admin/settings',
+      icon: '⚙️',
+    },
+    {
       title: t('admin.localizationEditor'),
       description: t('admin.localizationEditorDesc'),
       path: '/admin/localization',

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -18,10 +20,15 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'race',
         'google_id',
         'strava_id',
         'avatar_level',
         'total_points',
+        'level',
+        'coins',
+        'equipped_armor_id',
+        'equipped_weapon_id',
         'daily_calorie_limit',
         'birth_date',
         'height',
@@ -41,6 +48,8 @@ class User extends Authenticatable
         'password' => 'hashed',
         'avatar_level' => 'integer',
         'total_points' => 'integer',
+        'level' => 'integer',
+        'coins' => 'integer',
         'daily_calorie_limit' => 'integer',
         'current_music_walk_streak' => 'integer',
         'longest_music_walk_streak' => 'integer',
@@ -73,14 +82,41 @@ class User extends Authenticatable
         return $this->hasMany(PointTransaction::class);
     }
 
+    public function coinTransactions(): HasMany
+    {
+        return $this->hasMany(CoinTransaction::class);
+    }
+
     public function genreProgress(): HasMany
     {
         return $this->hasMany(UserGenreProgress::class);
     }
 
+    public function ownedEquipment(): BelongsToMany
+    {
+        return $this->belongsToMany(Equipment::class, 'user_equipment')
+            ->withPivot('purchased_price')
+            ->withTimestamps();
+    }
+
+    public function equippedArmor(): BelongsTo
+    {
+        return $this->belongsTo(Equipment::class, 'equipped_armor_id');
+    }
+
+    public function equippedWeapon(): BelongsTo
+    {
+        return $this->belongsTo(Equipment::class, 'equipped_weapon_id');
+    }
+
     public function addPoints(int $points): void
     {
         $this->increment('total_points', $points);
+    }
+
+    public function addCoins(int $coins): void
+    {
+        $this->increment('coins', $coins);
     }
 
     public function updateMusicWalkStreak(Carbon $date): void
@@ -148,5 +184,36 @@ class User extends Authenticatable
         $weeksSinceUpdate = $lastUpdate->diffInWeeks($now);
 
         return $isWeekend && $weeksSinceUpdate >= 1;
+    }
+
+    /**
+     * Check if user can equip a specific grade
+     */
+    public function canEquipGrade(string $grade): bool
+    {
+        $minLevel = match ($grade) {
+            'no-grade' => 1,
+            'D' => 20,
+            'C' => 40,
+            'B' => 52,
+            'A' => 61,
+            'S' => 76,
+            default => 1,
+        };
+
+        return $this->level >= $minLevel;
+    }
+
+    /**
+     * Get current equipment grade available to user
+     */
+    public function getAvailableGrade(): string
+    {
+        if ($this->level >= 76) return 'S';
+        if ($this->level >= 61) return 'A';
+        if ($this->level >= 52) return 'B';
+        if ($this->level >= 40) return 'C';
+        if ($this->level >= 20) return 'D';
+        return 'no-grade';
     }
 }

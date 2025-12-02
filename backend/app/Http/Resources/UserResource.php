@@ -19,8 +19,11 @@ class UserResource extends JsonResource
             'nickname' => $this->nickname,
             'email' => $this->email,
             'role' => $this->role,
+            'race' => $this->race ?? 'human',
             'avatar_level' => $this->avatar_level,
             'total_points' => $this->total_points,
+            'level' => $this->level ?? 1,
+            'coins' => $this->coins ?? 0,
             'daily_calorie_limit' => $this->daily_calorie_limit,
             'current_music_walk_streak' => $this->current_music_walk_streak,
             'longest_music_walk_streak' => $this->longest_music_walk_streak,
@@ -35,6 +38,26 @@ class UserResource extends JsonResource
             'bmi' => $this->bmi,
             'needs_weight_update' => $this->needsWeightUpdate(),
             'created_at' => $this->created_at,
+            // Equipment
+            'equipped_armor_id' => $this->equipped_armor_id,
+            'equipped_weapon_id' => $this->equipped_weapon_id,
+            'equipped_armor' => $this->whenLoaded('equippedArmor', function () {
+                return $this->equippedArmor ? new EquipmentResource($this->equippedArmor) : null;
+            }, $this->equippedArmor ? [
+                'id' => $this->equippedArmor->id,
+                'name' => $this->equippedArmor->name,
+                'type' => $this->equippedArmor->type,
+                'grade' => $this->equippedArmor->grade,
+            ] : null),
+            'equipped_weapon' => $this->whenLoaded('equippedWeapon', function () {
+                return $this->equippedWeapon ? new EquipmentResource($this->equippedWeapon) : null;
+            }, $this->equippedWeapon ? [
+                'id' => $this->equippedWeapon->id,
+                'name' => $this->equippedWeapon->name,
+                'type' => $this->equippedWeapon->type,
+                'grade' => $this->equippedWeapon->grade,
+            ] : null),
+            'available_grade' => $this->getAvailableGrade(),
         ];
     }
 }

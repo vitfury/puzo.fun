@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import LanguageSwitcher from './LanguageSwitcher';
-import { PointsCounter } from './PointsCounter';
 
 interface LayoutProps {
   children: ReactNode;
@@ -37,6 +36,12 @@ export const Layout = ({ children }: LayoutProps) => {
                     {t('nav.activities')}
                   </Link>
                   <Link
+                    to="/shop"
+                    className="text-gray-300 hover:text-purple-400 transition-colors px-3 py-2 rounded-md"
+                  >
+                    🛒 {t('nav.shop', 'Магазин')}
+                  </Link>
+                  <Link
                     to="/profile"
                     className="text-gray-300 hover:text-purple-400 transition-colors px-3 py-2 rounded-md"
                   >
@@ -53,13 +58,45 @@ export const Layout = ({ children }: LayoutProps) => {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <LanguageSwitcher />
               {user && (
                 <>
-                  <PointsCounter points={user.total_points} />
+                  {/* Compact Stats Panel */}
+                  <div className="flex items-center gap-2 bg-gray-700/50 rounded-lg px-2 py-1.5 border border-gray-600/50">
+                    {/* XP */}
+                    <Link 
+                      to="/points" 
+                      className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-gray-600/50 transition-colors group"
+                      title={t('profile.xp', 'Досвід')}
+                    >
+                      <span className="w-5 h-5 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-xs">
+                        ⚡
+                      </span>
+                      <span className="text-purple-300 font-semibold text-sm tabular-nums group-hover:text-purple-200">
+                        {user.total_points.toLocaleString()}
+                      </span>
+                    </Link>
+                    
+                    <div className="w-px h-5 bg-gray-600"></div>
+                    
+                    {/* Coins */}
+                    <Link 
+                      to="/shop" 
+                      className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-gray-600/50 transition-colors group"
+                      title={t('profile.coins', 'Монетки')}
+                    >
+                      <span className="w-5 h-5 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-xs">
+                        <span style={{ filter: 'sepia(1) saturate(3) brightness(1.1) hue-rotate(5deg)' }}>🪙</span>
+                      </span>
+                      <span className="text-yellow-300 font-semibold text-sm tabular-nums group-hover:text-yellow-200">
+                        {user.coins.toLocaleString()}
+                      </span>
+                    </Link>
+                  </div>
+                  
                   <span className="text-gray-300 text-sm hidden lg:inline">
-                    {user.name}
+                    {user.nickname}
                   </span>
                   <button
                     onClick={handleLogout}

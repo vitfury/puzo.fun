@@ -1,15 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { Layout } from '../components/Layout';
 import { HealthDataModal } from '../components/profile/HealthDataModal';
+import { shopApi } from '../api/shop';
+import { getAvatarImagePath } from '../utils/avatar';
+import type { LevelProgress } from '../types/user';
+
+// Grade colors for equipment
+const gradeColors: Record<string, string> = {
+  'no-grade': 'text-gray-400',
+  'D': 'text-blue-400',
+  'C': 'text-green-400',
+  'B': 'text-red-400',
+  'A': 'text-purple-400',
+  'S': 'text-yellow-400',
+};
+
+const gradeBgColors: Record<string, string> = {
+  'no-grade': 'from-gray-600 to-gray-700',
+  'D': 'from-blue-600 to-blue-700',
+  'C': 'from-green-600 to-green-700',
+  'B': 'from-red-600 to-red-700',
+  'A': 'from-purple-600 to-purple-700',
+  'S': 'from-yellow-500 to-amber-600',
+};
 
 export const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
   const [isFullHealthModalOpen, setIsFullHealthModalOpen] = useState(false);
+  const [levelProgress, setLevelProgress] = useState<LevelProgress | null>(null);
+
+  useEffect(() => {
+    const fetchLevelProgress = async () => {
+      try {
+        const progress = await shopApi.levelProgress();
+        setLevelProgress(progress);
+      } catch (error) {
+        console.error('Failed to fetch level progress:', error);
+      }
+    };
+
+    if (user) {
+      fetchLevelProgress();
+    }
+  }, [user]);
 
   if (!user) {
     return null;
@@ -26,117 +64,217 @@ export const ProfilePage: React.FC = () => {
     <Layout>
       <div className="max-w-4xl mx-auto">
         <div className="bg-gray-800 rounded-lg shadow-xl overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 h-32"></div>
+          {/* Header with gradient and progress bar */}
+          <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-6 pt-6 pb-4">
+            {levelProgress && !levelProgress.is_max_level && (
+              <div>
+                <div className="flex justify-between text-sm mb-1.5">
+                  <span className="text-white/80 font-medium">
+                    {t('profile.level', 'Рівень')} {levelProgress.current_level}
+                  </span>
+                  <span className="text-white/80 font-medium">
+                    {t('profile.level', 'Рівень')} {levelProgress.next_level}
+                  </span>
+                </div>
+                <div className="relative h-3 bg-black/30 rounded-full overflow-hidden backdrop-blur-sm">
+                  <div 
+                    className="absolute h-full bg-gradient-to-r from-yellow-400 to-yellow-200 transition-all duration-500 shadow-lg shadow-yellow-400/30"
+                    style={{ width: `${levelProgress.progress_percent}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs mt-1">
+                  <span className="text-yellow-200 font-semibold">
+                    {levelProgress.progress_percent.toFixed(2)}%
+                  </span>
+                  <span className="text-white/90 font-semibold">
+                    {levelProgress.points_in_level} / {levelProgress.points_needed} XP
+                  </span>
+                </div>
+              </div>
+            )}
+            {levelProgress?.is_max_level && (
+              <p className="text-center text-yellow-200 font-semibold">
+                🏆 {t('profile.maxLevel', 'Максимальний рівень досягнуто!')}
+              </p>
+            )}
+            {!levelProgress && <div className="h-12"></div>}
+          </div>
 
           <div className="px-6 py-8">
-            <div className="flex items-center mb-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-24 h-24 bg-purple-500 rounded-full flex items-center justify-center text-white text-4xl font-bold -mt-16 border-4 border-gray-800">
-                  {user.nickname.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-white">{user.nickname}</h1>
-                  <p className="text-gray-400">{user.email}</p>
+            <div className="flex flex-col md:flex-row gap-6 items-stretch">
+              {/* Left block - 60% width - Avatar display */}
+              <div className="w-full md:w-4/6">
+                <div className="flex flex-col items-center">
+                  {/* Nickname above avatar */}
+                  <h1 className="text-3xl font-bold text-white mb-4 text-center">
+                    {user.nickname}
+                  </h1>
+                  
+                  {/* Avatar image container */}
+                  <div className="relative" style={{height: '720px'}}>
+                    {/* Glow effect behind avatar based on armor grade */}
+                    <div className={`absolute inset-0 blur-2xl opacity-30 rounded-full bg-gradient-to-br ${
+                      user.equipped_armor 
+                        ? gradeBgColors[user.equipped_armor.grade] 
+                        : 'from-gray-500 to-gray-600'
+                    }`} />
+                    
+                    {/* Avatar as background-image div - adjust w-[], h-[], bg-[size] and bg-[position] as needed */}
+                    <div
+                      className="relative w-[400px] h-[600px] bg-no-repeat bg-center drop-shadow-2xl"
+                      style={{
+                        backgroundImage: `url(${getAvatarImagePath(user.race, user.equipped_armor)})`,
+                        backgroundSize: '200%',
+                        backgroundPosition: '52% 86%',
+                        height:'100%',
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-              <div
-                className="bg-gray-700 rounded-lg p-6 cursor-pointer hover:bg-gray-600 transition-colors relative"
-                onClick={() => setIsFullHealthModalOpen(true)}
-              >
-                <div>
-                  <p className="text-gray-400 text-sm mb-3">{t('profile.health.title')}</p>
-                  <div className="space-y-2 text-sm">
-                    {user.age && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">{t('profile.health.age')}:</span>
-                        <span className="text-white font-semibold">{user.age}</span>
+              {/* Right block - 40% width */}
+              <div className="w-full md:w-2/6 flex flex-col justify-between -mt-8 md:mt-0">
+                {/* Top section - Equipment & XP/Coins */}
+                <div className="space-y-4">
+                  {/* User Info & Equipment Panel */}
+                  <div className="bg-gray-700 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-gray-400 text-sm">{user.email}</p>
+                      <span className="inline-flex items-center justify-center bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm font-bold rounded-full px-3 py-1">
+                        Lv. {user.level}
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      {user.equipped_armor && (
+                        <div className={`${gradeColors[user.equipped_armor.grade]} flex items-center gap-2`}>
+                          <span className="text-lg">🛡️</span>
+                          <span className="font-medium">{user.equipped_armor.name}</span>
+                          <span className="text-xs opacity-70">({user.equipped_armor.grade})</span>
+                        </div>
+                      )}
+                      {user.equipped_weapon && (
+                        <div className={`${gradeColors[user.equipped_weapon.grade]} flex items-center gap-2`}>
+                          <span className="text-lg">⚔️</span>
+                          <span className="font-medium">{user.equipped_weapon.name}</span>
+                          <span className="text-xs opacity-70">({user.equipped_weapon.grade})</span>
+                        </div>
+                      )}
+                      {!user.equipped_armor && !user.equipped_weapon && (
+                        <span className="text-gray-500 italic text-sm">{t('profile.noEquipment', 'Немає екіпірування')}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* XP & Coins Panel */}
+                  <div className="bg-gray-700 rounded-lg p-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* XP */}
+                      <Link to="/points" className="block hover:opacity-80 transition-opacity">
+                        <div className="bg-gray-600 rounded-lg p-3 text-center">
+                          <div className="w-10 h-10 mx-auto bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-xl mb-1">
+                            ⚡
+                          </div>
+                          <p className="text-gray-400 text-xs">{t('profile.xp', 'Досвід')}</p>
+                          <p className="text-white font-bold">{user.total_points.toLocaleString()}</p>
+                        </div>
+                      </Link>
+                      {/* Coins */}
+                      <Link to="/shop" className="block hover:opacity-80 transition-opacity">
+                        <div className="bg-gray-600 rounded-lg p-3 text-center">
+                          <div className="w-10 h-10 mx-auto bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-xl mb-1">
+                            <span style={{ filter: 'sepia(1) saturate(3) brightness(1.1) hue-rotate(5deg)' }}>🪙</span>
+                          </div>
+                          <p className="text-gray-400 text-xs">{t('profile.coins', 'Монетки')}</p>
+                          <p className="text-white font-bold">{user.coins.toLocaleString()}</p>
+                        </div>
+                      </Link>
+                    </div>
+                    <Link 
+                      to="/shop" 
+                      className="block mt-3 text-center text-sm text-purple-400 hover:text-purple-300"
+                    >
+                      🛒 {t('profile.goToShop', 'Перейти в магазин')} →
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Bottom section - Health & Streak */}
+                <div className="space-y-4">
+                  {/* Health Indicators Tile */}
+                  <div
+                    className="bg-gray-700 rounded-lg p-4 cursor-pointer hover:bg-gray-600 transition-colors relative"
+                    onClick={() => setIsFullHealthModalOpen(true)}
+                  >
+                    <div>
+                      <p className="text-gray-400 text-sm mb-3">{t('profile.health.title')}</p>
+                      <div className="space-y-2 text-sm">
+                        {user.age && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">{t('profile.health.age')}:</span>
+                            <span className="text-white font-semibold">{user.age}</span>
+                          </div>
+                        )}
+                        {user.height && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">{t('profile.health.height')}:</span>
+                            <span className="text-white font-semibold">{user.height} см</span>
+                          </div>
+                        )}
+                        {user.weight && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">{t('profile.health.weight')}:</span>
+                            <span className="text-white font-semibold">{user.weight} кг</span>
+                          </div>
+                        )}
+                        {user.waist_circumference && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">{t('profile.health.waist')}:</span>
+                            <span className="text-white font-semibold">{user.waist_circumference} см</span>
+                          </div>
+                        )}
+                        {user.bmi && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">{t('profile.health.bmi')}:</span>
+                            <span className={`font-semibold ${getBMICategory(user.bmi).color}`}>
+                              {user.bmi}
+                            </span>
+                          </div>
+                        )}
+                        {user.body_fat_percentage && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">{t('profile.health.bodyFat')}:</span>
+                            <span className="text-white font-semibold">{user.body_fat_percentage}%</span>
+                          </div>
+                        )}
+                        {!user.age && !user.height && !user.weight && !user.waist_circumference && !user.body_fat_percentage && (
+                          <p className="text-gray-500 text-center py-2">
+                            {t('profile.health.noData')}
+                          </p>
+                        )}
                       </div>
-                    )}
-                    {user.height && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">{t('profile.health.height')}:</span>
-                        <span className="text-white font-semibold">{user.height} см</span>
-                      </div>
-                    )}
-                    {user.weight && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">{t('profile.health.weight')}:</span>
-                        <span className="text-white font-semibold">{user.weight} кг</span>
-                      </div>
-                    )}
-                    {user.waist_circumference && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">{t('profile.health.waist')}:</span>
-                        <span className="text-white font-semibold">{user.waist_circumference} см</span>
-                      </div>
-                    )}
-                    {user.bmi && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">{t('profile.health.bmi')}:</span>
-                        <span className={`font-semibold ${getBMICategory(user.bmi).color}`}>
-                          {user.bmi}
-                        </span>
-                      </div>
-                    )}
-                    {user.body_fat_percentage && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">{t('profile.health.bodyFat')}:</span>
-                        <span className="text-white font-semibold">{user.body_fat_percentage}%</span>
-                      </div>
-                    )}
-                    {!user.age && !user.height && !user.weight && !user.waist_circumference && !user.body_fat_percentage && (
-                      <p className="text-gray-500 text-center py-2">
-                        {t('profile.health.noData')}
+                      <p className="text-purple-400 text-xs mt-3 text-center">
+                        {t('profile.health.clickToEdit')}
                       </p>
-                    )}
+                    </div>
                   </div>
-                  <p className="text-purple-400 text-xs mt-3 text-center">
-                    {t('profile.health.clickToEdit')}
-                  </p>
-                </div>
-              </div>
 
-              <div className="bg-gray-700 rounded-lg p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">{t('profile.avatarLevel')}</p>
-                    <p className="text-white text-xl font-semibold">{user.avatar_level}</p>
-                  </div>
-                  <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-2xl">
-                    🥷
-                  </div>
-                </div>
-              </div>
-
-              <Link to="/points" className="bg-gray-700 rounded-lg p-6 hover:bg-gray-600 transition-colors cursor-pointer block">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">{t('profile.totalPoints')}</p>
-                    <p className="text-white text-xl font-semibold">{user.total_points}</p>
-                    <p className="text-purple-400 text-xs mt-1">{t('points.viewHistory')} →</p>
-                  </div>
-                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-2xl">
-                    ⭐
-                  </div>
-                </div>
-              </Link>
-
-              <div className="bg-gray-700 rounded-lg p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">{t('profile.currentStreak')}</p>
-                    <p className="text-white text-xl font-semibold">
-                      {user.current_music_walk_streak} {t('profile.days')}
-                    </p>
-                    <p className="text-gray-500 text-xs mt-1">
-                      {t('profile.longestStreak')}: {user.longest_music_walk_streak} {t('profile.days')}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-2xl">
-                    🔥
+                  {/* Streak Section */}
+                  <div className="bg-gray-700 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-400 text-sm">{t('profile.currentStreak')}</p>
+                        <p className="text-white text-xl font-semibold">
+                          {user.current_music_walk_streak} {t('profile.days')}
+                        </p>
+                        <p className="text-gray-500 text-xs mt-1">
+                          {t('profile.longestStreak')}: {user.longest_music_walk_streak} {t('profile.days')}
+                        </p>
+                      </div>
+                      <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-2xl">
+                        🔥
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -165,6 +303,12 @@ export const ProfilePage: React.FC = () => {
                       month: 'long',
                       day: 'numeric'
                     })}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center border-b border-gray-600 pb-3">
+                  <span className="text-gray-400">{t('profile.availableGrade', 'Доступний грейд')}</span>
+                  <span className={`font-medium ${gradeColors[user.available_grade]}`}>
+                    {user.available_grade === 'no-grade' ? 'No Grade' : user.available_grade}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">

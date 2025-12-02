@@ -9,9 +9,11 @@ import { ProfilePage } from './pages/ProfilePage';
 import { ActivitiesPage } from './pages/ActivitiesPage';
 import { GenresPage } from './pages/GenresPage';
 import { PointsHistoryPage } from './pages/PointsHistoryPage';
+import { ShopPage } from './pages/ShopPage';
 import AdminPage from './pages/admin/AdminPage';
 import AdminGenresPage from './pages/admin/AdminGenresPage';
 import AdminActivitiesPage from './pages/admin/AdminActivitiesPage';
+import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import LocalizationEditorPage from './pages/admin/LocalizationEditorPage';
 
 const queryClient = new QueryClient({
@@ -64,6 +66,14 @@ function App() {
               }
             />
             <Route
+              path="/shop"
+              element={
+                <ProtectedRoute>
+                  <ShopPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/admin"
               element={
                 <AdminRoute>
@@ -92,6 +102,14 @@ function App() {
               element={
                 <AdminRoute>
                   <LocalizationEditorPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <AdminRoute>
+                  <AdminSettingsPage />
                 </AdminRoute>
               }
             />

@@ -8,6 +8,7 @@ use App\Http\Resources\DailyStatResource;
 use App\Models\Activity;
 use App\Models\DailyStat;
 use App\Models\UserActivityLog;
+use App\Services\CoinService;
 use App\Services\PointService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +19,8 @@ use Illuminate\Support\Facades\DB;
 class ActivityController extends Controller
 {
     public function __construct(
-        private PointService $pointService
+        private PointService $pointService,
+        private CoinService $coinService
     ) {
     }
     public function today(Request $request): AnonymousResourceCollection
@@ -101,16 +103,27 @@ class ActivityController extends Controller
 
             $dailyStat->incrementActivitiesCompleted($activity->points);
 
-            // Update music walk streak only for music_walk activities
+            // Update music walk streak and award coins for music_walk activities
             if ($activity->type === 'music_walk') {
                 $user->refresh();
                 $user->updateMusicWalkStreak($today);
+                
+                // Award coins for music walk
+                $this->coinService->awardMusicWalkCoins($user);
+                
+                // Check and award streak bonuses
+                $this->coinService->checkAndAwardStreakBonus($user);
             }
         });
+
+        $user->refresh();
 
         return response()->json([
             'message' => 'Activity completed successfully!',
             'points_earned' => $activity->points,
+            'coins_earned' => $activity->type === 'music_walk' ? $this->coinService->getMusicWalkReward() : 0,
+            'new_level' => $user->level,
+            'new_coins' => $user->coins,
         ]);
     }
 

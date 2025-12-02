@@ -7,7 +7,9 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\UpdateUserHealthRequest;
 use App\Http\Resources\UserResource;
+use App\Models\Equipment;
 use App\Models\User;
+use App\Models\UserEquipment;
 use App\Services\GenreUnlockService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,10 +30,28 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'date_of_birth' => $request->date_of_birth,
+            'race' => $request->race,
         ]);
 
         // Initialize root genres for new user
         $this->unlockService->initializeUserGenres($user);
+
+        // Give starter Apprentice armor to new user
+        $apprenticeArmor = Equipment::where('name', 'Apprentice')
+            ->where('type', Equipment::TYPE_ARMOR)
+            ->first();
+        
+        if ($apprenticeArmor) {
+            UserEquipment::create([
+                'user_id' => $user->id,
+                'equipment_id' => $apprenticeArmor->id,
+                'purchased_price' => 0,
+            ]);
+            
+            // Auto-equip Apprentice armor
+            $user->equipped_armor_id = $apprenticeArmor->id;
+            $user->save();
+        }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 

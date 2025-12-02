@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\DB;
 
 class PointService
 {
+    public function __construct(
+        private ?LevelService $levelService = null
+    ) {
+        $this->levelService = $levelService ?? new LevelService();
+    }
+
     public function awardPoints(
         User $user,
         int $amount,
@@ -19,7 +25,7 @@ class PointService
         return DB::transaction(function () use ($user, $amount, $reason, $source, $metadata) {
             $user->increment('total_points', $amount);
 
-            return PointTransaction::create([
+            $transaction = PointTransaction::create([
                 'user_id' => $user->id,
                 'amount' => $amount,
                 'reason' => $reason,
@@ -27,6 +33,12 @@ class PointService
                 'source_id' => $source?->id,
                 'metadata' => $metadata,
             ]);
+
+            // Update user level after awarding points
+            $user->refresh();
+            $this->levelService->updateUserLevel($user);
+
+            return $transaction;
         });
     }
 

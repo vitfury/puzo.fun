@@ -11,6 +11,14 @@
         "nickname": "Нікнейм",
         "dateOfBirth": "Дата народження",
         "confirmPassword": "Підтвердити пароль",
+        "race": "Обери свою расу",
+        "races": {
+            "human": "Людина",
+            "elf": "Ельф",
+            "dark_elf": "Темний Ельф",
+            "orc": "Орк",
+            "dwarf": "Гном"
+        },
         "alreadyHaveAccount": "Вже є акаунт?",
         "dontHaveAccount": "Немає акаунту?",
         "loginButton": "Увійти",
@@ -25,7 +33,8 @@
         "genres": "Жанри",
         "challenges": "Виклики",
         "rewards": "Нагороди",
-        "admin": "Адмінка"
+        "admin": "Адмінка",
+        "shop": "Магазин"
     },
     "activities": {
         "title": "Щоденні активності",
@@ -96,6 +105,22 @@
         "memberSince": "Учасник з",
         "stats": "Статистика",
         "achievements": "Досягнення",
+        "level": "Рівень",
+        "xp": "Досвід",
+        "coins": "Фіт Коіни",
+        "xpToNext": "до наступного",
+        "maxLevel": "Максимальний рівень досягнуто!",
+        "noEquipment": "Немає екіпіювання",
+        "goToShop": "Перейти в магазин",
+        "availableGrade": "Доступний грейд",
+        "difficulty": {
+            "easy": "Легко",
+            "medium": "Середньо",
+            "hard": "Важко",
+            "very_hard": "Дуже важко",
+            "extreme": "Екстрим",
+            "legendary": "Легендарно"
+        },
         "health": {
             "title": "Показники здоров'я",
             "age": "Вік",
@@ -232,5 +257,35 @@
             "saveChanges": "Зберегти зміни",
             "saved": "Зміни успішно збережено"
         }
+    },
+    "shop": {
+        "title": "Магазин спорядження",
+        "subtitle": "Купуй броню та зброю для свого персонажа",
+        "coins": "монет",
+        "level": "рівень",
+        "currentlyEquipped": "Зараз одягнуто",
+        "none": "Немає",
+        "shopTab": "Магазин",
+        "inventoryTab": "Інвентар",
+        "filter": {
+            "all": "Все",
+            "armor": "Броня",
+            "weapon": "Зброя",
+            "allGrades": "Всі грейди"
+        },
+        "requiredLevel": "Рівень",
+        "price": "Ціна",
+        "owned": "У інвентарі",
+        "levelRequired": "Потрібен рівень",
+        "notEnoughCoins": "Недостатньо монет",
+        "buy": "Купити",
+        "purchasing": "Купую...",
+        "equip": "Одягнути",
+        "equipped": "Одягнуто",
+        "unequip": "Зняти",
+        "equipping": "Одягаю...",
+        "noItemsFound": "Немає товарів за обраними фільтрами",
+        "emptyInventory": "Ваш інвентар порожній. Придбайте щось у магазині!",
+        "loading": "Завантаження..."
     }
 }

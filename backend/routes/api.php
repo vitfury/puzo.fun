@@ -2,11 +2,14 @@
 
 use App\Http\Controllers\Api\ActivityController;
 use App\Http\Controllers\Api\Admin\AdminActivityController;
+use App\Http\Controllers\Api\Admin\AdminEquipmentController;
+use App\Http\Controllers\Api\Admin\AdminSettingsController;
 use App\Http\Controllers\Api\AdminGenreController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\GenreController;
 use App\Http\Controllers\Api\LocalizationController;
 use App\Http\Controllers\Api\PointController;
+use App\Http\Controllers\Api\ShopController;
 use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\V1\HealthController;
 use Illuminate\Http\Request;
@@ -68,10 +71,39 @@ Route::prefix('v1')->name('v1.')->group(function () {
             Route::post('/{genre}/comments', [GenreController::class, 'addComment'])->name('comments.store');
         });
 
+        // Shop routes
+        Route::prefix('shop')->name('shop.')->group(function () {
+            Route::get('/', [ShopController::class, 'index'])->name('index');
+            Route::get('/inventory', [ShopController::class, 'inventory'])->name('inventory');
+            Route::post('/purchase/{equipment}', [ShopController::class, 'purchase'])->name('purchase');
+            Route::post('/sell/{equipment}', [ShopController::class, 'sell'])->name('sell');
+            Route::post('/equip/{equipment}', [ShopController::class, 'equip'])->name('equip');
+            Route::post('/unequip', [ShopController::class, 'unequip'])->name('unequip');
+            Route::get('/level-progress', [ShopController::class, 'levelProgress'])->name('level-progress');
+            Route::get('/coins/history', [ShopController::class, 'coinHistory'])->name('coins.history');
+        });
+
         // Admin routes
         Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
             Route::apiResource('activities', AdminActivityController::class);
             Route::apiResource('genres', AdminGenreController::class);
+            
+            // Equipment management
+            Route::apiResource('equipment', AdminEquipmentController::class);
+            Route::post('equipment/bulk-prices', [AdminEquipmentController::class, 'bulkUpdatePrices'])
+                ->name('equipment.bulk-prices');
+
+            // Game settings management
+            Route::prefix('settings')->name('settings.')->group(function () {
+                Route::get('/', [AdminSettingsController::class, 'index'])->name('index');
+                Route::get('/group/{group}', [AdminSettingsController::class, 'byGroup'])->name('byGroup');
+                Route::put('/{key}', [AdminSettingsController::class, 'update'])->name('update');
+                Route::post('/bulk', [AdminSettingsController::class, 'bulkUpdate'])->name('bulk');
+                
+                // Dev tools - user stats modification
+                Route::get('/user-stats', [AdminSettingsController::class, 'getCurrentUserStats'])->name('user-stats');
+                Route::post('/user-stats', [AdminSettingsController::class, 'updateUserStats'])->name('user-stats.update');
+            });
 
             // Localization management
             Route::prefix('localizations')->name('localizations.')->group(function () {
