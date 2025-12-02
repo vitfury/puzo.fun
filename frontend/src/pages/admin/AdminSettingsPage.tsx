@@ -18,7 +18,7 @@ const settingLabels: Record<string, { label: string; emoji: string }> = {
 
 const groupLabels: Record<string, { label: string; description: string }> = {
   coins: { 
-    label: '💰 Винагороди монетками', 
+    label: '🪙 Винагороди монетками', 
     description: 'Налаштуй кількість монеток за різні активності' 
   },
   levels: { 

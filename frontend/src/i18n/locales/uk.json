@@ -1,6 +1,6 @@
 {
     "app": {
-        "title": "Melody Ninja"
+        "title": null
     },
     "auth": {
         "login": "Вхід",
@@ -26,6 +26,65 @@
         "loginSuccess": "Успішний вхід!",
         "registerSuccess": "Реєстрація успішна!"
     },
+    "onboarding": {
+        "title": "Заповни свій профіль",
+        "subtitle": "Розкажи про себе, щоб ми могли персоналізувати твій досвід",
+        "step": "Крок {{current}} з {{total}}",
+        "next": "Далі",
+        "previous": "Назад",
+        "complete": "Завершити",
+        "age": {
+            "title": "Твій вік",
+            "label": "Дата народження",
+            "placeholder": "Обери дату народження"
+        },
+        "weight": {
+            "title": "Твоя вага",
+            "label": "Вага (кг)",
+            "placeholder": "Введи свою вагу"
+        },
+        "height": {
+            "title": "Твій зріст",
+            "label": "Зріст (см)",
+            "placeholder": "Введи свій зріст"
+        },
+        "race": {
+            "title": "Обери свою расу",
+            "subtitle": "Вибери расу свого персонажа",
+            "human": "Людина",
+            "humanDesc": "Збалансовані та адаптивні воїни",
+            "orc": "Орк",
+            "orcDesc": "Могутні та сильні бійці",
+            "elf": "Ельф",
+            "elfDesc": "Спритні та граціозні лучники",
+            "darkElf": "Темний Ельф",
+            "darkElfDesc": "Таємничі та хитрі асасини",
+            "dwarf": "Гном",
+            "dwarfDesc": "Міцні та стійкі захисники"
+        },
+        "activityPreference": {
+            "title": "Улюблена фізична активність",
+            "subtitle": "Що тобі подобається найбільше?",
+            "gym": "Тренажерний зал",
+            "gymDesc": "Силові тренування та тренажери",
+            "bodyweight": "Вправи з власною вагою",
+            "bodyweightDesc": "Калістеніка та домашні тренування",
+            "walkingRunning": "Прогулянки або біг",
+            "walkingRunningDesc": "Кардіо на свіжому повітрі"
+        },
+        "errors": {
+            "birthDateRequired": "Дата народження обов'язкова",
+            "birthDateInvalid": "Будь ласка, обери правильну дату",
+            "weightRequired": "Вага обов'язкова",
+            "weightInvalid": "Вага має бути від 20 до 500 кг",
+            "heightRequired": "Зріст обов'язковий",
+            "heightInvalid": "Зріст має бути від 50 до 300 см",
+            "raceRequired": "Будь ласка, обери расу",
+            "activityPreferenceRequired": "Будь ласка, обери улюблену активність",
+            "submissionFailed": "Не вдалося зберегти дані. Спробуй ще раз."
+        },
+        "success": "Профіль успішно заповнено!"
+    },
     "nav": {
         "home": "Головна",
         "activities": "Активності",
@@ -35,7 +94,27 @@
         "rewards": "Нагороди",
         "admin": "Адмінка",
         "shop": "Магазин",
-        "rating": "Рейтинг"
+        "rating": "Рейтинг",
+        "streaks": "Серії"
+    },
+    "streaks": {
+        "title": "Панель серій",
+        "subtitle": "Відстежуйте щоденні серії активностей та отримуйте бонусні нагороди",
+        "maxStreak": "Найкраща серія",
+        "totalStreak": "Всього днів",
+        "activeStreaks": "Активних серій",
+        "totalActivities": "Активностей",
+        "viewMilestones": "Переглянути бонуси за досягнення",
+        "milestoneBonuses": "Бонуси за досягнення серій",
+        "days": "днів",
+        "daysLeft": "днів залишилось",
+        "totalCompletions": "Всього",
+        "longestStreak": "Рекорд",
+        "lastCompleted": "Останнє",
+        "currentStreak": "поточна",
+        "nextMilestone": "Наступне досягнення",
+        "maxMilestoneReached": "Всі досягнення виконано!",
+        "noStreaks": "Виконуйте активності щодня, щоб будувати свої серії!"
     },
     "activities": {
         "title": "Щоденні активності",
@@ -44,8 +123,11 @@
         "pending": "В очікуванні",
         "dailyTasks": "Щоденні завдання",
         "ongoingRules": "Постійні правила",
+        "trainings": "Тренування",
         "musicWalks": "Музичні прогулянки",
         "points": "балів",
+        "coins": "Фіт Коіни",
+        "experience": "Досвід",
         "completeTask": "Виконати завдання",
         "completedAt": "Виконано о",
         "history": "Історія активностей",
@@ -130,11 +212,12 @@
             "waist": "Талія",
             "bodyFat": "Відсоток жиру",
             "bmi": "ІМТ",
+            "activity": "Активність",
             "birthDate": "Дата народження",
             "waistCircumference": "Обхват талії",
             "bodyFatPercentage": "Відсоток жиру",
             "updateMetrics": "Оновити показники",
-            "updateData": "Оновити дані",
+            "updateData": "Оновити облікові дані",
             "updateError": "Не вдалося оновити дані",
             "noData": "Немає даних",
             "clickToEdit": "Натисніть для редагування",
@@ -142,6 +225,26 @@
             "bmiNormal": "Нормальна вага",
             "bmiOverweight": "Надлишкова вага",
             "bmiObese": "Ожиріння"
+        },
+        "charts": {
+            "title": "Статистика та прогрес",
+            "healthProgress": "Прогрес здоров'я",
+            "dailyActivities": "Завдань за день",
+            "activeStreaks": "Активні серії",
+            "experienceGained": "Отриманий досвід",
+            "coinsFlow": "Рух монет",
+            "activityHeatmap": "Карта активності",
+            "activityRate": "Активність",
+            "totalActivities": "Завдань",
+            "xpEarned": "Досвід",
+            "coinsNet": "Монети (нетто)",
+            "perDay": "/день",
+            "completed": "Виконано",
+            "active": "активних",
+            "earned": "Отримано",
+            "spent": "Витрачено",
+            "noHealthData": "Немає даних про здоров'я",
+            "noStreaks": "Почніть виконувати завдання для створення серій!"
         }
     },
     "points": {
@@ -178,6 +281,10 @@
         "comingSoon": "Скоро буде",
         "comingSoonDesc": "Дерево навичок жанрів знаходиться в розробці. Незабаром ти зможеш досліджувати музичні жанри та отримувати нагороди!",
         "openPlaylist": "Відкрити плейлист",
+        "openMap": "Відкрити карту жанрів",
+        "selectGenre": "Обрати жанр",
+        "selectGenreDescription": "Обери жанр для своєї музичної прогулянки",
+        "selectGenreHint": "Натисни на доступний (фіолетовий) жанр, щоб обрати його для прогулянки",
         "completed": "Завершено",
         "available": "Доступний",
         "locked": "Заблоковано",
@@ -220,7 +327,8 @@
             "name": "Назва активності",
             "type": "Тип",
             "description": "Опис",
-            "points": "Бали",
+            "coins": "Монети",
+            "experience": "Досвід (XP)",
             "activeFrom": "Активна з",
             "activeTo": "Активна до",
             "isActive": "Активна",
@@ -267,7 +375,7 @@
         "selectArmor": "Оберіть броню",
         "selectWeapon": "Оберіть зброю",
         "weaponPreviewSoon": "Прев'ю буде додано",
-        "coins": "монет",
+        "coins": "Фіт Коінів",
         "level": "рівень",
         "currentlyEquipped": "Зараз одягнуто",
         "none": "Немає",
@@ -283,7 +391,7 @@
         "price": "Ціна",
         "owned": "У інвентарі",
         "levelRequired": "Потрібен рівень",
-        "notEnoughCoins": "Недостатньо монет",
+        "notEnoughCoins": "Недостатньо Фіт Коінів",
         "buy": "Купити",
         "purchasing": "Купую...",
         "equip": "Одягнути",
@@ -306,7 +414,7 @@
         "noEquipment": "Без екіпірування",
         "sortXP": "Досвід",
         "sortLevel": "Рівень",
-        "sortCoins": "Монети",
+        "sortCoins": "Фіт Коіни",
         "sortStreak": "Серія"
     }
 }

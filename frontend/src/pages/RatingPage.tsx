@@ -143,7 +143,7 @@ export const RatingPage: React.FC = () => {
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
           >
-            🪙 {t('rating.sortCoins')} {getSortIcon('coins')}
+            <span style={{ filter: 'sepia(1) saturate(3) brightness(1.1) hue-rotate(5deg)' }}>🪙</span> {t('rating.sortCoins')} {getSortIcon('coins')}
           </button>
           <button
             onClick={() => handleSort('current_music_walk_streak')}

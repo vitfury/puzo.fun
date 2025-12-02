@@ -253,8 +253,8 @@ class CoinService
      */
     public function sellEquipment(User $user, Equipment $equipment): array
     {
-        // Apprentice armor cannot be sold (starter item)
-        if ($equipment->name === 'Apprentice') {
+        // Starter items cannot be sold (Apprentice armor and Club weapon)
+        if ($equipment->name === 'Apprentice' || $equipment->name === 'Club') {
             return [
                 'success' => false,
                 'error' => 'starter_item',

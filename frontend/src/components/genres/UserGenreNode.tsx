@@ -37,7 +37,7 @@ function UserGenreNode({ data }: UserGenreNodeProps) {
 
   return (
     <div
-      className={`border-2 rounded-lg p-4 min-w-[220px] shadow-lg transition-all ${getNodeStyle()}`}
+      className={`border-2 rounded-lg p-4 min-w-[220px] max-w-[300px] shadow-lg transition-all ${getNodeStyle()}`}
       onClick={handleClick}
     >
       <Handle
@@ -47,23 +47,23 @@ function UserGenreNode({ data }: UserGenreNodeProps) {
       />
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h3 className={`font-bold text-lg ${isAvailable ? 'text-white' : 'text-gray-500'}`}>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <h3 className={`font-bold text-lg truncate ${isAvailable ? 'text-white' : 'text-gray-500'}`}>
               {genre.name}
             </h3>
-            {isCompleted && <span className="text-green-400 text-xl">✓</span>}
-            {!isAvailable && <span className="text-gray-600 text-lg">🔒</span>}
+            {isCompleted && <span className="text-green-400 text-xl flex-shrink-0">✓</span>}
+            {!isAvailable && <span className="text-gray-600 text-lg flex-shrink-0">🔒</span>}
           </div>
           {genre.year && (
-            <span className={`text-xs ${isAvailable ? 'text-purple-400' : 'text-gray-600'}`}>
+            <span className={`text-xs flex-shrink-0 ${isAvailable ? 'text-purple-400' : 'text-gray-600'}`}>
               {genre.year}
             </span>
           )}
         </div>
 
         {genre.description && (
-          <p className={`text-sm line-clamp-2 ${isAvailable ? 'text-gray-300' : 'text-gray-600'}`}>
+          <p className={`text-sm line-clamp-2 break-words ${isAvailable ? 'text-gray-300' : 'text-gray-600'}`}>
             {genre.description}
           </p>
         )}

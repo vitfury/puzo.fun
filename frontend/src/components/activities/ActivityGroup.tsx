@@ -12,6 +12,7 @@ interface ActivityGroupProps {
 const typeColors: Record<ActivityType, string> = {
   daily_task: 'text-blue-400 border-blue-500',
   ongoing_rule: 'text-purple-400 border-purple-500',
+  training: 'text-green-400 border-green-500',
   music_walk: 'text-red-400 border-red-500',
 };
 

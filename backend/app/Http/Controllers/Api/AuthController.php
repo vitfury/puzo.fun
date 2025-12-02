@@ -50,8 +50,25 @@ class AuthController extends Controller
             
             // Auto-equip Apprentice armor
             $user->equipped_armor_id = $apprenticeArmor->id;
-            $user->save();
         }
+
+        // Give starter Club weapon to new user
+        $clubWeapon = Equipment::where('name', 'Club')
+            ->where('type', Equipment::TYPE_WEAPON)
+            ->first();
+        
+        if ($clubWeapon) {
+            UserEquipment::create([
+                'user_id' => $user->id,
+                'equipment_id' => $clubWeapon->id,
+                'purchased_price' => 0,
+            ]);
+            
+            // Auto-equip Club weapon
+            $user->equipped_weapon_id = $clubWeapon->id;
+        }
+
+        $user->save();
 
         $token = $user->createToken('auth_token')->plainTextToken;
 

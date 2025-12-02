@@ -63,6 +63,7 @@ const getArmorIconName = (name: string): string => {
 // Map weapon names to small icon filenames (for shop grid)
 const getWeaponIconName = (name: string): string => {
   const iconMap: Record<string, string> = {
+    // Swords
     'Short Sword': 'short_sword',
     'Gladius': 'gladius',
     'Falchion': 'falchion',
@@ -79,6 +80,19 @@ const getWeaponIconName = (name: string): string => {
     'Forgotten Blade': 'forgotten_blade',
     'Dynasty Sword': 'dynasty',
     'Vesper Sword': 'vesper',
+    // Axes
+    'Club': 'weapon_club_i00',
+    'Work Hammer': 'weapon_work_hammer_i00',
+    'Tarbar': 'weapon_tarbar_i00',
+    'War Axe': 'weapon_war_axe_i00',
+    'Ecliptic Axe': 'weapon_eclipse_axe_i00',
+    'Heavy War Axe': 'weapon_heavy_war_axe_i00',
+    'Deadmans Glory': 'weapon_deadmans_glory_i00',
+    'Meteor Shower': 'weapon_meteor_shower_i00',
+    'Barakiel Axe': 'weapon_barakiel_axe_i00',
+    'Basalt Battlehammer': 'weapon_basalt_battlehammer_i00',
+    'Dynasty Cudgel': 'weapon_dynasty_hammer_i00',
+    'Vesper Avenger': 'weapon_vesper_avenger_i00',
   };
   return iconMap[name] || 'short_sword';
 };
@@ -86,24 +100,38 @@ const getWeaponIconName = (name: string): string => {
 // Map weapon names to large preview image filenames
 const getWeaponPreviewName = (name: string): string => {
   const previewMap: Record<string, string> = {
-    'Short Sword': 'short',
-    'Gladius': 'gladius',
-    'Falchion': 'falchion',
-    'Crimson Sword': 'crimson',
-    'Sword of Revolution': 'revolution',
-    'Elven Long Sword': 'elven',
-    'Stormbringer': 'stormbringer',
-    'Sword of Delusion': 'delusion',
-    'Samurai Longsword': 'samurai',
-    'Keshanberk': 'keshanberk',
-    'Sword of Damascus': 'damascus',
-    'Tallum Blade': 'tallum',
-    'Dark Legion Edge': 'dark_legion',
-    'Forgotten Blade': 'forgotten',
-    'Dynasty Sword': 'dynasty',
-    'Vesper Sword': 'vesper',
+    // Swords
+    'Short Sword': 'sword/short',
+    'Gladius': 'sword/gladius',
+    'Falchion': 'sword/falchion',
+    'Crimson Sword': 'sword/crimson',
+    'Sword of Revolution': 'sword/revolution',
+    'Elven Long Sword': 'sword/elven',
+    'Stormbringer': 'sword/stormbringer',
+    'Sword of Delusion': 'sword/delusion',
+    'Samurai Longsword': 'sword/samurai',
+    'Keshanberk': 'sword/keshanberk',
+    'Sword of Damascus': 'sword/damascus',
+    'Tallum Blade': 'sword/tallum',
+    'Dark Legion Edge': 'sword/dark_legion',
+    'Forgotten Blade': 'sword/forgotten',
+    'Dynasty Sword': 'sword/dynasty',
+    'Vesper Sword': 'sword/vesper',
+    // Axes
+    'Club': 'axe/club',
+    'Work Hammer': 'axe/work_hammer',
+    'Tarbar': 'axe/tarbar',
+    'War Axe': 'axe/war_axe',
+    'Ecliptic Axe': 'axe/ecliptic_axe',
+    'Heavy War Axe': 'axe/heavy_war_are',
+    'Deadmans Glory': 'axe/deadmans_glory',
+    'Meteor Shower': 'axe/meteor_shower',
+    'Barakiel Axe': 'axe/Barakiel_axe',
+    'Basalt Battlehammer': 'axe/basalt_battlehammer',
+    'Dynasty Cudgel': 'axe/dynasty_cudgel',
+    'Vesper Avenger': 'axe/vesper_blunt',
   };
-  return previewMap[name] || 'short';
+  return previewMap[name] || 'sword/short';
 };
 
 // Get icon path based on equipment type
@@ -358,15 +386,18 @@ export const ShopPage: React.FC = () => {
             src={iconPath}
             alt={item.name}
             className="w-full h-full object-contain p-0.5"
-            onError={(e) => { (e.target as HTMLImageElement).src = '/images/icons/armor/bronze.png'; }}
+            onError={(e) => {
+              const fallback = shopType === 'armor' ? '/images/icons/armor/bronze.png' : '/images/icons/weapon/short_sword.png';
+              (e.target as HTMLImageElement).src = fallback;
+            }}
           />
-          
+
           {owned && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/40">
               <span className="text-green-400 text-xs">✓</span>
             </div>
           )}
-          
+
           {!levelOk && !owned && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50">
               <span className="text-[10px]">🔒</span>
@@ -419,15 +450,18 @@ export const ShopPage: React.FC = () => {
             src={iconPath}
             alt={item.name}
             className="w-full h-full object-contain p-0.5"
-            onError={(e) => { (e.target as HTMLImageElement).src = '/images/icons/armor/bronze.png'; }}
+            onError={(e) => {
+              const fallback = shopType === 'armor' ? '/images/icons/armor/bronze.png' : '/images/icons/weapon/short_sword.png';
+              (e.target as HTMLImageElement).src = fallback;
+            }}
           />
-          
+
           {equipped && (
             <div className="absolute top-0 right-0 w-3 h-3 bg-yellow-500 rounded-full flex items-center justify-center text-[6px]">
               ⭐
             </div>
           )}
-          
+
           {!levelOk && (
             <div className="absolute bottom-0 left-0 right-0 text-center text-[8px] bg-gray-900/80 text-gray-400">
               🔒
@@ -697,13 +731,13 @@ export const ShopPage: React.FC = () => {
                       </div>
                     )}
                     
-                    {!isEquipped(selectedItem) && selectedItem.name !== 'Apprentice' && (
+                    {!isEquipped(selectedItem) && selectedItem.name !== 'Apprentice' && selectedItem.name !== 'Club' && (
                       <button
                         onClick={handleSell}
                         disabled={selling}
                         className="w-full py-2 rounded-lg bg-red-900/30 text-red-400 font-bold hover:bg-red-900/50 border border-red-600 text-sm"
                       >
-                        {selling ? '...' : `💰 ${t('shop.sell', 'Продати')} за ${selectedItem.price.toLocaleString()}`}
+                        {selling ? '...' : <><span style={{ filter: 'sepia(1) saturate(3) brightness(1.1) hue-rotate(5deg)' }}>🪙</span> {t('shop.sell', 'Продати')} за {selectedItem.price.toLocaleString()}</>}
                       </button>
                     )}
                   </div>

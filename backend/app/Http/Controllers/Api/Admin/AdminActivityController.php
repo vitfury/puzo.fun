@@ -20,7 +20,19 @@ class AdminActivityController extends Controller
 
     public function store(StoreActivityRequest $request): ActivityResource
     {
-        $activity = Activity::create($request->validated());
+        $validated = $request->validated();
+        $activity = Activity::create($validated);
+        
+        // Create translations for all locales
+        $locales = ['en', 'uk'];
+        foreach ($locales as $locale) {
+            $activity->translations()->create([
+                'locale' => $locale,
+                'name' => $validated['name'] ?? '',
+                'description' => $validated['description'] ?? '',
+            ]);
+        }
+        
         return new ActivityResource($activity);
     }
 
@@ -33,8 +45,32 @@ class AdminActivityController extends Controller
     public function update(UpdateActivityRequest $request, int $id): ActivityResource
     {
         $activity = Activity::findOrFail($id);
-        $activity->update($request->validated());
-        return new ActivityResource($activity);
+        $validated = $request->validated();
+        
+        $activity->update($validated);
+        
+        // Also update translations if name or description changed
+        if (isset($validated['name']) || isset($validated['description'])) {
+            $locales = ['en', 'uk'];
+            foreach ($locales as $locale) {
+                $translationData = [];
+                if (isset($validated['name'])) {
+                    $translationData['name'] = $validated['name'];
+                }
+                if (isset($validated['description'])) {
+                    $translationData['description'] = $validated['description'];
+                }
+                
+                if (!empty($translationData)) {
+                    $activity->translations()->updateOrCreate(
+                        ['locale' => $locale],
+                        $translationData
+                    );
+                }
+            }
+        }
+        
+        return new ActivityResource($activity->fresh());
     }
 
     public function destroy(int $id): JsonResponse

@@ -129,8 +129,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .weapon-preview.race-orc {
-  right: 105px;
-  top: 224px;
+  right: 98px;
+  top: 233px;
   width: 400px;
   height: 400px;
   background-size: 400px 400px;
@@ -209,8 +209,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .profile-armor.race-dwarf {
-  background-size: 175%;
-  background-position: 50% -50px;
+  background-size: 150%;
+  background-position: 50% 10px;
 }
 
 /* Weapon layer */
@@ -249,8 +249,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .profile-weapon.race-orc {
-  right: 291px;
-  top: 284px;
+right: 285px;
+    top: 288px;
   width: 400px;
   height: 400px;
   background-size: 400px 400px;
@@ -258,10 +258,39 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .profile-weapon.race-dwarf {
-  right: 312px;
-  top: 303px;
+  right: 294px;
+  top: 305px;
   width: 400px;
   height: 400px;
   background-size: 400px 400px;
   transform: rotate(5deg);
+}
+
+/* =====================================================
+   Custom Scrollbar for Profile Charts
+   ===================================================== */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #374151;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #6b7280;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #6b7280 #374151;
 }

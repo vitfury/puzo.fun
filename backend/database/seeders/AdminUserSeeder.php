@@ -9,6 +9,9 @@ class AdminUserSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     * 
+     * Creates only admin user for production.
+     * Password should be changed after first login!
      */
     public function run(): void
     {
@@ -22,18 +25,6 @@ class AdminUserSeeder extends Seeder
             'current_music_walk_streak' => 0,
             'longest_music_walk_streak' => 0,
             'date_of_birth' => '2000-01-01',
-        ]);
-
-        \App\Models\User::create([
-            'nickname' => 'TestUser',
-            'email' => 'user@melody.ninja',
-            'password' => bcrypt('user123'),
-            'role' => 'user',
-            'avatar_level' => 1,
-            'total_points' => 0,
-            'current_music_walk_streak' => 0,
-            'longest_music_walk_streak' => 0,
-            'date_of_birth' => '2011-05-15',
         ]);
     }
 }

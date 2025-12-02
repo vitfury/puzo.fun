@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   setUser: (user: User) => void;
   updateUser: (user: User) => void;
+  refreshUser: () => Promise<void>;
   loading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
@@ -70,10 +71,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(updatedUser);
   };
 
+  const refreshUser = async () => {
+    try {
+      const { user } = await authApi.me();
+      setUser(user);
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     setUser,
     updateUser,
+    refreshUser,
     loading,
     login,
     register,

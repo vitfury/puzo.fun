@@ -24,9 +24,6 @@ export const Layout = ({ children }: LayoutProps) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-8">
-              <Link to="/" className="text-2xl font-bold text-purple-400 hover:text-purple-300 transition-colors">
-                {t('app.title')}
-              </Link>
               {user && (
                 <div className="hidden md:flex gap-4">
                   <Link
@@ -52,6 +49,12 @@ export const Layout = ({ children }: LayoutProps) => {
                     className="text-gray-300 hover:text-purple-400 transition-colors px-3 py-2 rounded-md"
                   >
                     🏆 {t('nav.rating')}
+                  </Link>
+                  <Link
+                    to="/streaks"
+                    className="text-gray-300 hover:text-purple-400 transition-colors px-3 py-2 rounded-md"
+                  >
+                    🔥 {t('nav.streaks', 'Streaks')}
                   </Link>
                   {user.role === 'admin' && (
                     <Link
@@ -92,8 +95,8 @@ export const Layout = ({ children }: LayoutProps) => {
                       className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-gray-600/50 transition-colors group"
                       title={t('profile.coins', 'Монетки')}
                     >
-                      <span className="w-5 h-5 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-xs">
-                        <span style={{ filter: 'sepia(1) saturate(3) brightness(1.1) hue-rotate(5deg)' }}>🪙</span>
+                      <span className="w-5 h-5 bg-gradient-to-br from-gray-500 to-gray-700 rounded-full flex items-center justify-center text-xs">
+                        <span style={{ fontSize: '20px',filter: 'sepia(1) saturate(3) brightness(1.1) hue-rotate(5deg)' }}>🪙</span>
                       </span>
                       <span className="text-yellow-300 font-semibold text-sm tabular-nums group-hover:text-yellow-200">
                         {user.coins.toLocaleString()}

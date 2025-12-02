@@ -36,6 +36,8 @@ class User extends Authenticatable
         'weight_updated_at',
         'waist_circumference',
         'body_fat_percentage',
+        'activity_preference',
+        'onboarding_completed',
     ];
 
     protected $hidden = [
@@ -60,6 +62,7 @@ class User extends Authenticatable
         'weight_updated_at' => 'datetime',
         'waist_circumference' => 'integer',
         'body_fat_percentage' => 'decimal:2',
+        'onboarding_completed' => 'boolean',
     ];
 
     public function isAdmin(): bool
@@ -85,6 +88,11 @@ class User extends Authenticatable
     public function coinTransactions(): HasMany
     {
         return $this->hasMany(CoinTransaction::class);
+    }
+
+    public function healthHistory(): HasMany
+    {
+        return $this->hasMany(HealthHistory::class);
     }
 
     public function genreProgress(): HasMany

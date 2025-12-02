@@ -26,6 +26,65 @@
         "loginSuccess": "Logged in successfully!",
         "registerSuccess": "Registration successful!"
     },
+    "onboarding": {
+        "title": "Complete Your Profile",
+        "subtitle": "Tell us about yourself to personalize your experience",
+        "step": "Step {{current}} of {{total}}",
+        "next": "Next",
+        "previous": "Previous",
+        "complete": "Complete",
+        "age": {
+            "title": "Your Age",
+            "label": "Date of Birth",
+            "placeholder": "Select your date of birth"
+        },
+        "weight": {
+            "title": "Your Weight",
+            "label": "Weight (kg)",
+            "placeholder": "Enter your weight"
+        },
+        "height": {
+            "title": "Your Height",
+            "label": "Height (cm)",
+            "placeholder": "Enter your height"
+        },
+        "race": {
+            "title": "Choose Your Race",
+            "subtitle": "Select your character race",
+            "human": "Human",
+            "humanDesc": "Balanced and adaptable warriors",
+            "orc": "Orc",
+            "orcDesc": "Powerful and strong fighters",
+            "elf": "Elf",
+            "elfDesc": "Agile and graceful archers",
+            "darkElf": "Dark Elf",
+            "darkElfDesc": "Mysterious and cunning assassins",
+            "dwarf": "Dwarf",
+            "dwarfDesc": "Tough and resilient defenders"
+        },
+        "activityPreference": {
+            "title": "Favorite Physical Activity",
+            "subtitle": "What do you enjoy most?",
+            "gym": "Gym",
+            "gymDesc": "Weight training and machines",
+            "bodyweight": "Bodyweight Exercises",
+            "bodyweightDesc": "Calisthenics and home workouts",
+            "walkingRunning": "Walking or Running",
+            "walkingRunningDesc": "Outdoor cardio activities"
+        },
+        "errors": {
+            "birthDateRequired": "Date of birth is required",
+            "birthDateInvalid": "Please select a valid date",
+            "weightRequired": "Weight is required",
+            "weightInvalid": "Weight must be between 20 and 500 kg",
+            "heightRequired": "Height is required",
+            "heightInvalid": "Height must be between 50 and 300 cm",
+            "raceRequired": "Please select a race",
+            "activityPreferenceRequired": "Please select your activity preference",
+            "submissionFailed": "Failed to save your data. Please try again."
+        },
+        "success": "Profile completed successfully!"
+    },
     "nav": {
         "home": "Home",
         "activities": "Activities",
@@ -35,7 +94,27 @@
         "rewards": "Rewards",
         "admin": "Admin Panel",
         "shop": "Shop",
-        "rating": "Rating"
+        "rating": "Rating",
+        "streaks": "Streaks"
+    },
+    "streaks": {
+        "title": "Streak Dashboard",
+        "subtitle": "Track your daily activity streaks and earn bonus rewards",
+        "maxStreak": "Best Streak",
+        "totalStreak": "Total Days",
+        "activeStreaks": "Active Streaks",
+        "totalActivities": "Activities",
+        "viewMilestones": "View Milestone Bonuses",
+        "milestoneBonuses": "Streak Milestone Bonuses",
+        "days": "days",
+        "daysLeft": "days left",
+        "totalCompletions": "Total",
+        "longestStreak": "Record",
+        "lastCompleted": "Last",
+        "currentStreak": "current",
+        "nextMilestone": "Next milestone",
+        "maxMilestoneReached": "All milestones achieved!",
+        "noStreaks": "Complete activities daily to build your streaks!"
     },
     "activities": {
         "title": "Daily Activities",
@@ -44,8 +123,11 @@
         "pending": "Pending",
         "dailyTasks": "Daily Tasks",
         "ongoingRules": "Ongoing Rules",
+        "trainings": "Trainings",
         "musicWalks": "Music Walks",
         "points": "points",
+        "coins": "Coins",
+        "experience": "Experience",
         "completeTask": "Complete Task",
         "completedAt": "Completed at",
         "history": "Activity History",
@@ -130,6 +212,7 @@
             "waist": "Waist",
             "bodyFat": "Body Fat",
             "bmi": "BMI",
+            "activity": "Activity",
             "birthDate": "Birth Date",
             "waistCircumference": "Waist Circumference",
             "bodyFatPercentage": "Body Fat Percentage",
@@ -142,6 +225,26 @@
             "bmiNormal": "Normal",
             "bmiOverweight": "Overweight",
             "bmiObese": "Obese"
+        },
+        "charts": {
+            "title": "Statistics & Progress",
+            "healthProgress": "Health Progress",
+            "dailyActivities": "Daily Activities",
+            "activeStreaks": "Active Streaks",
+            "experienceGained": "Experience Gained",
+            "coinsFlow": "Coins Flow",
+            "activityHeatmap": "Activity Heatmap",
+            "activityRate": "Activity Rate",
+            "totalActivities": "Activities",
+            "xpEarned": "Experience",
+            "coinsNet": "Coins (net)",
+            "perDay": "/day",
+            "completed": "Completed",
+            "active": "active",
+            "earned": "Earned",
+            "spent": "Spent",
+            "noHealthData": "No health data available",
+            "noStreaks": "Complete activities to build your streaks!"
         }
     },
     "points": {
@@ -178,6 +281,10 @@
         "comingSoon": "Coming Soon",
         "comingSoonDesc": "The genre skill tree is under development. Soon you'll be able to explore music genres and earn rewards!",
         "openPlaylist": "Open Playlist",
+        "openMap": "Open genre map",
+        "selectGenre": "Select Genre",
+        "selectGenreDescription": "Choose a genre for your music walk",
+        "selectGenreHint": "Click on an available (purple) genre to select it for your walk",
         "completed": "Completed",
         "available": "Available",
         "locked": "Locked",
@@ -220,7 +327,8 @@
             "name": "Activity Name",
             "type": "Type",
             "description": "Description",
-            "points": "Points",
+            "coins": "Coins",
+            "experience": "Experience (XP)",
             "activeFrom": "Active From",
             "activeTo": "Active To",
             "isActive": "Is Active",

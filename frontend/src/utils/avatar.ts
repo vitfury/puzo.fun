@@ -70,24 +70,39 @@ export function getDefaultAvatarPath(race: Race): string {
   return `/images/armor/${race}/N/front_robe_apprentice_high.png`;
 }
 
-// Map weapon names to preview image filenames
-const weaponPreviewMap: Record<string, string> = {
-  'Short Sword': 'short',
-  'Gladius': 'gladius',
-  'Falchion': 'falchion',
-  'Crimson Sword': 'crimson',
-  'Sword of Revolution': 'revolution',
-  'Elven Long Sword': 'elven',
-  'Stormbringer': 'stormbringer',
-  'Sword of Delusion': 'delusion',
-  'Samurai Longsword': 'samurai',
-  'Keshanberk': 'keshanberk',
-  'Sword of Damascus': 'damascus',
-  'Tallum Blade': 'tallum',
-  'Dark Legion Edge': 'dark_legion',
-  'Forgotten Blade': 'forgotten',
-  'Dynasty Sword': 'dynasty',
-  'Vesper Sword': 'vesper',
+// Map weapon names to preview image filenames and types
+const weaponPreviewMap: Record<string, { filename: string; type: 'sword' | 'axe' }> = {
+  // Swords
+  'Short Sword': { filename: 'short', type: 'sword' },
+  'Gladius': { filename: 'gladius', type: 'sword' },
+  'Falchion': { filename: 'falchion', type: 'sword' },
+  'Crimson Sword': { filename: 'crimson', type: 'sword' },
+  'Sword of Revolution': { filename: 'revolution', type: 'sword' },
+  'Elven Long Sword': { filename: 'elven', type: 'sword' },
+  'Stormbringer': { filename: 'stormbringer', type: 'sword' },
+  'Sword of Delusion': { filename: 'delusion', type: 'sword' },
+  'Samurai Longsword': { filename: 'samurai', type: 'sword' },
+  'Keshanberk': { filename: 'keshanberk', type: 'sword' },
+  'Sword of Damascus': { filename: 'damascus', type: 'sword' },
+  'Tallum Blade': { filename: 'tallum', type: 'sword' },
+  'Dark Legion Edge': { filename: 'dark_legion', type: 'sword' },
+  'Forgotten Blade': { filename: 'forgotten', type: 'sword' },
+  'Dynasty Sword': { filename: 'dynasty', type: 'sword' },
+  'Vesper Sword': { filename: 'vesper', type: 'sword' },
+
+  // Axes
+  'Club': { filename: 'club', type: 'axe' },
+  'Work Hammer': { filename: 'work_hammer', type: 'axe' },
+  'Tarbar': { filename: 'tarbar', type: 'axe' },
+  'War Axe': { filename: 'war_axe', type: 'axe' },
+  'Ecliptic Axe': { filename: 'ecliptic_axe', type: 'axe' },
+  'Heavy War Axe': { filename: 'heavy_war_are', type: 'axe' },
+  'Deadmans Glory': { filename: 'deadmans_glory', type: 'axe' },
+  'Meteor Shower': { filename: 'meteor_shower', type: 'axe' },
+  'Barakiel Axe': { filename: 'Barakiel_axe', type: 'axe' },
+  'Basalt Battlehammer': { filename: 'basalt_battlehammer', type: 'axe' },
+  'Dynasty Cudgel': { filename: 'dynasty_cudgel', type: 'axe' },
+  'Vesper Avenger': { filename: 'vesper_blunt', type: 'axe' },
 };
 
 /**
@@ -97,8 +112,13 @@ const weaponPreviewMap: Record<string, string> = {
  */
 export function getWeaponImagePath(equippedWeapon: Pick<Equipment, 'name'> | null): string | null {
   if (!equippedWeapon) return null;
-  
-  const weaponFilename = weaponPreviewMap[equippedWeapon.name] || 'short';
-  return `/images/weapon/${weaponFilename}.png`;
+
+  const weaponData = weaponPreviewMap[equippedWeapon.name];
+  if (!weaponData) {
+    // Default to sword if weapon not found
+    return '/images/weapon/sword/short.png';
+  }
+
+  return `/images/weapon/${weaponData.type}/${weaponData.filename}.png`;
 }
 

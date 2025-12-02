@@ -11,8 +11,10 @@ use App\Http\Controllers\Api\LocalizationController;
 use App\Http\Controllers\Api\PointController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\ShopController;
+use App\Http\Controllers\Api\ProfileChartsController;
 use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\V1\HealthController;
+use App\Http\Controllers\OnboardingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +39,9 @@ Route::prefix('v1')->name('v1.')->group(function () {
     // Protected routes
     Route::middleware(['auth:sanctum'])->group(function () {
 
+        // Onboarding routes
+        Route::post('/onboarding/complete', [OnboardingController::class, 'complete'])->name('onboarding.complete');
+
         // User routes
         Route::get('/user', function (Request $request) {
             return response()->json([
@@ -51,12 +56,16 @@ Route::prefix('v1')->name('v1.')->group(function () {
             Route::post('/{id}/complete', [ActivityController::class, 'complete'])->name('complete');
             Route::delete('/{id}/complete', [ActivityController::class, 'uncomplete'])->name('uncomplete');
             Route::get('/history', [ActivityController::class, 'history'])->name('history');
+            Route::get('/streaks', [ActivityController::class, 'streaks'])->name('streaks');
         });
 
         // Stats routes
         Route::prefix('stats')->name('stats.')->group(function () {
             Route::post('/steps', [StatsController::class, 'updateSteps'])->name('updateSteps');
         });
+
+        // Profile charts data
+        Route::get('/profile/charts', [ProfileChartsController::class, 'index'])->name('profile.charts');
 
         // Points routes
         Route::prefix('points')->name('points.')->group(function () {

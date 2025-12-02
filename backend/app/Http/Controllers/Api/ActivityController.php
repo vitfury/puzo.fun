@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ActivityResource;
 use App\Http\Resources\DailyStatResource;
 use App\Models\Activity;
+use App\Models\ActivityStreak;
 use App\Models\DailyStat;
 use App\Models\UserActivityLog;
 use App\Services\CoinService;
@@ -77,7 +78,9 @@ class ActivityController extends Controller
             ], 422);
         }
 
-        DB::transaction(function () use ($user, $activity, $today, $now) {
+        $streakBonus = null;
+        
+        DB::transaction(function () use ($user, $activity, $today, $now, &$streakBonus) {
             $log = UserActivityLog::create([
                 'user_id' => $user->id,
                 'activity_id' => $activity->id,
@@ -85,7 +88,25 @@ class ActivityController extends Controller
                 'completed_at' => $now,
             ]);
 
-            $this->pointService->awardActivityPoints($user, $activity);
+            // Award experience points if activity has experience
+            if ($activity->experience > 0) {
+                $this->pointService->awardPoints(
+                    user: $user,
+                    amount: $activity->experience,
+                    reason: "Completed activity: {$activity->name}",
+                    source: $activity
+                );
+            }
+
+            // Award coins if activity has coins
+            if ($activity->coins > 0) {
+                $this->coinService->awardCoins(
+                    user: $user,
+                    amount: $activity->coins,
+                    reason: "Completed activity: {$activity->name}",
+                    source: $activity
+                );
+            }
 
             $dailyStat = DailyStat::firstOrCreate(
                 [
@@ -101,16 +122,57 @@ class ActivityController extends Controller
                 ]
             );
 
-            $dailyStat->incrementActivitiesCompleted($activity->points);
+            // Track both coins and experience in daily stats
+            $dailyStat->incrementActivitiesCompleted($activity->experience);
 
-            // Update music walk streak and award coins for music_walk activities
+            // Update activity streak
+            $streak = ActivityStreak::firstOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'activity_id' => $activity->id,
+                ],
+                [
+                    'current_streak' => 0,
+                    'longest_streak' => 0,
+                    'total_completions' => 0,
+                ]
+            );
+            
+            $streak->recordCompletion($today);
+            
+            // Check for streak milestone bonus
+            if ($streak->isAtMilestone()) {
+                $bonus = $streak->getMilestoneBonus();
+                if ($bonus) {
+                    $streakBonus = [
+                        'streak' => $streak->current_streak,
+                        'coins' => $bonus['coins'],
+                        'experience' => $bonus['experience'],
+                    ];
+                    
+                    // Award streak bonus coins
+                    $this->coinService->awardCoins(
+                        user: $user,
+                        amount: $bonus['coins'],
+                        reason: "Streak bonus ({$streak->current_streak} days): {$activity->name}",
+                        source: $activity
+                    );
+                    
+                    // Award streak bonus experience
+                    $this->pointService->awardPoints(
+                        user: $user,
+                        amount: $bonus['experience'],
+                        reason: "Streak bonus ({$streak->current_streak} days): {$activity->name}",
+                        source: $activity
+                    );
+                }
+            }
+
+            // Update music walk streak for music_walk activities (legacy support)
             if ($activity->type === 'music_walk') {
                 $user->refresh();
                 $user->updateMusicWalkStreak($today);
-                
-                // Award coins for music walk
-                $this->coinService->awardMusicWalkCoins($user);
-                
+
                 // Check and award streak bonuses
                 $this->coinService->checkAndAwardStreakBonus($user);
             }
@@ -118,13 +180,20 @@ class ActivityController extends Controller
 
         $user->refresh();
 
-        return response()->json([
+        $response = [
             'message' => 'Activity completed successfully!',
-            'points_earned' => $activity->points,
-            'coins_earned' => $activity->type === 'music_walk' ? $this->coinService->getMusicWalkReward() : 0,
+            'experience_earned' => $activity->experience,
+            'coins_earned' => $activity->coins,
             'new_level' => $user->level,
+            'new_total_points' => $user->total_points,
             'new_coins' => $user->coins,
-        ]);
+        ];
+        
+        if ($streakBonus) {
+            $response['streak_bonus'] = $streakBonus;
+        }
+        
+        return response()->json($response);
     }
 
     public function uncomplete(Request $request, int $activityId): JsonResponse
@@ -148,12 +217,25 @@ class ActivityController extends Controller
         DB::transaction(function () use ($user, $activity, $log, $today) {
             $log->delete();
 
-            $this->pointService->deductPoints(
-                user: $user,
-                amount: $activity->points,
-                reason: "Uncompleted activity: {$activity->name}",
-                source: $activity
-            );
+            // Deduct experience if activity had experience
+            if ($activity->experience > 0) {
+                $this->pointService->deductPoints(
+                    user: $user,
+                    amount: $activity->experience,
+                    reason: "Uncompleted activity: {$activity->name}",
+                    source: $activity
+                );
+            }
+
+            // Deduct coins if activity had coins
+            if ($activity->coins > 0) {
+                $this->coinService->deductCoins(
+                    user: $user,
+                    amount: $activity->coins,
+                    reason: "Uncompleted activity: {$activity->name}",
+                    source: $activity
+                );
+            }
 
             $dailyStat = DailyStat::forUser($user->id)
                 ->forDate($today)
@@ -161,7 +243,7 @@ class ActivityController extends Controller
 
             if ($dailyStat) {
                 $dailyStat->decrement('activities_completed');
-                $dailyStat->decrement('points_earned', $activity->points);
+                $dailyStat->decrement('points_earned', $activity->experience);
             }
         });
 
@@ -183,5 +265,86 @@ class ActivityController extends Controller
             ->get();
 
         return DailyStatResource::collection($stats);
+    }
+
+    /**
+     * Get streak information for all activities
+     */
+    public function streaks(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $today = Carbon::today();
+        
+        // Get all active activities
+        $activities = Activity::with('translations')
+            ->activeOnDate($today)
+            ->ordered()
+            ->get();
+        
+        // Get user's streaks
+        $userStreaks = ActivityStreak::where('user_id', $user->id)
+            ->get()
+            ->keyBy('activity_id');
+        
+        $streaksData = [];
+        $milestones = ActivityStreak::getStreakMilestones();
+        
+        foreach ($activities as $activity) {
+            $streak = $userStreaks->get($activity->id);
+            
+            // Get next milestone
+            $currentStreak = $streak?->current_streak ?? 0;
+            $nextMilestone = null;
+            foreach ($milestones as $milestone) {
+                if ($milestone > $currentStreak) {
+                    $nextMilestone = $milestone;
+                    break;
+                }
+            }
+            
+            // Get bonus for next milestone
+            $tempStreak = new ActivityStreak(['current_streak' => $nextMilestone]);
+            $nextBonus = $nextMilestone ? $tempStreak->getMilestoneBonus() : null;
+            
+            $streaksData[] = [
+                'activity_id' => $activity->id,
+                'activity_name' => $activity->getTranslation(substr($request->header('Accept-Language', 'en'), 0, 2))?->name ?? $activity->name,
+                'activity_type' => $activity->type,
+                'current_streak' => $currentStreak,
+                'longest_streak' => $streak?->longest_streak ?? 0,
+                'total_completions' => $streak?->total_completions ?? 0,
+                'last_completed' => $streak?->last_completed_date?->format('Y-m-d'),
+                'next_milestone' => $nextMilestone,
+                'next_milestone_bonus' => $nextBonus,
+                'days_to_next_milestone' => $nextMilestone ? $nextMilestone - $currentStreak : null,
+            ];
+        }
+        
+        // Sort by current streak (descending)
+        usort($streaksData, fn($a, $b) => $b['current_streak'] <=> $a['current_streak']);
+        
+        // Calculate summary
+        $totalCurrentStreak = array_sum(array_column($streaksData, 'current_streak'));
+        $maxStreak = max(array_column($streaksData, 'current_streak') ?: [0]);
+        $activitiesWithStreak = count(array_filter($streaksData, fn($s) => $s['current_streak'] > 0));
+        
+        return response()->json([
+            'data' => [
+                'streaks' => $streaksData,
+                'summary' => [
+                    'total_current_streak' => $totalCurrentStreak,
+                    'max_current_streak' => $maxStreak,
+                    'activities_with_streak' => $activitiesWithStreak,
+                    'total_activities' => count($streaksData),
+                ],
+                'milestones' => array_map(function ($days) {
+                    $tempStreak = new ActivityStreak(['current_streak' => $days]);
+                    return [
+                        'days' => $days,
+                        'bonus' => $tempStreak->getMilestoneBonus(),
+                    ];
+                }, $milestones),
+            ],
+        ]);
     }
 }

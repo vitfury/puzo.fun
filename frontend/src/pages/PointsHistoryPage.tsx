@@ -33,7 +33,7 @@ export const PointsHistoryPage = () => {
     if (reason.includes('activity') || reason.includes('Activity')) return '✓';
     if (reason.includes('step') || reason.includes('Step')) return '👣';
     if (reason.includes('bonus')) return '🎁';
-    return '⭐';
+    return '⚡';
   };
 
   const formatDate = (dateString: string) => {

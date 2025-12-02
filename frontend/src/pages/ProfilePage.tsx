@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { Layout } from '../components/Layout';
 import { HealthDataModal } from '../components/profile/HealthDataModal';
+import { ProfileCharts } from '../components/profile/ProfileCharts';
 import { shopApi } from '../api/shop';
 import { getAvatarImagePath, getWeaponImagePath } from '../utils/avatar';
 import type { LevelProgress } from '../types/user';
@@ -198,7 +199,7 @@ export const ProfilePage: React.FC = () => {
                       <Link to="/shop" className="block hover:opacity-80 transition-opacity">
                         <div className="bg-gray-600 rounded-lg p-3 text-center">
                           <div className="w-10 h-10 mx-auto bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-xl mb-1">
-                            <span style={{ filter: 'sepia(1) saturate(3) brightness(1.1) hue-rotate(5deg)' }}>🪙</span>
+                            <span style={{ fontSize: '40px', filter: 'sepia(1) saturate(3) brightness(1.1) hue-rotate(5deg)' }}>🪙</span>
                           </div>
                           <p className="text-gray-400 text-xs">{t('profile.coins', 'Монетки')}</p>
                           <p className="text-white font-bold">{user.coins.toLocaleString()}</p>
@@ -262,7 +263,7 @@ export const ProfilePage: React.FC = () => {
                             <span className="text-white font-semibold">{user.body_fat_percentage}%</span>
                           </div>
                         )}
-                        {!user.age && !user.height && !user.weight && !user.waist_circumference && !user.body_fat_percentage && (
+                        {!user.age && !user.height && !user.weight && !user.waist_circumference && !user.body_fat_percentage && !user.activity_preference && (
                           <p className="text-gray-500 text-center py-2">
                             {t('profile.health.noData')}
                           </p>
@@ -331,6 +332,11 @@ export const ProfilePage: React.FC = () => {
                   <span className="text-white font-medium">#{user.id}</span>
                 </div>
               </div>
+            </div>
+
+            {/* Profile Charts Section */}
+            <div className="mt-8">
+              <ProfileCharts />
             </div>
           </div>
         </div>

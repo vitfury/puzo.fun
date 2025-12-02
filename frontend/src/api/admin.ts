@@ -1,24 +1,30 @@
 import { apiClient } from './client';
 
+export type ActivityType = 'daily_task' | 'ongoing_rule' | 'music_walk' | 'training';
+
 export interface Activity {
   id: number;
   name: string;
-  type: 'daily_task' | 'ongoing_rule' | 'music_walk';
+  type: ActivityType;
   description: string | null;
   points: number;
+  coins: number;
+  experience: number;
   active_from: string | null;
   active_to: string | null;
   is_active: boolean;
   order_index: number;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CreateActivityData {
   name: string;
-  type: 'daily_task' | 'ongoing_rule' | 'music_walk';
+  type: ActivityType;
   description?: string;
-  points: number;
+  points?: number;
+  coins?: number;
+  experience?: number;
   active_from?: string | null;
   active_to?: string | null;
   is_active?: boolean;

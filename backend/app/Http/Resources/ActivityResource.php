@@ -22,7 +22,9 @@ class ActivityResource extends JsonResource
             'name' => $translation?->name ?? $this->name,
             'type' => $this->type,
             'description' => $translation?->description ?? $this->description,
-            'points' => $this->points,
+            'points' => $this->points, // Keep for backward compatibility
+            'coins' => $this->coins,
+            'experience' => $this->experience,
             'active_from' => $this->active_from?->format('Y-m-d'),
             'active_to' => $this->active_to?->format('Y-m-d'),
             'is_active' => $this->is_active,

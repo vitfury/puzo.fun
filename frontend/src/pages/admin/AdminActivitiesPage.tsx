@@ -3,120 +3,18 @@ import { useTranslation } from 'react-i18next';
 import { Layout } from '../../components/Layout';
 import { adminApi, Activity, CreateActivityData } from '../../api/admin';
 
-export const AdminActivitiesPage = () => {
+interface ActivityFormProps {
+  formData: CreateActivityData;
+  setFormData: React.Dispatch<React.SetStateAction<CreateActivityData>>;
+  onSubmit: (e: React.FormEvent) => void;
+  onCancel: () => void;
+  isEdit?: boolean;
+}
+
+const ActivityForm = ({ formData, setFormData, onSubmit, onCancel, isEdit = false }: ActivityFormProps) => {
   const { t } = useTranslation();
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [formData, setFormData] = useState<CreateActivityData>({
-    name: '',
-    type: 'daily_task',
-    description: '',
-    points: 10,
-    active_from: null,
-    active_to: null,
-    is_active: true,
-    order_index: 0,
-  });
 
-  useEffect(() => {
-    loadActivities();
-  }, []);
-
-  const loadActivities = async () => {
-    try {
-      setLoading(true);
-      const data = await adminApi.getActivities();
-      setActivities(data);
-    } catch (error) {
-      console.error('Failed to load activities:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await adminApi.createActivity(formData);
-      await loadActivities();
-      setShowCreateForm(false);
-      resetForm();
-    } catch (error) {
-      console.error('Failed to create activity:', error);
-    }
-  };
-
-  const handleUpdate = async (id: number) => {
-    try {
-      await adminApi.updateActivity(id, formData);
-      await loadActivities();
-      setEditingId(null);
-      resetForm();
-    } catch (error) {
-      console.error('Failed to update activity:', error);
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm(t('admin.activities.confirmDelete'))) return;
-    try {
-      await adminApi.deleteActivity(id);
-      await loadActivities();
-    } catch (error) {
-      console.error('Failed to delete activity:', error);
-    }
-  };
-
-  const startEdit = (activity: Activity) => {
-    setEditingId(activity.id);
-    setFormData({
-      name: activity.name,
-      type: activity.type,
-      description: activity.description || '',
-      points: activity.points,
-      active_from: activity.active_from,
-      active_to: activity.active_to,
-      is_active: activity.is_active,
-      order_index: activity.order_index,
-    });
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setShowCreateForm(false);
-    resetForm();
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      type: 'daily_task',
-      description: '',
-      points: 10,
-      active_from: null,
-      active_to: null,
-      is_active: true,
-      order_index: 0,
-    });
-  };
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return t('admin.activities.noDate');
-    return new Date(dateString).toLocaleDateString();
-  };
-
-  const getTypeLabel = (type: string) => {
-    const types: Record<string, string> = {
-      daily_task: t('activities.dailyTasks'),
-      ongoing_rule: t('activities.ongoingRules'),
-      music_walk: t('activities.musicWalks'),
-    };
-    return types[type] || type;
-  };
-
-  const ActivityForm = ({ onSubmit, isEdit = false }: { onSubmit: (e: React.FormEvent) => void; isEdit?: boolean }) => (
+  return (
     <form onSubmit={onSubmit} className="bg-gray-800/50 backdrop-blur-sm border border-purple-500/30 rounded-lg p-6 mb-6">
       <div className="grid md:grid-cols-2 gap-4">
         <div>
@@ -143,20 +41,33 @@ export const AdminActivitiesPage = () => {
           >
             <option value="daily_task">{t('activities.dailyTasks')}</option>
             <option value="ongoing_rule">{t('activities.ongoingRules')}</option>
+            <option value="training">{t('activities.trainings')}</option>
             <option value="music_walk">{t('activities.musicWalks')}</option>
           </select>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
-            {t('admin.activities.points')}
+            🪙 {t('admin.activities.coins')}
           </label>
           <input
             type="number"
-            value={formData.points}
-            onChange={(e) => setFormData({ ...formData, points: parseInt(e.target.value) })}
+            value={formData.coins ?? 0}
+            onChange={(e) => setFormData({ ...formData, coins: parseInt(e.target.value) || 0 })}
             className="w-full px-4 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-            required
+            min="0"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            ⚡ {t('admin.activities.experience')}
+          </label>
+          <input
+            type="number"
+            value={formData.experience ?? 0}
+            onChange={(e) => setFormData({ ...formData, experience: parseInt(e.target.value) || 0 })}
+            className="w-full px-4 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
             min="0"
           />
         </div>
@@ -167,8 +78,8 @@ export const AdminActivitiesPage = () => {
           </label>
           <input
             type="number"
-            value={formData.order_index}
-            onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) })}
+            value={formData.order_index ?? 0}
+            onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
             className="w-full px-4 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
             min="0"
           />
@@ -257,7 +168,7 @@ export const AdminActivitiesPage = () => {
         </button>
         <button
           type="button"
-          onClick={cancelEdit}
+          onClick={onCancel}
           className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
         >
           {t('common.cancel')}
@@ -265,6 +176,124 @@ export const AdminActivitiesPage = () => {
       </div>
     </form>
   );
+};
+
+export const AdminActivitiesPage = () => {
+  const { t } = useTranslation();
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [formData, setFormData] = useState<CreateActivityData>({
+    name: '',
+    type: 'daily_task',
+    description: '',
+    coins: 5,
+    experience: 10,
+    active_from: null,
+    active_to: null,
+    is_active: true,
+    order_index: 0,
+  });
+
+  useEffect(() => {
+    loadActivities();
+  }, []);
+
+  const loadActivities = async () => {
+    try {
+      setLoading(true);
+      const data = await adminApi.getActivities();
+      setActivities(data);
+    } catch (error) {
+      console.error('Failed to load activities:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await adminApi.createActivity(formData);
+      await loadActivities();
+      setShowCreateForm(false);
+      resetForm();
+    } catch (error) {
+      console.error('Failed to create activity:', error);
+    }
+  };
+
+  const handleUpdate = async (id: number) => {
+    try {
+      await adminApi.updateActivity(id, formData);
+      await loadActivities();
+      setEditingId(null);
+      resetForm();
+    } catch (error) {
+      console.error('Failed to update activity:', error);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm(t('admin.activities.confirmDelete'))) return;
+    try {
+      await adminApi.deleteActivity(id);
+      await loadActivities();
+    } catch (error) {
+      console.error('Failed to delete activity:', error);
+    }
+  };
+
+  const startEdit = (activity: Activity) => {
+    setEditingId(activity.id);
+    setFormData({
+      name: activity.name,
+      type: activity.type,
+      description: activity.description || '',
+      coins: activity.coins,
+      experience: activity.experience,
+      active_from: activity.active_from,
+      active_to: activity.active_to,
+      is_active: activity.is_active,
+      order_index: activity.order_index,
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setShowCreateForm(false);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      type: 'daily_task',
+      description: '',
+      coins: 5,
+      experience: 10,
+      active_from: null,
+      active_to: null,
+      is_active: true,
+      order_index: 0,
+    });
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return t('admin.activities.noDate');
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const getTypeLabel = (type: string) => {
+    const types: Record<string, string> = {
+      daily_task: t('activities.dailyTasks'),
+      ongoing_rule: t('activities.ongoingRules'),
+      training: t('activities.trainings'),
+      music_walk: t('activities.musicWalks'),
+    };
+    return types[type] || type;
+  };
 
   if (loading) {
     return (
@@ -296,13 +325,26 @@ export const AdminActivitiesPage = () => {
           </button>
         </div>
 
-        {showCreateForm && <ActivityForm onSubmit={handleCreate} />}
+        {showCreateForm && (
+          <ActivityForm
+            formData={formData}
+            setFormData={setFormData}
+            onSubmit={handleCreate}
+            onCancel={cancelEdit}
+          />
+        )}
 
         <div className="space-y-4">
           {activities.map((activity) => (
             <div key={activity.id} className="bg-gray-800/50 backdrop-blur-sm border border-purple-500/30 rounded-lg p-6">
               {editingId === activity.id ? (
-                <ActivityForm onSubmit={(e) => { e.preventDefault(); handleUpdate(activity.id); }} isEdit />
+                <ActivityForm
+                  formData={formData}
+                  setFormData={setFormData}
+                  onSubmit={(e) => { e.preventDefault(); handleUpdate(activity.id); }}
+                  onCancel={cancelEdit}
+                  isEdit
+                />
               ) : (
                 <div>
                   <div className="flex items-start justify-between">
@@ -323,7 +365,10 @@ export const AdminActivitiesPage = () => {
                       )}
                       <div className="flex flex-wrap gap-4 text-sm text-gray-400">
                         <div>
-                          <span className="font-medium">{t('admin.activities.points')}:</span> {activity.points}
+                          <span className="font-medium">🪙 {t('admin.activities.coins')}:</span> {activity.coins}
+                        </div>
+                        <div>
+                          <span className="font-medium">⚡ {t('admin.activities.experience')}:</span> {activity.experience}
                         </div>
                         <div>
                           <span className="font-medium">{t('admin.activities.activeFrom')}:</span> {formatDate(activity.active_from)}

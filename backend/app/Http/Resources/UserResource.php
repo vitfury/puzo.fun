@@ -37,6 +37,8 @@ class UserResource extends JsonResource
             'age' => $this->age,
             'bmi' => $this->bmi,
             'needs_weight_update' => $this->needsWeightUpdate(),
+            'activity_preference' => $this->activity_preference,
+            'onboarding_completed' => (bool) $this->onboarding_completed,
             'created_at' => $this->created_at,
             // Equipment
             'equipped_armor_id' => $this->equipped_armor_id,

@@ -50,14 +50,29 @@ export function ActivityCheckbox({ activity, onToggle }: ActivityCheckboxProps) 
         )}
       </div>
 
-      <div
-        className={`flex-shrink-0 px-3 py-1 rounded-full text-sm font-semibold ${
-          activity.is_completed
-            ? 'bg-green-900/30 text-green-400'
-            : 'bg-yellow-900/30 text-yellow-400'
-        }`}
-      >
-        +{activity.points}
+      <div className="flex-shrink-0 flex gap-2">
+        {activity.coins > 0 && (
+          <div
+            className={`px-3 py-1 rounded-full text-sm font-semibold ${
+              activity.is_completed
+                ? 'bg-green-900/30 text-green-400'
+                : 'bg-yellow-900/30 text-yellow-400'
+            }`}
+          >
+            <span style={{ filter: 'sepia(1) saturate(3) brightness(1.1) hue-rotate(5deg)' }}>🪙</span> {activity.coins}
+          </div>
+        )}
+        {activity.experience > 0 && (
+          <div
+            className={`px-3 py-1 rounded-full text-sm font-semibold ${
+              activity.is_completed
+                ? 'bg-green-900/30 text-green-400'
+                : 'bg-purple-900/30 text-purple-400'
+            }`}
+          >
+            ⚡ {activity.experience}
+          </div>
+        )}
       </div>
     </div>
   );

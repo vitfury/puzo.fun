@@ -36,6 +36,8 @@ export interface User {
   age: number | null;
   bmi: number | null;
   needs_weight_update: boolean;
+  activity_preference: 'gym' | 'bodyweight' | 'walking_running' | null;
+  onboarding_completed: boolean;
   created_at: string;
   // Equipment
   equipped_armor_id: number | null;

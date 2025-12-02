@@ -20,19 +20,19 @@ function GenreNode({ data }: GenreNodeProps) {
   const onAddChild = data.onAddChild;
 
   return (
-    <div className="bg-gray-800 border-2 border-purple-500 rounded-lg p-4 min-w-[200px] shadow-lg hover:shadow-purple-500/50 transition-shadow">
+    <div className="bg-gray-800 border-2 border-purple-500 rounded-lg p-4 min-w-[200px] max-w-[300px] shadow-lg hover:shadow-purple-500/50 transition-shadow">
       <Handle type="target" position={Position.Top} className="!bg-purple-500" />
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h3 className="text-white font-bold text-lg">{genre.name}</h3>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-white font-bold text-lg truncate">{genre.name}</h3>
           {genre.year && (
-            <span className="text-purple-400 text-xs">{genre.year}</span>
+            <span className="text-purple-400 text-xs flex-shrink-0">{genre.year}</span>
           )}
         </div>
 
         {genre.description && (
-          <p className="text-gray-400 text-sm line-clamp-2">{genre.description}</p>
+          <p className="text-gray-400 text-sm line-clamp-2 break-words">{genre.description}</p>
         )}
 
         <div className="space-y-2 pt-2">

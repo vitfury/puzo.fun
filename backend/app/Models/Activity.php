@@ -13,6 +13,8 @@ class Activity extends Model
         'type',
         'description',
         'points',
+        'coins',
+        'experience',
         'active_from',
         'active_to',
         'is_active',
@@ -24,6 +26,8 @@ class Activity extends Model
         'active_to' => 'date',
         'is_active' => 'boolean',
         'points' => 'integer',
+        'coins' => 'integer',
+        'experience' => 'integer',
         'order_index' => 'integer',
     ];
 

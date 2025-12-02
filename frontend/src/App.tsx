@@ -11,6 +11,8 @@ import { GenresPage } from './pages/GenresPage';
 import { PointsHistoryPage } from './pages/PointsHistoryPage';
 import { ShopPage } from './pages/ShopPage';
 import { RatingPage } from './pages/RatingPage';
+import { StreaksPage } from './pages/StreaksPage';
+import OnboardingPage from './pages/OnboardingPage';
 import AdminPage from './pages/admin/AdminPage';
 import AdminGenresPage from './pages/admin/AdminGenresPage';
 import AdminActivitiesPage from './pages/admin/AdminActivitiesPage';
@@ -34,6 +36,14 @@ function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedRoute>
+                  <OnboardingPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/profile"
               element={
@@ -79,6 +89,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <RatingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/streaks"
+              element={
+                <ProtectedRoute>
+                  <StreaksPage />
                 </ProtectedRoute>
               }
             />
