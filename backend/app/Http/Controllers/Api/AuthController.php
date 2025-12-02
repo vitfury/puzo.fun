@@ -32,8 +32,7 @@ class AuthController extends Controller
             'nickname' => $request->nickname,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'date_of_birth' => $request->date_of_birth,
-            'race' => $request->race,
+            'race' => 'human', // Default race, will be updated during onboarding
         ]);
 
         // Initialize root genres for new user

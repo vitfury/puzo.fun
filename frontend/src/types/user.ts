@@ -62,8 +62,6 @@ export interface RegisterCredentials {
   email: string;
   password: string;
   password_confirmation: string;
-  date_of_birth: string;
-  race: Race;
 }
 
 export interface UpdateHealthData {

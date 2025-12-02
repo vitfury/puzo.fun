@@ -25,8 +25,6 @@ class RegisterRequest extends FormRequest
             'nickname' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
-            'date_of_birth' => ['required', 'date', 'before:today'],
-            'race' => ['required', 'string', 'in:human,elf,dark_elf,orc,dwarf'],
         ];
     }
 }

@@ -3,9 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import LanguageSwitcher from '../components/LanguageSwitcher';
-import type { Race } from '../types/user';
-
-const RACES: Race[] = ['human', 'elf', 'dark_elf', 'orc', 'dwarf'];
 
 export const RegisterPage: React.FC = () => {
   const { t } = useTranslation();
@@ -13,8 +10,6 @@ export const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
-  const [race, setRace] = useState<Race>('human');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -37,8 +32,6 @@ export const RegisterPage: React.FC = () => {
         email,
         password,
         password_confirmation: passwordConfirmation,
-        date_of_birth: dateOfBirth,
-        race,
       });
       navigate('/profile');
     } catch (err: any) {
@@ -110,51 +103,6 @@ export const RegisterPage: React.FC = () => {
                 className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="your@email.com"
               />
-            </div>
-
-            <div>
-              <label htmlFor="date_of_birth" className="block text-sm font-medium text-gray-300">
-                {t('auth.dateOfBirth')}
-              </label>
-              <input
-                id="date_of_birth"
-                name="date_of_birth"
-                type="date"
-                required
-                value={dateOfBirth}
-                onChange={(e) => setDateOfBirth(e.target.value)}
-                max={new Date().toISOString().split('T')[0]}
-                className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-3">
-                {t('auth.race')}
-              </label>
-              <div className="grid grid-cols-5 gap-2">
-                {RACES.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => setRace(r)}
-                    className={`flex flex-col items-center p-3 rounded-lg border-2 transition-all ${
-                      race === r
-                        ? 'border-purple-500 bg-purple-500/20 text-white'
-                        : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
-                    }`}
-                  >
-                    <span className="text-2xl mb-1">
-                      {r === 'human' && '🧑'}
-                      {r === 'elf' && '🧝'}
-                      {r === 'dark_elf' && '🧝‍♂️'}
-                      {r === 'orc' && '👹'}
-                      {r === 'dwarf' && '🧔'}
-                    </span>
-                    <span className="text-xs text-center">{t(`auth.races.${r}`)}</span>
-                  </button>
-                ))}
-              </div>
             </div>
 
             <div>
