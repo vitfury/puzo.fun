@@ -12,14 +12,10 @@ class ComprehensiveActivitySeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     *
+     * 
      * Баланс: Рівень 20 за 7 днів, Рівень 80 за 6 місяців
-     * Середній XP на день: 650-1000 (залежить від виконання)
-     *
-     * ОНОВЛЕНО 2025-12-03: Ціни збалансовані за пріоритетом впливу на здоров'я
-     * Найбільші винагороди: денний ліміт калорій, тренування, музична прогулянка
-     * Критичні правила: напої без цукру, одна порція, день без солодощів
-     *
+     * Середній XP на день: 500-800 (залежить від виконання)
+     * 
      * PRODUCTION DATA - synced from local DB on 2025-12-02
      */
     public function run(): void
@@ -45,7 +41,6 @@ class ComprehensiveActivitySeeder extends Seeder
             // ============================================
             // ПРАВИЛА (ongoing_rule) - Award EXPERIENCE
             // Виконуються щодня, формують корисні звички
-            // Ціни збалансовані за пріоритетом впливу на здоров'я
             // ============================================
             $ongoingRules = [
                 // === Доступні одразу ===
@@ -54,7 +49,7 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Пити напої без цукру',
                     'description' => 'Drink only sugar-free beverages today',
                     'description_uk' => 'Пий сьогодні тільки напої без цукру',
-                    'experience' => 70, // ⬆️ +30 (КРИТИЧНО для схуднення - сотні калорій!)
+                    'experience' => 40,
                     'coins' => 0,
                     'order_index' => 101,
                     'active_from' => null,
@@ -64,7 +59,7 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Поспати мінімум 8 годин',
                     'description' => 'Get at least 8 hours of sleep',
                     'description_uk' => 'Поспи мінімум 8 годин цієї ночі',
-                    'experience' => 55, // ⬆️ +5 (ВАЖЛИВО для відновлення та метаболізму)
+                    'experience' => 50,
                     'coins' => 0,
                     'order_index' => 102,
                     'active_from' => null,
@@ -74,7 +69,7 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Не пропускати сніданок',
                     'description' => 'Have a proper breakfast in the morning',
                     'description_uk' => 'З\'їж повноцінний сніданок вранці',
-                    'experience' => 50, // ⬆️ +5 (ВАЖЛИВО для метаболізму)
+                    'experience' => 45,
                     'coins' => 0,
                     'order_index' => 103,
                     'active_from' => null,
@@ -86,7 +81,7 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Їсти по одній порції',
                     'description' => 'Eat only one portion per meal, no seconds',
                     'description_uk' => 'Їж тільки одну порцію, без добавок',
-                    'experience' => 80, // ⬆️ +25 (КРИТИЧНО - контроль калорій!)
+                    'experience' => 55,
                     'coins' => 0,
                     'order_index' => 104,
                     'active_from' => $in2Weeks,
@@ -96,7 +91,7 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'День без солодощів',
                     'description' => 'Go the entire day without any sweets',
                     'description_uk' => 'Проведи весь день без солодощів',
-                    'experience' => 85, // ⬆️ +25 (ДУЖЕ ВАЖЛИВО - елімінує порожні калорії)
+                    'experience' => 60,
                     'coins' => 0,
                     'order_index' => 105,
                     'active_from' => $in2Weeks,
@@ -106,7 +101,7 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Солодке максимум раз на день',
                     'description' => 'Have sweets no more than once today',
                     'description_uk' => 'Їж солодке не більше 1 разу на день',
-                    'experience' => 60, // ⬆️ +10 (ВАЖЛИВО - обмеження цукру)
+                    'experience' => 50,
                     'coins' => 0,
                     'order_index' => 106,
                     'active_from' => $in2Weeks,
@@ -118,7 +113,7 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Їсти тільки за столом',
                     'description' => 'Have all three meals at a proper table',
                     'description_uk' => 'Їж всі три прийоми їжі тільки за столом',
-                    'experience' => 40, // ⬇️ -20 (допоміжне - усвідомлене харчування)
+                    'experience' => 60,
                     'coins' => 0,
                     'order_index' => 107,
                     'active_from' => $in1Month,
@@ -128,7 +123,7 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Їсти без гаджетів',
                     'description' => 'No phones or screens during meals',
                     'description_uk' => 'Їж без телефона та інших екранів',
-                    'experience' => 35, // ⬇️ -20 (допоміжне - усвідомлене харчування)
+                    'experience' => 55,
                     'coins' => 0,
                     'order_index' => 108,
                     'active_from' => $in1Month,
@@ -138,7 +133,7 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Стакан води перед їжею',
                     'description' => 'Drink a glass of water before each meal',
                     'description_uk' => 'Випий склянку води перед кожним прийомом їжі',
-                    'experience' => 55, // ⬆️ +10 (ВАЖЛИВО - зменшує апетит)
+                    'experience' => 45,
                     'coins' => 0,
                     'order_index' => 109,
                     'active_from' => $in1Month,
@@ -148,7 +143,7 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Хочеш вкусняху - сходи за нею',
                     'description' => 'If you want a treat, walk to get it',
                     'description_uk' => 'Якщо хочеш смаколик - сходи за ним пішки',
-                    'experience' => 70, // ⬆️ +5 (ВАЖЛИВО - активність + усвідомленість)
+                    'experience' => 65,
                     'coins' => 0,
                     'order_index' => 110,
                     'active_from' => $in1Month,
@@ -184,9 +179,8 @@ class ComprehensiveActivitySeeder extends Seeder
             }
 
             // ============================================
-            // ЗАВДАННЯ (daily_task) - Award EXPERIENCE + COINS
+            // ЗАВДАННЯ (daily_task) - Award EXPERIENCE
             // Конкретні досягнення на день
-            // Ціни збалансовані за пріоритетом впливу на здоров'я
             // ============================================
             $dailyTasks = [
                 [
@@ -194,8 +188,8 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Денний ліміт калорій',
                     'description' => 'Не перевищуй свій денний ліміт калорій',
                     'description_uk' => 'Не перевищуй свій денний ліміт калорій',
-                    'experience' => 120, // ⬆️ +30 (НАЙВАЖЛИВІШЕ - основа схуднення!)
-                    'coins' => 20, // ⬆️ +20 (додаткова мотивація для найважливішого)
+                    'experience' => 90,
+                    'coins' => 0,
                     'order_index' => 201,
                     'active_from' => null,
                 ],
@@ -204,8 +198,8 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Пройти 5 тис. кроків',
                     'description' => 'Reach 5,000 steps today',
                     'description_uk' => 'Досягни 5000 кроків за день',
-                    'experience' => 70, // ⬆️ +10 (ВАЖЛИВО - базова активність)
-                    'coins' => 15, // ⬆️ +15 (додаткова мотивація рухатись)
+                    'experience' => 60,
+                    'coins' => 0,
                     'order_index' => 202,
                     'active_from' => null,
                 ],
@@ -214,8 +208,8 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Сходити за фруктом',
                     'description' => 'Сходи пішки та принеси собі свіжий фрукт',
                     'description_uk' => 'Сходи пішки та принеси собі свіжий фрукт',
-                    'experience' => 50, // ⬆️ +10 (активність + здорова їжа)
-                    'coins' => 10, // ⬆️ +5 (мотивація до здорових перекусів)
+                    'experience' => 40,
+                    'coins' => 5,
                     'order_index' => 204,
                     'active_from' => $fruitDate,
                 ],
@@ -252,7 +246,6 @@ class ComprehensiveActivitySeeder extends Seeder
             // ============================================
             // ТРЕНУВАННЯ (training) - Award EXPERIENCE + COINS
             // Фізична активність, основне джерело монет
-            // Ціни збалансовані за інтенсивністю та впливом на схуднення
             // ============================================
             $trainings = [
                 [
@@ -260,8 +253,8 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Ранкова зарядка',
                     'description' => 'Виконай ранкову зарядку',
                     'description_uk' => 'Виконай ранкову зарядку',
-                    'experience' => 70, // ⬆️ +20 (ВАЖЛИВО - розгін метаболізму вранці)
-                    'coins' => 40, // ⬆️ +10 (більша мотивація почати день активно)
+                    'experience' => 50,
+                    'coins' => 30,
                     'order_index' => 0,
                     'active_from' => Carbon::parse('2025-12-02'),
                 ],
@@ -270,8 +263,8 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Тренажерний зал',
                     'description' => 'Complete a gym session',
                     'description_uk' => 'Потренуйся в тренажерному залі',
-                    'experience' => 180, // ⬆️ +30 (ДУЖЕ ВАЖЛИВО - м'язи + спалює багато калорій)
-                    'coins' => 100, // ⬆️ +20 (висока нагорода за інтенсивне тренування)
+                    'experience' => 150,
+                    'coins' => 80,
                     'order_index' => 302,
                     'active_from' => null,
                 ],
@@ -280,8 +273,8 @@ class ComprehensiveActivitySeeder extends Seeder
                     'name_uk' => 'Функціональне тренування',
                     'description' => 'Complete a functional/HIIT workout',
                     'description_uk' => 'Виконай функціональне або HIIT тренування',
-                    'experience' => 180, // ⬆️ +30 (ДУЖЕ ВАЖЛИВО - інтервальний тренінг)
-                    'coins' => 100, // ⬆️ +20 (висока нагорода за інтенсивне тренування)
+                    'experience' => 150,
+                    'coins' => 80,
                     'order_index' => 303,
                     'active_from' => null,
                 ],
@@ -315,54 +308,15 @@ class ComprehensiveActivitySeeder extends Seeder
                 ]);
             }
 
-            // ============================================
-            // МУЗИЧНА ПРОГУЛЯНКА (music_walk)
-            // Головна активність для прогресу жанрів
-            // Збалансована нагорода за регулярну активність
-            // ============================================
-            $musicWalk = Activity::create([
-                'name' => 'Music Walk',
-                'type' => 'music_walk',
-                'description' => 'Go for a walk while listening to your current genre playlist',
-                'points' => 0,
-                'coins' => 60, // ⬆️ +10 (основна денна активність)
-                'experience' => 120, // ⬆️ +20 (ДУЖЕ ВАЖЛИВО - кардіо + регулярність)
-                'is_active' => true,
-                'order_index' => 300, // Same priority as trainings
-                'active_from' => null,
-            ]);
-
-            ActivityTranslation::create([
-                'activity_id' => $musicWalk->id,
-                'locale' => 'en',
-                'name' => 'Music Walk',
-                'description' => 'Go for a walk while listening to your current genre playlist',
-            ]);
-
-            ActivityTranslation::create([
-                'activity_id' => $musicWalk->id,
-                'locale' => 'uk',
-                'name' => 'Музична прогулянка',
-                'description' => 'Прогуляйся, слухаючи плейлист поточного жанру',
-            ]);
-
             $this->command->info('✅ Activities seeded successfully!');
             $this->command->info('');
             $this->command->info('📋 ПРАВИЛА (ongoing_rule): ' . count($ongoingRules));
-            $this->command->info('   - Одразу доступні: 3 (35-70 XP)');
-            $this->command->info('   - Через 2 тижні (2025-12-16): 3 (60-85 XP)');
-            $this->command->info('   - Через 1 місяць (2026-01-02): 4 (35-70 XP)');
+            $this->command->info('   - Одразу доступні: 3');
+            $this->command->info('   - Через 2 тижні (2025-12-16): 3');
+            $this->command->info('   - Через 1 місяць (2026-01-02): 4');
             $this->command->info('');
             $this->command->info('✅ ЗАВДАННЯ (daily_task): ' . count($dailyTasks));
-            $this->command->info('   - Денний ліміт калорій: 120 XP + 20 монет ⭐');
-            $this->command->info('   - 5000 кроків: 70 XP + 15 монет');
-            $this->command->info('   - Сходити за фруктом: 50 XP + 10 монет');
-            $this->command->info('');
             $this->command->info('💪 ТРЕНУВАННЯ (training): ' . count($trainings));
-            $this->command->info('   - Ранкова зарядка: 70 XP + 40 монет');
-            $this->command->info('   - Зал/HIIT: 180 XP + 100 монет ⭐');
-            $this->command->info('');
-            $this->command->info('🎵 МУЗИЧНА ПРОГУЛЯНКА: 120 XP + 60 монет ⭐');
         });
     }
 }
