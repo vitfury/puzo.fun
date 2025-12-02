@@ -207,5 +207,28 @@ class AdminSettingsController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Update user's race (for testing different race avatars)
+     */
+    public function updateUserRace(Request $request): JsonResponse
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'race' => 'required|in:human,elf,dark_elf,orc,dwarf',
+        ]);
+
+        $user = User::findOrFail($request->input('user_id'));
+        $user->race = $request->input('race');
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User race updated to ' . $user->race,
+            'data' => [
+                'race' => $user->race,
+            ],
+        ]);
+    }
 }
 

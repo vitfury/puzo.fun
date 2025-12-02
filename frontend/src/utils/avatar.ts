@@ -50,7 +50,7 @@ const gradeToFolder: Record<string, string> = {
  * @param equippedArmor - Currently equipped armor, or null for default
  * @returns Path to the avatar image
  */
-export function getAvatarImagePath(race: Race, equippedArmor: Equipment | null): string {
+export function getAvatarImagePath(race: Race, equippedArmor: Pick<Equipment, 'name' | 'grade'> | null): string {
   // Default armor is Apprentice
   const armorName = equippedArmor?.name || 'Apprentice';
   const armorGrade = equippedArmor?.grade || 'no-grade';
@@ -68,5 +68,37 @@ export function getAvatarImagePath(race: Race, equippedArmor: Equipment | null):
  */
 export function getDefaultAvatarPath(race: Race): string {
   return `/images/armor/${race}/N/front_robe_apprentice_high.png`;
+}
+
+// Map weapon names to preview image filenames
+const weaponPreviewMap: Record<string, string> = {
+  'Short Sword': 'short',
+  'Gladius': 'gladius',
+  'Falchion': 'falchion',
+  'Crimson Sword': 'crimson',
+  'Sword of Revolution': 'revolution',
+  'Elven Long Sword': 'elven',
+  'Stormbringer': 'stormbringer',
+  'Sword of Delusion': 'delusion',
+  'Samurai Longsword': 'samurai',
+  'Keshanberk': 'keshanberk',
+  'Sword of Damascus': 'damascus',
+  'Tallum Blade': 'tallum',
+  'Dark Legion Edge': 'dark_legion',
+  'Forgotten Blade': 'forgotten',
+  'Dynasty Sword': 'dynasty',
+  'Vesper Sword': 'vesper',
+};
+
+/**
+ * Get the weapon preview image path
+ * @param equippedWeapon - Currently equipped weapon, or null
+ * @returns Path to the weapon image or null if no weapon
+ */
+export function getWeaponImagePath(equippedWeapon: Pick<Equipment, 'name'> | null): string | null {
+  if (!equippedWeapon) return null;
+  
+  const weaponFilename = weaponPreviewMap[equippedWeapon.name] || 'short';
+  return `/images/weapon/${weaponFilename}.png`;
 }
 

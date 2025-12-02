@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\GenreController;
 use App\Http\Controllers\Api\LocalizationController;
 use App\Http\Controllers\Api\PointController;
+use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\ShopController;
 use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\V1\HealthController;
@@ -83,6 +84,9 @@ Route::prefix('v1')->name('v1.')->group(function () {
             Route::get('/coins/history', [ShopController::class, 'coinHistory'])->name('coins.history');
         });
 
+        // Rating routes
+        Route::get('/rating', [RatingController::class, 'index'])->name('rating.index');
+
         // Admin routes
         Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
             Route::apiResource('activities', AdminActivityController::class);
@@ -103,6 +107,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
                 // Dev tools - user stats modification
                 Route::get('/user-stats', [AdminSettingsController::class, 'getCurrentUserStats'])->name('user-stats');
                 Route::post('/user-stats', [AdminSettingsController::class, 'updateUserStats'])->name('user-stats.update');
+                Route::post('/user-race', [AdminSettingsController::class, 'updateUserRace'])->name('user-race.update');
             });
 
             // Localization management

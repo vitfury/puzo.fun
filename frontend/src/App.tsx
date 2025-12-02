@@ -10,6 +10,7 @@ import { ActivitiesPage } from './pages/ActivitiesPage';
 import { GenresPage } from './pages/GenresPage';
 import { PointsHistoryPage } from './pages/PointsHistoryPage';
 import { ShopPage } from './pages/ShopPage';
+import { RatingPage } from './pages/RatingPage';
 import AdminPage from './pages/admin/AdminPage';
 import AdminGenresPage from './pages/admin/AdminGenresPage';
 import AdminActivitiesPage from './pages/admin/AdminActivitiesPage';
@@ -70,6 +71,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ShopPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/rating"
+              element={
+                <ProtectedRoute>
+                  <RatingPage />
                 </ProtectedRoute>
               }
             />

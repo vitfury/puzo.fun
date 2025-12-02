@@ -127,4 +127,12 @@ export const adminApi = {
     });
     return response.data.data;
   },
+
+  updateUserRace: async (userId: number, race: string): Promise<{ race: string }> => {
+    const response = await apiClient.post('/admin/settings/user-race', {
+      user_id: userId,
+      race,
+    });
+    return response.data.data;
+  },
 };

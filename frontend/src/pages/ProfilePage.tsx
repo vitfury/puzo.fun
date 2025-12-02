@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Layout } from '../components/Layout';
 import { HealthDataModal } from '../components/profile/HealthDataModal';
 import { shopApi } from '../api/shop';
-import { getAvatarImagePath } from '../utils/avatar';
+import { getAvatarImagePath, getWeaponImagePath } from '../utils/avatar';
 import type { LevelProgress } from '../types/user';
 
 // Grade colors for equipment
@@ -102,70 +102,85 @@ export const ProfilePage: React.FC = () => {
 
           <div className="px-6 py-8">
             <div className="flex flex-col md:flex-row gap-6 items-stretch">
-              {/* Left block - 60% width - Avatar display */}
-              <div className="w-full md:w-4/6">
-                <div className="flex flex-col items-center">
-                  {/* Nickname above avatar */}
-                  <h1 className="text-3xl font-bold text-white mb-4 text-center">
-                    {user.nickname}
-                  </h1>
-                  
-                  {/* Avatar image container */}
-                  <div className="relative" style={{height: '720px'}}>
-                    {/* Glow effect behind avatar based on armor grade */}
-                    <div className={`absolute inset-0 blur-2xl opacity-30 rounded-full bg-gradient-to-br ${
-                      user.equipped_armor 
-                        ? gradeBgColors[user.equipped_armor.grade] 
-                        : 'from-gray-500 to-gray-600'
-                    }`} />
+              {/* Left block - 75% width - Avatar display */}
+              <div className="w-full md:w-3/4">
+                <div className="flex flex-col items-center relative">
+                  {/* User Info & Equipment Panel - top left */}
+                  <div className="absolute top-0 left-0 bg-gray-700/90 backdrop-blur-sm rounded-lg p-3 z-10 w-auto">
+                    <div className="space-y-2">
+                      {/* Level */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">⭐</span>
+                        <span className="text-white font-bold">Lv. {user.level}</span>
+                      </div>
+                      
+                      {/* Armor */}
+                      <div className={`flex items-center gap-2 ${user.equipped_armor ? gradeColors[user.equipped_armor.grade] : 'text-gray-500'}`}>
+                        <span className="text-lg">🛡️</span>
+                        {user.equipped_armor ? (
+                          <span className="font-medium">{user.equipped_armor.name}</span>
+                        ) : (
+                          <span className="italic text-sm">—</span>
+                        )}
+                      </div>
+                      
+                      {/* Weapon */}
+                      <div className={`flex items-center gap-2 ${user.equipped_weapon ? gradeColors[user.equipped_weapon.grade] : 'text-gray-500'}`}>
+                        <span className="text-lg">⚔️</span>
+                        {user.equipped_weapon ? (
+                          <span className="font-medium">{user.equipped_weapon.name}</span>
+                        ) : (
+                          <span className="italic text-sm">—</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Avatar with nickname - centered block */}
+                  <div className="profile-avatar-wrapper">
+                    {/* Nickname above avatar */}
+                    <h1 className="text-3xl font-bold text-white mb-4 text-center">
+                      {user.nickname}
+                    </h1>
                     
-                    {/* Avatar as background-image div - adjust w-[], h-[], bg-[size] and bg-[position] as needed */}
-                    <div
-                      className="relative w-[400px] h-[600px] bg-no-repeat bg-center drop-shadow-2xl"
-                      style={{
-                        backgroundImage: `url(${getAvatarImagePath(user.race, user.equipped_armor)})`,
-                        backgroundSize: '200%',
-                        backgroundPosition: '52% 86%',
-                        height:'100%',
-                      }}
-                    />
+                    {/* Avatar image container */}
+                    <div className="profile-avatar-container">
+                      {/* Glow effect behind avatar based on armor grade */}
+                      <div className={`absolute inset-0 blur-2xl opacity-30 rounded-full bg-gradient-to-br ${
+                        user.equipped_armor 
+                          ? gradeBgColors[user.equipped_armor.grade] 
+                          : 'from-gray-500 to-gray-600'
+                      }`} />
+                      
+                      {/* Inner container with overflow hidden for armor only */}
+                      <div className="profile-avatar-inner">
+                        {/* Avatar (armor) layer */}
+                        <div
+                          className={`profile-armor race-${user.race}`}
+                          style={{
+                            backgroundImage: `url(${getAvatarImagePath(user.race, user.equipped_armor)})`,
+                          }}
+                        />
+                      </div>
+                      
+                      {/* Weapon overlay - OUTSIDE inner container so it's not clipped */}
+                      {user.equipped_weapon && getWeaponImagePath(user.equipped_weapon) && (
+                        <div
+                          className={`profile-weapon race-${user.race}`}
+                          style={{
+                            backgroundImage: `url(${getWeaponImagePath(user.equipped_weapon)})`,
+                          }}
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Right block - 40% width */}
-              <div className="w-full md:w-2/6 flex flex-col justify-between -mt-8 md:mt-0">
-                {/* Top section - Equipment & XP/Coins */}
+              {/* Right block - 25% width */}
+              <div className="w-full md:w-1/4 flex flex-col justify-between -mt-8 md:mt-0">
+                {/* Top section - XP/Coins */}
                 <div className="space-y-4">
-                  {/* User Info & Equipment Panel */}
-                  <div className="bg-gray-700 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-gray-400 text-sm">{user.email}</p>
-                      <span className="inline-flex items-center justify-center bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm font-bold rounded-full px-3 py-1">
-                        Lv. {user.level}
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      {user.equipped_armor && (
-                        <div className={`${gradeColors[user.equipped_armor.grade]} flex items-center gap-2`}>
-                          <span className="text-lg">🛡️</span>
-                          <span className="font-medium">{user.equipped_armor.name}</span>
-                          <span className="text-xs opacity-70">({user.equipped_armor.grade})</span>
-                        </div>
-                      )}
-                      {user.equipped_weapon && (
-                        <div className={`${gradeColors[user.equipped_weapon.grade]} flex items-center gap-2`}>
-                          <span className="text-lg">⚔️</span>
-                          <span className="font-medium">{user.equipped_weapon.name}</span>
-                          <span className="text-xs opacity-70">({user.equipped_weapon.grade})</span>
-                        </div>
-                      )}
-                      {!user.equipped_armor && !user.equipped_weapon && (
-                        <span className="text-gray-500 italic text-sm">{t('profile.noEquipment', 'Немає екіпірування')}</span>
-                      )}
-                    </div>
-                  </div>
-
                   {/* XP & Coins Panel */}
                   <div className="bg-gray-700 rounded-lg p-4">
                     <div className="grid grid-cols-2 gap-3">

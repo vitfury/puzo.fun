@@ -5,14 +5,16 @@ import { Layout } from '../components/Layout';
 import { shopApi } from '../api/shop';
 import type { Equipment } from '../types/user';
 
+type ShopType = 'armor' | 'weapon';
+
 // Grade colors
 const gradeColors: Record<string, string> = {
-  'no-grade': 'border-gray-500 bg-gray-800/50',
-  'D': 'border-blue-500 bg-blue-900/30',
-  'C': 'border-green-500 bg-green-900/30',
-  'B': 'border-red-500 bg-red-900/30',
-  'A': 'border-purple-500 bg-purple-900/30',
-  'S': 'border-yellow-500 bg-yellow-900/30',
+  'no-grade': 'border-gray-600 bg-gray-800/50',
+  'D': 'border-gray-600 bg-gray-800/50',
+  'C': 'border-gray-600 bg-gray-800/50',
+  'B': 'border-gray-600 bg-gray-800/50',
+  'A': 'border-gray-600 bg-gray-800/50',
+  'S': 'border-gray-600 bg-gray-800/50',
 };
 
 const gradeTextColors: Record<string, string> = {
@@ -33,8 +35,8 @@ const gradeLabels: Record<string, string> = {
   'S': 'S',
 };
 
-// Map equipment names to icon filenames
-const getIconName = (name: string): string => {
+// Map armor names to icon filenames
+const getArmorIconName = (name: string): string => {
   const iconMap: Record<string, string> = {
     'Apprentice': 'apprentice',
     'Bone': 'bone',
@@ -56,6 +58,58 @@ const getIconName = (name: string): string => {
     'Vesper': 'vesper',
   };
   return iconMap[name] || 'bronze';
+};
+
+// Map weapon names to small icon filenames (for shop grid)
+const getWeaponIconName = (name: string): string => {
+  const iconMap: Record<string, string> = {
+    'Short Sword': 'short_sword',
+    'Gladius': 'gladius',
+    'Falchion': 'falchion',
+    'Crimson Sword': 'crimson',
+    'Sword of Revolution': 'revolution',
+    'Elven Long Sword': 'elven_long_sword',
+    'Stormbringer': 'stormbringer',
+    'Sword of Delusion': 'delusion',
+    'Samurai Longsword': 'samurai',
+    'Keshanberk': 'kshanberk',
+    'Sword of Damascus': 'damascus',
+    'Tallum Blade': 'tallum_blade',
+    'Dark Legion Edge': 'dark_legion',
+    'Forgotten Blade': 'forgotten_blade',
+    'Dynasty Sword': 'dynasty',
+    'Vesper Sword': 'vesper',
+  };
+  return iconMap[name] || 'short_sword';
+};
+
+// Map weapon names to large preview image filenames
+const getWeaponPreviewName = (name: string): string => {
+  const previewMap: Record<string, string> = {
+    'Short Sword': 'short',
+    'Gladius': 'gladius',
+    'Falchion': 'falchion',
+    'Crimson Sword': 'crimson',
+    'Sword of Revolution': 'revolution',
+    'Elven Long Sword': 'elven',
+    'Stormbringer': 'stormbringer',
+    'Sword of Delusion': 'delusion',
+    'Samurai Longsword': 'samurai',
+    'Keshanberk': 'keshanberk',
+    'Sword of Damascus': 'damascus',
+    'Tallum Blade': 'tallum',
+    'Dark Legion Edge': 'dark_legion',
+    'Forgotten Blade': 'forgotten',
+    'Dynasty Sword': 'dynasty',
+    'Vesper Sword': 'vesper',
+  };
+  return previewMap[name] || 'short';
+};
+
+// Get icon path based on equipment type
+const getIconPath = (name: string, type: ShopType): string => {
+  const iconName = type === 'armor' ? getArmorIconName(name) : getWeaponIconName(name);
+  return `/images/icons/${type}/${iconName}.png`;
 };
 
 // Map equipment names to avatar image filenames
@@ -97,6 +151,7 @@ export const ShopPage: React.FC = () => {
   const { t } = useTranslation();
   const { user, updateUser } = useAuth();
   
+  const [shopType, setShopType] = useState<ShopType>('armor');
   const [selectedItem, setSelectedItem] = useState<Equipment | null>(null);
   const [selectionSource, setSelectionSource] = useState<SelectionSource>('shop');
   
@@ -104,6 +159,7 @@ export const ShopPage: React.FC = () => {
   const [inventory, setInventory] = useState<Equipment[]>([]);
   const [ownedIds, setOwnedIds] = useState<number[]>([]);
   const [equippedArmorId, setEquippedArmorId] = useState<number | null>(null);
+  const [equippedWeaponId, setEquippedWeaponId] = useState<number | null>(null);
   
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
@@ -115,25 +171,32 @@ export const ShopPage: React.FC = () => {
     try {
       setLoading(true);
       const [shopData, inventoryData] = await Promise.all([
-        shopApi.list('armor'),
+        shopApi.list(shopType),
         shopApi.inventory()
       ]);
       
       setShopItems(shopData.equipment);
       setOwnedIds(shopData.owned_ids);
-      setInventory(inventoryData.inventory.filter(i => i.type === 'armor'));
+      setInventory(inventoryData.inventory.filter(i => i.type === shopType));
       setEquippedArmorId(inventoryData.equipped_armor_id);
+      setEquippedWeaponId(inventoryData.equipped_weapon_id);
     } catch (err) {
       setError('Failed to load data');
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [shopType]);
 
   useEffect(() => {
     fetchAllData();
   }, [fetchAllData]);
+
+  // Clear selection when changing shop type
+  useEffect(() => {
+    setSelectedItem(null);
+    setSelectionSource('shop');
+  }, [shopType]);
 
   // Group shop items by grade
   const groupedShopItems = useMemo(() => {
@@ -200,13 +263,21 @@ export const ShopPage: React.FC = () => {
       setError(null);
       const result = await shopApi.equip(selectedItem.id);
       
-      setEquippedArmorId(result.equipped_armor_id);
-      
-      updateUser({
-        ...user,
-        equipped_armor_id: result.equipped_armor_id,
-        equipped_armor: result.equipped_armor,
-      });
+      if (shopType === 'armor') {
+        setEquippedArmorId(result.equipped_armor_id);
+        updateUser({
+          ...user,
+          equipped_armor_id: result.equipped_armor_id,
+          equipped_armor: result.equipped_armor,
+        });
+      } else {
+        setEquippedWeaponId(result.equipped_weapon_id);
+        updateUser({
+          ...user,
+          equipped_weapon_id: result.equipped_weapon_id,
+          equipped_weapon: result.equipped_weapon,
+        });
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Equip failed');
     } finally {
@@ -219,17 +290,24 @@ export const ShopPage: React.FC = () => {
 
     try {
       setError(null);
-      await shopApi.unequip('armor');
+      await shopApi.unequip(shopType);
       
-      setEquippedArmorId(null);
-      updateUser({ ...user, equipped_armor_id: null, equipped_armor: null });
+      if (shopType === 'armor') {
+        setEquippedArmorId(null);
+        updateUser({ ...user, equipped_armor_id: null, equipped_armor: null });
+      } else {
+        setEquippedWeaponId(null);
+        updateUser({ ...user, equipped_weapon_id: null, equipped_weapon: null });
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Unequip failed');
     }
   };
 
   const isOwned = (item: Equipment): boolean => ownedIds.includes(item.id);
-  const isEquipped = (item: Equipment): boolean => equippedArmorId === item.id;
+  const isEquipped = (item: Equipment): boolean => {
+    return shopType === 'armor' ? equippedArmorId === item.id : equippedWeaponId === item.id;
+  };
   const canAfford = (item: Equipment): boolean => user ? user.coins >= item.price : false;
   const meetsLevel = (item: Equipment): boolean => user ? user.level >= item.required_level : false;
 
@@ -254,7 +332,7 @@ export const ShopPage: React.FC = () => {
     const owned = isOwned(item);
     const levelOk = meetsLevel(item);
     const isSelected = selectedItem?.id === item.id && selectionSource === 'shop';
-    const iconName = getIconName(item.name);
+    const iconPath = getIconPath(item.name, shopType);
     const isClickable = levelOk || owned;
 
     return (
@@ -277,10 +355,10 @@ export const ShopPage: React.FC = () => {
           }`}
         >
           <img
-            src={`/images/icons/${iconName}.png`}
+            src={iconPath}
             alt={item.name}
             className="w-full h-full object-contain p-0.5"
-            onError={(e) => { (e.target as HTMLImageElement).src = '/images/icons/bronze.png'; }}
+            onError={(e) => { (e.target as HTMLImageElement).src = '/images/icons/armor/bronze.png'; }}
           />
           
           {owned && (
@@ -323,7 +401,7 @@ export const ShopPage: React.FC = () => {
     const equipped = isEquipped(item);
     const levelOk = meetsLevel(item);
     const isSelected = selectedItem?.id === item.id && selectionSource === 'inventory';
-    const iconName = getIconName(item.name);
+    const iconPath = getIconPath(item.name, shopType);
 
     return (
       <div key={`inv-${item.id}`} title={item.name} className="relative">
@@ -338,10 +416,10 @@ export const ShopPage: React.FC = () => {
           }`}
         >
           <img
-            src={`/images/icons/${iconName}.png`}
+            src={iconPath}
             alt={item.name}
             className="w-full h-full object-contain p-0.5"
-            onError={(e) => { (e.target as HTMLImageElement).src = '/images/icons/bronze.png'; }}
+            onError={(e) => { (e.target as HTMLImageElement).src = '/images/icons/armor/bronze.png'; }}
           />
           
           {equipped && (
@@ -366,7 +444,34 @@ export const ShopPage: React.FC = () => {
         {/* Header */}
         <div className="bg-gray-800 rounded-lg p-3 mb-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-lg font-bold text-white">🛡️ {t('shop.armorShop', 'Магазин броні')}</h1>
+            {/* Shop Type Toggle */}
+            <div className="flex items-center gap-2">
+              <div className="flex bg-gray-900 rounded-lg p-1">
+                <button
+                  onClick={() => setShopType('armor')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-all duration-200 ${
+                    shopType === 'armor'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  }`}
+                >
+                  <span>🛡️</span>
+                  <span>{t('shop.armorShop', 'Броня')}</span>
+                </button>
+                <button
+                  onClick={() => setShopType('weapon')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-all duration-200 ${
+                    shopType === 'weapon'
+                      ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  }`}
+                >
+                  <span>⚔️</span>
+                  <span>{t('shop.weaponShop', 'Зброя')}</span>
+                </button>
+              </div>
+            </div>
+            
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 rounded-lg">
                 <span className="text-xl" style={{ filter: 'sepia(1) saturate(3) brightness(1.1) hue-rotate(5deg)' }}>🪙</span>
@@ -457,30 +562,77 @@ export const ShopPage: React.FC = () => {
             {/* CENTER - Avatar Preview */}
             <div className="bg-gray-900 rounded-lg p-3 flex flex-col">
               <div className="bg-gray-900 rounded-lg overflow-hidden" style={{ height: '550px' }}>
-                {selectedItem ? (
-                  <div
-                    className="w-full h-full bg-no-repeat bg-center"
-                    style={{
-                      backgroundImage: `url(/images/armor/${race}/${getGradeFolder(selectedItem.grade)}/${getAvatarImageName(selectedItem.name)}.png)`,
-                      backgroundSize: '160%',
-                      backgroundPosition: '52% 86%',
-                    }}
-                  />
-                ) : user.equipped_armor ? (
-                  <div
-                    className="w-full h-full bg-no-repeat bg-center opacity-60"
-                    style={{
-                      backgroundImage: `url(/images/armor/${race}/${getGradeFolder(user.equipped_armor.grade)}/${getAvatarImageName(user.equipped_armor.name)}.png)`,
-                      backgroundSize: '160%',
-                      backgroundPosition: '52% 86%',
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-500 text-center">
-                    <div>
-                      <div className="text-4xl mb-2">👤</div>
-                      <p className="text-sm">{t('shop.selectArmor', 'Оберіть броню')}</p>
+                {shopType === 'armor' ? (
+                  // Armor preview
+                  selectedItem ? (
+                    <div
+                      className="w-full h-full bg-no-repeat bg-center"
+                      style={{
+                        backgroundImage: `url(/images/armor/${race}/${getGradeFolder(selectedItem.grade)}/${getAvatarImageName(selectedItem.name)}.png)`,
+                        backgroundSize: '160%',
+                        backgroundPosition: '52% 86%',
+                      }}
+                    />
+                  ) : user.equipped_armor ? (
+                    <div
+                      className="w-full h-full bg-no-repeat bg-center opacity-60"
+                      style={{
+                        backgroundImage: `url(/images/armor/${race}/${getGradeFolder(user.equipped_armor.grade)}/${getAvatarImageName(user.equipped_armor.name)}.png)`,
+                        backgroundSize: '160%',
+                        backgroundPosition: '52% 86%',
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-500 text-center">
+                      <div>
+                        <div className="text-4xl mb-2">🛡️</div>
+                        <p className="text-sm">{t('shop.selectArmor', 'Оберіть броню')}</p>
+                      </div>
                     </div>
+                  )
+                ) : (
+                  // Weapon preview - avatar with equipped armor + weapon overlay
+                  <div className="weapon-shop-preview">
+                    {/* Avatar background with current armor */}
+                    {user.equipped_armor ? (
+                      <div
+                        className={`armor-preview-weapon-shop race-${race}`}
+                        style={{
+                          backgroundImage: `url(/images/armor/${race}/${getGradeFolder(user.equipped_armor.grade)}/${getAvatarImageName(user.equipped_armor.name)}.png)`,
+                        }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center z-10">
+                        <div className="text-8xl opacity-20">👤</div>
+                      </div>
+                    )}
+                    
+                    {/* Weapon overlay */}
+                    {selectedItem ? (
+                      <div
+                        className={`weapon-preview race-${race}`}
+                        style={{
+                          backgroundImage: `url(/images/weapon/${getWeaponPreviewName(selectedItem.name)}.png)`,
+                        }}
+                      />
+                    ) : user.equipped_weapon ? (
+                      <div
+                        className={`weapon-preview race-${race} opacity-60`}
+                        style={{
+                          backgroundImage: `url(/images/weapon/${getWeaponPreviewName(user.equipped_weapon.name)}.png)`,
+                        }}
+                      />
+                    ) : null}
+                    
+                    {/* Empty state hint */}
+                    {!selectedItem && !user.equipped_weapon && (
+                      <div className="absolute inset-0 flex items-center justify-center text-gray-500 text-center pointer-events-none z-30">
+                        <div>
+                          <div className="text-4xl mb-2">⚔️</div>
+                          <p className="text-sm">{t('shop.selectWeapon', 'Оберіть зброю')}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

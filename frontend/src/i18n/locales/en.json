@@ -34,7 +34,8 @@
         "challenges": "Challenges",
         "rewards": "Rewards",
         "admin": "Admin Panel",
-        "shop": "Shop"
+        "shop": "Shop",
+        "rating": "Rating"
     },
     "activities": {
         "title": "Daily Activities",
@@ -261,6 +262,11 @@
     "shop": {
         "title": "Equipment Shop",
         "subtitle": "Buy armor and weapons for your character",
+        "armorShop": "Armor",
+        "weaponShop": "Weapons",
+        "selectArmor": "Select armor",
+        "selectWeapon": "Select weapon",
+        "weaponPreviewSoon": "Preview coming soon",
         "coins": "coins",
         "level": "level",
         "currentlyEquipped": "Currently Equipped",
@@ -287,5 +293,20 @@
         "noItemsFound": "No items found with selected filters",
         "emptyInventory": "Your inventory is empty. Buy something from the shop!",
         "loading": "Loading..."
+    },
+    "rating": {
+        "title": "Player Rating",
+        "subtitle": "The strongest warriors of the music world",
+        "totalPlayers": "Total Players",
+        "loading": "Loading rating...",
+        "noPlayers": "No players yet",
+        "you": "You",
+        "level": "Level",
+        "xp": "Experience",
+        "noEquipment": "No equipment",
+        "sortXP": "Experience",
+        "sortLevel": "Level",
+        "sortCoins": "Coins",
+        "sortStreak": "Streak"
     }
 }

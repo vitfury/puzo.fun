@@ -36,16 +36,22 @@ export const Layout = ({ children }: LayoutProps) => {
                     {t('nav.activities')}
                   </Link>
                   <Link
+                    to="/profile"
+                    className="text-gray-300 hover:text-purple-400 transition-colors px-3 py-2 rounded-md"
+                  >
+                    {t('nav.profile')}
+                  </Link>
+                  <Link
                     to="/shop"
                     className="text-gray-300 hover:text-purple-400 transition-colors px-3 py-2 rounded-md"
                   >
                     🛒 {t('nav.shop', 'Магазин')}
                   </Link>
                   <Link
-                    to="/profile"
+                    to="/rating"
                     className="text-gray-300 hover:text-purple-400 transition-colors px-3 py-2 rounded-md"
                   >
-                    {t('nav.profile')}
+                    🏆 {t('nav.rating')}
                   </Link>
                   {user.role === 'admin' && (
                     <Link
@@ -94,10 +100,7 @@ export const Layout = ({ children }: LayoutProps) => {
                       </span>
                     </Link>
                   </div>
-                  
-                  <span className="text-gray-300 text-sm hidden lg:inline">
-                    {user.nickname}
-                  </span>
+
                   <button
                     onClick={handleLogout}
                     className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors"

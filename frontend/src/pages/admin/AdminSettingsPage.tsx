@@ -40,7 +40,9 @@ export const AdminSettingsPage = () => {
   // Dev tools state
   const [devCoins, setDevCoins] = useState<number>(0);
   const [devPoints, setDevPoints] = useState<number>(0);
+  const [devRace, setDevRace] = useState<string>('human');
   const [savingDevStats, setSavingDevStats] = useState(false);
+  const [savingRace, setSavingRace] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -50,6 +52,7 @@ export const AdminSettingsPage = () => {
     if (user) {
       setDevCoins(user.coins);
       setDevPoints(user.total_points);
+      setDevRace(user.race);
     }
   }, [user]);
 
@@ -421,6 +424,48 @@ export const AdminSettingsPage = () => {
                       }`}
                     >
                       Lvl {level}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Race selector */}
+              <div className="mt-6 pt-4 border-t border-gray-700">
+                <p className="text-gray-400 text-sm mb-3">🧝 Переключити расу:</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { race: 'human', label: '👨 Human', color: 'bg-blue-900/50 hover:bg-blue-900 text-blue-300 border-blue-700' },
+                    { race: 'elf', label: '🧝 Elf', color: 'bg-green-900/50 hover:bg-green-900 text-green-300 border-green-700' },
+                    { race: 'dark_elf', label: '🧝‍♀️ Dark Elf', color: 'bg-purple-900/50 hover:bg-purple-900 text-purple-300 border-purple-700' },
+                    { race: 'orc', label: '👹 Orc', color: 'bg-red-900/50 hover:bg-red-900 text-red-300 border-red-700' },
+                    { race: 'dwarf', label: '🧔 Dwarf', color: 'bg-orange-900/50 hover:bg-orange-900 text-orange-300 border-orange-700' },
+                  ].map(({ race, label, color }) => (
+                    <button
+                      key={race}
+                      onClick={async () => {
+                        if (race === user.race || savingRace) return;
+                        try {
+                          setSavingRace(true);
+                          setDevRace(race);
+                          const result = await adminApi.updateUserRace(user.id, race);
+                          updateUser({ ...user, race: result.race as any });
+                          setMessage({ type: 'success', text: `Раса змінена на ${label}` });
+                          setTimeout(() => setMessage(null), 3000);
+                        } catch (error) {
+                          setDevRace(user.race);
+                          setMessage({ type: 'error', text: 'Помилка зміни раси' });
+                        } finally {
+                          setSavingRace(false);
+                        }
+                      }}
+                      disabled={savingRace}
+                      className={`px-4 py-2 rounded text-sm font-medium transition-all border ${
+                        user.race === race
+                          ? `${color} ring-2 ring-white ring-offset-2 ring-offset-gray-900`
+                          : `${color} opacity-60 hover:opacity-100`
+                      }`}
+                    >
+                      {savingRace && devRace === race ? '...' : label}
                     </button>
                   ))}
                 </div>
