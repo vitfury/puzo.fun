@@ -17,7 +17,7 @@ class AdminUserSeeder extends Seeder
     {
         \App\Models\User::create([
             'nickname' => 'Admin',
-            'email' => 'admin@melody.ninja',
+            'email' => 'admin@puzo.fun',
             'password' => bcrypt('admin123'),
             'role' => 'admin',
             'avatar_level' => 1,

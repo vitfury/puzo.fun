@@ -1,6 +1,6 @@
 {
     "app": {
-        "title": "Melody Ninja"
+        "title": "Puzo Fun"
     },
     "auth": {
         "login": "Login",
@@ -135,13 +135,23 @@
         "streak_other": "🔥 {{count}} days streak",
         "noActivities": "No activities available",
         "loading": "Loading activities...",
+        "progress": "Today's Progress",
+        "allCompleted": "All Done for Today!",
+        "greatJob": "Great job! Come back tomorrow for more.",
+        "selectActivities": "Edit Activities",
+        "editModeHint": "Tap stars to choose which activities to show",
+        "selected": "selected",
+        "noFavoritesVisible": "No activities selected. Tap 'Edit Activities' to choose.",
         "musicWalkCard": {
             "title": "Music Walk",
             "description": "Explore music genres and go for a walk while listening to curated playlists. Complete your journey through the world of music!",
-            "currentGenre": "Current Genre",
+            "currentGenre": "Listen to",
             "notStarted": "Not Started",
             "streak": "Walk Streak",
-            "explore": "Start Walk"
+            "explore": "Start Walk",
+            "noGenreSelected": "Select a genre from the map first",
+            "exploreGenres": "Genre Map",
+            "helpText": "First, open the Genre Map and select a genre to listen to during your walk."
         },
         "items": {
             "Morning Stretch": {

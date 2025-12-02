@@ -57,6 +57,8 @@ Route::prefix('v1')->name('v1.')->group(function () {
             Route::delete('/{id}/complete', [ActivityController::class, 'uncomplete'])->name('uncomplete');
             Route::get('/history', [ActivityController::class, 'history'])->name('history');
             Route::get('/streaks', [ActivityController::class, 'streaks'])->name('streaks');
+            Route::get('/favorites', [ActivityController::class, 'getFavorites'])->name('favorites');
+            Route::post('/{id}/favorite', [ActivityController::class, 'toggleFavorite'])->name('favorite.toggle');
         });
 
         // Stats routes

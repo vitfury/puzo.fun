@@ -5,7 +5,7 @@ use Illuminate\Support\ServiceProvider;
 
 return [
 
-    'name' => env('APP_NAME', 'Melody Ninja'),
+    'name' => env('APP_NAME', 'Puzo Fun'),
     'env' => env('APP_ENV', 'production'),
     'debug' => (bool) env('APP_DEBUG', false),
     'url' => env('APP_URL', 'http://localhost'),

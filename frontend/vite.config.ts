@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'favicon.svg', 'favicon-96x96.png', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Melody Ninja',
-        short_name: 'Ninja',
+        name: 'Puzo Fun',
+        short_name: 'Puzo',
         description: 'Gamified music discovery and fitness tracking',
         theme_color: '#1a1a2e',
         background_color: '#0f0f1e',
@@ -36,7 +36,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\.melody\.ninja\/.*/i,
+            urlPattern: /^https:\/\/api\.puzo\.fun\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',

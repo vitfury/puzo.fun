@@ -37,6 +37,14 @@ class ActivityResource extends JsonResource
                 isset($this->is_completed),
                 fn() => $this->is_completed
             ),
+            'is_favorite' => $this->when(
+                isset($this->is_favorite),
+                fn() => $this->is_favorite
+            ),
+            'added_to_favorites_at' => $this->when(
+                isset($this->added_to_favorites_at),
+                fn() => $this->added_to_favorites_at
+            ),
         ];
     }
 }

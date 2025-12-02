@@ -3,7 +3,7 @@
 set -e
 
 echo "================================================"
-echo "  Melody Ninja - Docker Environment Setup"
+echo "  Puzo Fun - Docker Environment Setup"
 echo "================================================"
 echo ""
 

@@ -21,10 +21,10 @@ class ProfileChartsTestDataSeeder extends Seeder
     public function run(): void
     {
         // Get admin user by email
-        $user = User::where('email', 'admin@melody.ninja')->first();
+        $user = User::where('email', 'admin@puzo.fun')->first();
 
         if (!$user) {
-            $this->command->info('Admin user (admin@melody.ninja) not found. Skipping profile charts test data.');
+            $this->command->info('Admin user (admin@puzo.fun) not found. Skipping profile charts test data.');
             return;
         }
 

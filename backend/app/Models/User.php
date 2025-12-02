@@ -100,6 +100,12 @@ class User extends Authenticatable
         return $this->hasMany(UserGenreProgress::class);
     }
 
+    public function favoriteActivities(): BelongsToMany
+    {
+        return $this->belongsToMany(Activity::class, 'user_favorite_activities')
+            ->withTimestamps();
+    }
+
     public function ownedEquipment(): BelongsToMany
     {
         return $this->belongsToMany(Equipment::class, 'user_equipment')

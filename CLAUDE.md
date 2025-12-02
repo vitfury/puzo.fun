@@ -1,9 +1,9 @@
-# Melody Ninja - Technical Specification
+# Puzo Fun - Technical Specification
 
 ## Project Overview
-Melody Ninja is a gamified music discovery and fitness tracking web application designed to motivate a 13-year-old to stay active through music exploration. Users progress through a skill-tree of music genres, earning points for completing daily activities and walks while listening to curated playlists.
+Puzo Fun is a gamified music discovery and fitness tracking web application designed to motivate a 13-year-old to stay active through music exploration. Users progress through a skill-tree of music genres, earning points for completing daily activities and walks while listening to curated playlists.
 
-**Domain:** melody.ninja  
+**Domain:** puzo.fun
 **Target User:** Teenagers (13+) with focus on fitness motivation through music
 
 ## Tech Stack
@@ -20,10 +20,10 @@ Melody Ninja is a gamified music discovery and fitness tracking web application 
 
 
 ## Design Guidelines
-**Theme:** Dark ninja aesthetic with gamified Japanese cartoon style
+**Theme:** Dark RPG/fantasy aesthetic with gamified cartoon style
 - Dark color palette with accent colors
-- Ninja-themed avatars
-- Anime/manga-inspired UI elements
+- Fantasy RPG-themed avatars (Human, Elf, Dark Elf, Orc, Dwarf)
+- Game-inspired UI elements
 - Mobile-first responsive design
 - Smooth animations and transitions
 

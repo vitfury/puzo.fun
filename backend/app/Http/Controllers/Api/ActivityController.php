@@ -39,7 +39,15 @@ class ActivityController extends Controller
             ->pluck('activity_id')
             ->toArray();
 
-        $activities->transform(function ($activity) use ($completedActivityIds, $user, $today) {
+        $favoriteActivityIds = $user->favoriteActivities()->pluck('activities.id')->toArray();
+
+        // Get favorites with their created_at timestamps
+        $favoritesWithTimestamps = $user->favoriteActivities()
+            ->select('activities.id', 'user_favorite_activities.created_at as added_at')
+            ->get()
+            ->keyBy('id');
+
+        $activities->transform(function ($activity) use ($completedActivityIds, $favoriteActivityIds, $favoritesWithTimestamps, $user, $today) {
             $log = UserActivityLog::where('user_id', $user->id)
                 ->where('activity_id', $activity->id)
                 ->whereDate('date', $today)
@@ -47,10 +55,53 @@ class ActivityController extends Controller
 
             $activity->is_completed = in_array($activity->id, $completedActivityIds);
             $activity->completed_at = $log?->completed_at;
+            $activity->is_favorite = in_array($activity->id, $favoriteActivityIds);
+
+            // Add timestamp when activity was added to favorites
+            $favorite = $favoritesWithTimestamps->get($activity->id);
+            $activity->added_to_favorites_at = $favorite?->added_at;
+
             return $activity;
         });
 
         return ActivityResource::collection($activities);
+    }
+
+    /**
+     * Toggle favorite status for an activity
+     */
+    public function toggleFavorite(Request $request, int $activityId): JsonResponse
+    {
+        $user = $request->user();
+        $activity = Activity::findOrFail($activityId);
+
+        $isFavorite = $user->favoriteActivities()->where('activity_id', $activityId)->exists();
+
+        if ($isFavorite) {
+            $user->favoriteActivities()->detach($activityId);
+            $newStatus = false;
+        } else {
+            $user->favoriteActivities()->attach($activityId);
+            $newStatus = true;
+        }
+
+        return response()->json([
+            'message' => $newStatus ? 'Activity added to favorites' : 'Activity removed from favorites',
+            'is_favorite' => $newStatus,
+        ]);
+    }
+
+    /**
+     * Get all favorite activity IDs
+     */
+    public function getFavorites(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $favoriteIds = $user->favoriteActivities()->pluck('activities.id')->toArray();
+
+        return response()->json([
+            'data' => $favoriteIds,
+        ]);
     }
 
     public function complete(Request $request, int $activityId): JsonResponse

@@ -1,7 +1,7 @@
 {
-    "name": "melody-ninja/backend",
+    "name": "puzo-fun/backend",
     "type": "project",
-    "description": "Melody Ninja API Backend",
+    "description": "Puzo Fun API Backend",
     "keywords": ["laravel", "api", "music", "gamification"],
     "license": "MIT",
     "require": {

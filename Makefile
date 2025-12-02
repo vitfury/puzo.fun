@@ -20,7 +20,7 @@ logs: ## Show logs from all containers
 
 install: ## Install dependencies and set up the project
 	@echo "================================================"
-	@echo "  🎵 Melody Ninja - Setup Starting..."
+	@echo "  🎮 Puzo Fun - Setup Starting..."
 	@echo "================================================"
 	@echo ""
 	@echo "⚙️  Step 1: Checking Docker..."

@@ -60,4 +60,16 @@ export const activitiesApi = {
     const response = await apiClient.get<{ data: StreaksResponse }>('/activities/streaks');
     return response.data.data;
   },
+
+  async toggleFavorite(activityId: number): Promise<{ is_favorite: boolean }> {
+    const response = await apiClient.post<{ is_favorite: boolean }>(
+      `/activities/${activityId}/favorite`
+    );
+    return response.data;
+  },
+
+  async getFavorites(): Promise<number[]> {
+    const response = await apiClient.get<{ data: number[] }>('/activities/favorites');
+    return response.data.data;
+  },
 };

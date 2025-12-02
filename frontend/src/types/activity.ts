@@ -14,6 +14,8 @@ export interface Activity {
   order_index: number;
   is_completed?: boolean;
   completed_at?: string;
+  is_favorite?: boolean;
+  added_to_favorites_at?: string;
 }
 
 export interface DailyStat {

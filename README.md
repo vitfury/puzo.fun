@@ -1,4 +1,4 @@
-# Melody Ninja
+# Puzo Fun
 
 Gamified music discovery and fitness tracking web application built with Laravel 11 and React 18.
 
@@ -46,7 +46,7 @@ Gamified music discovery and fitness tracking web application built with Laravel
 
 ```bash
 git clone <repository-url>
-cd music.ninja
+cd puzo.fun
 ```
 
 ### 2. Automated setup (recommended)
@@ -146,7 +146,7 @@ docker-compose exec php php artisan migrate  # Run migrations
 ## Project Structure
 
 ```
-music.ninja/
+puzo.fun/
 ├── backend/                 # Laravel application
 │   ├── app/                # Application code
 │   ├── config/             # Configuration files
@@ -174,9 +174,9 @@ music.ninja/
 
 ### Root `.env`
 ```env
-DB_DATABASE=melody_ninja
-DB_USERNAME=melody_user
-DB_PASSWORD=melody_pass
+DB_DATABASE=puzo_fun
+DB_USERNAME=puzo_user
+DB_PASSWORD=puzo_pass
 DB_ROOT_PASSWORD=root_secret
 VITE_API_URL=http://localhost/api
 ```
@@ -192,7 +192,7 @@ See [backend/.env.example](backend/.env.example) for all available options inclu
 ### Frontend `.env`
 ```env
 VITE_API_URL=http://localhost/api
-VITE_APP_NAME=Melody Ninja
+VITE_APP_NAME=Puzo Fun
 ```
 
 ## Hot Module Replacement (HMR)
@@ -236,7 +236,7 @@ docker-compose exec php php artisan db:seed
 ```bash
 make db-shell
 # or
-docker-compose exec mysql mysql -u melody_user -pmelody_pass melody_ninja
+docker-compose exec mysql mysql -u puzo_user -ppuzo_pass puzo_fun
 ```
 
 ## Queue & Scheduled Tasks
