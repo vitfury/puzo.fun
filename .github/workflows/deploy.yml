@@ -13,13 +13,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: ✅ Validate Secrets
+        run: |
+          if [ -z "${{ secrets.DO_HOST }}" ]; then
+            echo "❌ Error: DO_HOST secret is missing!"
+            exit 1
+          fi
+          if [ -z "${{ secrets.DO_USERNAME }}" ]; then
+            echo "❌ Error: DO_USERNAME secret is missing!"
+            exit 1
+          fi
+          if [ -z "${{ secrets.DO_SSH_KEY }}" ]; then
+            echo "❌ Error: DO_SSH_KEY secret is missing!"
+            exit 1
+          fi
+          echo "✅ All secrets are configured"
+
       - name: 🚀 Deploy to DigitalOcean
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
-          port: ${{ secrets.DO_SSH_PORT }}
+          port: ${{ secrets.DO_SSH_PORT || 22 }}
+          script_timeout: 30m
           script: |
             set -e
             echo "========================================="
@@ -76,7 +93,7 @@ jobs:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
-          port: ${{ secrets.DO_SSH_PORT }}
+          port: ${{ secrets.DO_SSH_PORT || 22 }}
           script: |
             echo "Testing API health endpoint..."
             sleep 3
