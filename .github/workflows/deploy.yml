@@ -39,7 +39,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.0
         env:
           # Use custom PAT if available, otherwise use default GITHUB_TOKEN
-          GITHUB_TOKEN: ${{ secrets.DEPLOY_GIT_TOKEN || secrets.GITHUB_TOKEN }}
+          DEPLOY_GIT_TOKEN: ${{ secrets.DEPLOY_GIT_TOKEN || secrets.GITHUB_TOKEN }}
         with:
           host: ${{ vars.DO_HOST || secrets.DO_HOST }}
           username: ${{ vars.DO_USERNAME || secrets.DO_USERNAME }}
@@ -60,49 +60,54 @@ jobs:
             echo "   Current remote: $REMOTE_URL"
             
             # Debug: Check if token is available (without showing it)
-            if [ -n "$GITHUB_TOKEN" ]; then
-                TOKEN_LENGTH=${#GITHUB_TOKEN}
-                echo "   ℹ️  GITHUB_TOKEN is available (length: $TOKEN_LENGTH)"
+            # Check both DEPLOY_GIT_TOKEN (custom PAT) and GITHUB_TOKEN (auto)
+            GIT_TOKEN="${DEPLOY_GIT_TOKEN:-$GITHUB_TOKEN}"
+            if [ -n "$GIT_TOKEN" ]; then
+                TOKEN_LENGTH=${#GIT_TOKEN}
+                echo "   ℹ️  GitHub token is available (length: $TOKEN_LENGTH)"
             else
-                echo "   ⚠️  GITHUB_TOKEN is not set in environment"
+                echo "   ⚠️  No GitHub token available in environment"
             fi
             
             # Clear any cached credentials that might be invalid
             git config --global --unset credential.helper 2>/dev/null || true
             git config --local --unset credential.helper 2>/dev/null || true
             
-            if [[ "$REMOTE_URL" == *"https://github.com"* ]]; then
-                echo "   Converting HTTPS remote to use token authentication..."
-                # Extract repo path from HTTPS URL (remove https://github.com/ and .git)
-                REPO_PATH=$(echo "$REMOTE_URL" | sed 's|https://github.com/||' | sed 's|\.git$||' | sed 's|^github.com/||')
-                echo "   Repo path: $REPO_PATH"
-                
-                # Use GITHUB_TOKEN or DEPLOY_GIT_TOKEN from environment (passed from GitHub Actions)
-                # Format: https://TOKEN@github.com/OWNER/REPO.git
-                if [ -n "$GITHUB_TOKEN" ]; then
+            # Convert SSH remote to HTTPS with token if token is available
+            if [[ "$REMOTE_URL" == *"git@github.com"* ]]; then
+                if [ -n "$GIT_TOKEN" ]; then
+                    echo "   Converting SSH remote to HTTPS with token authentication..."
+                    # Extract repo path from SSH URL (git@github.com:owner/repo.git)
+                    REPO_PATH=$(echo "$REMOTE_URL" | sed 's|git@github.com:||' | sed 's|\.git$||')
+                    echo "   Repo path: $REPO_PATH"
                     # Mask token in logs (show only first 4 chars)
-                    TOKEN_PREVIEW=$(echo "$GITHUB_TOKEN" | cut -c1-4)
+                    TOKEN_PREVIEW=$(echo "$GIT_TOKEN" | cut -c1-4)
                     echo "   ✅ Using GitHub token (${TOKEN_PREVIEW}...)"
-                    git remote set-url origin "https://${GITHUB_TOKEN}@github.com/${REPO_PATH}.git"
+                    git remote set-url origin "https://${GIT_TOKEN}@github.com/${REPO_PATH}.git"
                     echo "   ✅ Updated remote to use token authentication"
                 else
-                    echo "   ⚠️  GITHUB_TOKEN not available, trying SSH..."
-                    # Try to convert to SSH
-                    git remote set-url origin "git@github.com:${REPO_PATH}.git"
-                    # Add GitHub to known_hosts
+                    echo "   Remote is already using SSH, ensuring known_hosts..."
                     mkdir -p ~/.ssh
                     chmod 700 ~/.ssh 2>/dev/null || true
                     ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>/dev/null || true
                     chmod 644 ~/.ssh/known_hosts 2>/dev/null || true
-                    echo "   ✅ Updated remote to use SSH"
-                    echo "   ⚠️  Note: SSH will only work if SSH key is configured on server"
                 fi
-            elif [[ "$REMOTE_URL" == *"git@github.com"* ]]; then
-                echo "   Remote is already using SSH, ensuring known_hosts..."
-                mkdir -p ~/.ssh
-                chmod 700 ~/.ssh 2>/dev/null || true
-                ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>/dev/null || true
-                chmod 644 ~/.ssh/known_hosts 2>/dev/null || true
+            elif [[ "$REMOTE_URL" == *"https://github.com"* ]]; then
+                echo "   Converting HTTPS remote to use token authentication..."
+                # Extract repo path from HTTPS URL (remove https://github.com/ and .git)
+                REPO_PATH=$(echo "$REMOTE_URL" | sed 's|https://github.com/||' | sed 's|\.git$||' | sed 's|^github.com/||' | sed 's|.*@github.com/||')
+                echo "   Repo path: $REPO_PATH"
+                
+                # Use token from environment
+                if [ -n "$GIT_TOKEN" ]; then
+                    # Mask token in logs (show only first 4 chars)
+                    TOKEN_PREVIEW=$(echo "$GIT_TOKEN" | cut -c1-4)
+                    echo "   ✅ Using GitHub token (${TOKEN_PREVIEW}...)"
+                    git remote set-url origin "https://${GIT_TOKEN}@github.com/${REPO_PATH}.git"
+                    echo "   ✅ Updated remote to use token authentication"
+                else
+                    echo "   ⚠️  No token available, keeping current remote"
+                fi
             fi
             
             # Fetch with retry logic
