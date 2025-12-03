@@ -78,7 +78,10 @@ jobs:
                 if [ -n "$GIT_TOKEN" ]; then
                     echo "   Converting SSH remote to HTTPS with token authentication..."
                     # Extract repo path from SSH URL (git@github.com:owner/repo.git)
+                    # Handle both old (music.ninja) and new (puzo.fun) repository names
                     REPO_PATH=$(echo "$REMOTE_URL" | sed 's|git@github.com:||' | sed 's|\.git$||')
+                    # If repo path contains music.ninja, replace with puzo.fun
+                    REPO_PATH=$(echo "$REPO_PATH" | sed 's|music\.ninja|puzo.fun|g')
                     echo "   Repo path: $REPO_PATH"
                     # Mask token in logs (show only first 4 chars)
                     TOKEN_PREVIEW=$(echo "$GIT_TOKEN" | cut -c1-4)
@@ -96,6 +99,8 @@ jobs:
                 echo "   Converting HTTPS remote to use token authentication..."
                 # Extract repo path from HTTPS URL (remove https://github.com/ and .git)
                 REPO_PATH=$(echo "$REMOTE_URL" | sed 's|https://github.com/||' | sed 's|\.git$||' | sed 's|^github.com/||' | sed 's|.*@github.com/||')
+                # If repo path contains music.ninja, replace with puzo.fun
+                REPO_PATH=$(echo "$REPO_PATH" | sed 's|music\.ninja|puzo.fun|g')
                 echo "   Repo path: $REPO_PATH"
                 
                 # Use token from environment
