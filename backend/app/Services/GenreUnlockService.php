@@ -135,6 +135,11 @@ class GenreUnlockService
      */
     public function completeGenre(User $user, Genre $genre): array
     {
+        // Check if genre is available for completion
+        if (!$this->isGenreAvailableForUser($user, $genre)) {
+            throw new \Exception('Genre is not available for completion');
+        }
+
         $progress = UserGenreProgress::firstOrCreate(
             [
                 'user_id' => $user->id,
@@ -173,6 +178,40 @@ class GenreUnlockService
             'can_unlock' => $canUnlock,
             'reason' => $canUnlock ? null : $this->getUnlockBlockReason($user),
         ];
+    }
+
+    /**
+     * Check if genre is available for user to complete
+     */
+    private function isGenreAvailableForUser(User $user, Genre $genre): bool
+    {
+        // First root genre is always available
+        if ($genre->parent_id === null) {
+            $firstRoot = Genre::roots()->first();
+            if ($genre->id === $firstRoot->id) {
+                return true;
+            }
+        }
+
+        // Check if user has progress record and genre is available
+        $progress = UserGenreProgress::where('user_id', $user->id)
+            ->where('genre_id', $genre->id)
+            ->first();
+
+        if ($progress) {
+            return $progress->is_available;
+        }
+
+        // For child genres, check if parent is completed
+        if ($genre->parent_id !== null) {
+            $parentProgress = UserGenreProgress::where('user_id', $user->id)
+                ->where('genre_id', $genre->parent_id)
+                ->first();
+
+            return $parentProgress && $parentProgress->isCompleted();
+        }
+
+        return false;
     }
 
     /**
