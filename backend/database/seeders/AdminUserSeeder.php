@@ -24,7 +24,7 @@ class AdminUserSeeder extends Seeder
             'total_points' => 0,
             'current_music_walk_streak' => 0,
             'longest_music_walk_streak' => 0,
-            'date_of_birth' => '2000-01-01',
+            'birth_date' => '2000-01-01',
         ]);
     }
 }
