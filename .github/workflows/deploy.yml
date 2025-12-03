@@ -39,7 +39,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.0
         env:
           # Use custom PAT if available, otherwise use default GITHUB_TOKEN
-          GITHUB_TOKEN: ${{ secrets.GITHUB_PAT || secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_GIT_TOKEN || secrets.GITHUB_TOKEN }}
         with:
           host: ${{ vars.DO_HOST || secrets.DO_HOST }}
           username: ${{ vars.DO_USERNAME || secrets.DO_USERNAME }}
@@ -59,6 +59,14 @@ jobs:
             REMOTE_URL=$(git remote get-url origin 2>/dev/null || echo "")
             echo "   Current remote: $REMOTE_URL"
             
+            # Debug: Check if token is available (without showing it)
+            if [ -n "$GITHUB_TOKEN" ]; then
+                TOKEN_LENGTH=${#GITHUB_TOKEN}
+                echo "   ℹ️  GITHUB_TOKEN is available (length: $TOKEN_LENGTH)"
+            else
+                echo "   ⚠️  GITHUB_TOKEN is not set in environment"
+            fi
+            
             # Clear any cached credentials that might be invalid
             git config --global --unset credential.helper 2>/dev/null || true
             git config --local --unset credential.helper 2>/dev/null || true
@@ -67,8 +75,9 @@ jobs:
                 echo "   Converting HTTPS remote to use token authentication..."
                 # Extract repo path from HTTPS URL (remove https://github.com/ and .git)
                 REPO_PATH=$(echo "$REMOTE_URL" | sed 's|https://github.com/||' | sed 's|\.git$||' | sed 's|^github.com/||')
+                echo "   Repo path: $REPO_PATH"
                 
-                # Use GITHUB_TOKEN or GITHUB_PAT from environment (passed from GitHub Actions)
+                # Use GITHUB_TOKEN or DEPLOY_GIT_TOKEN from environment (passed from GitHub Actions)
                 # Format: https://TOKEN@github.com/OWNER/REPO.git
                 if [ -n "$GITHUB_TOKEN" ]; then
                     # Mask token in logs (show only first 4 chars)
@@ -86,6 +95,7 @@ jobs:
                     ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>/dev/null || true
                     chmod 644 ~/.ssh/known_hosts 2>/dev/null || true
                     echo "   ✅ Updated remote to use SSH"
+                    echo "   ⚠️  Note: SSH will only work if SSH key is configured on server"
                 fi
             elif [[ "$REMOTE_URL" == *"git@github.com"* ]]; then
                 echo "   Remote is already using SSH, ensuring known_hosts..."
