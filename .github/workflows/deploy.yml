@@ -38,14 +38,15 @@ jobs:
       - name: 🚀 Deploy to DigitalOcean
         uses: appleboy/ssh-action@v1.0.0
         env:
-          # Use custom PAT if available, otherwise use default GITHUB_TOKEN
           DEPLOY_GIT_TOKEN: ${{ secrets.DEPLOY_GIT_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           host: ${{ vars.DO_HOST || secrets.DO_HOST }}
           username: ${{ vars.DO_USERNAME || secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
           port: ${{ vars.DO_SSH_PORT || secrets.DO_SSH_PORT || 22 }}
           script_timeout: 30m
+          envs: DEPLOY_GIT_TOKEN,GITHUB_TOKEN
           script: |
             set -e
             echo "========================================="
@@ -58,63 +59,45 @@ jobs:
             # Check current remote URL and fix authentication if needed
             REMOTE_URL=$(git remote get-url origin 2>/dev/null || echo "")
             echo "   Current remote: $REMOTE_URL"
-            
-            # Debug: Check if token is available (without showing it)
-            # Check both DEPLOY_GIT_TOKEN (custom PAT) and GITHUB_TOKEN (auto)
+
+            # Use custom PAT if available, otherwise use default GITHUB_TOKEN
             GIT_TOKEN="${DEPLOY_GIT_TOKEN:-$GITHUB_TOKEN}"
+
+            # Debug: Check if token is available (without showing it)
             if [ -n "$GIT_TOKEN" ]; then
                 TOKEN_LENGTH=${#GIT_TOKEN}
                 echo "   ℹ️  GitHub token is available (length: $TOKEN_LENGTH)"
             else
                 echo "   ⚠️  No GitHub token available in environment"
             fi
-            
+
             # Clear any cached credentials that might be invalid
             git config --global --unset credential.helper 2>/dev/null || true
             git config --local --unset credential.helper 2>/dev/null || true
-            
-            # Convert SSH remote to HTTPS with token if token is available
-            if [[ "$REMOTE_URL" == *"git@github.com"* ]]; then
-                if [ -n "$GIT_TOKEN" ]; then
-                    echo "   Converting SSH remote to HTTPS with token authentication..."
-                    # Extract repo path from SSH URL (git@github.com:owner/repo.git)
-                    # Handle both old (music.ninja) and new (puzo.fun) repository names
-                    REPO_PATH=$(echo "$REMOTE_URL" | sed 's|git@github.com:||' | sed 's|\.git$||')
-                    # If repo path contains music.ninja, replace with puzo.fun
-                    REPO_PATH=$(echo "$REPO_PATH" | sed 's|music\.ninja|puzo.fun|g')
-                    echo "   Repo path: $REPO_PATH"
-                    # Mask token in logs (show only first 4 chars)
-                    TOKEN_PREVIEW=$(echo "$GIT_TOKEN" | cut -c1-4)
-                    echo "   ✅ Using GitHub token (${TOKEN_PREVIEW}...)"
-                    git remote set-url origin "https://${GIT_TOKEN}@github.com/${REPO_PATH}.git"
-                    echo "   ✅ Updated remote to use token authentication"
-                else
-                    echo "   Remote is already using SSH, ensuring known_hosts..."
-                    mkdir -p ~/.ssh
-                    chmod 700 ~/.ssh 2>/dev/null || true
-                    ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>/dev/null || true
-                    chmod 644 ~/.ssh/known_hosts 2>/dev/null || true
-                fi
-            elif [[ "$REMOTE_URL" == *"https://github.com"* ]]; then
-                echo "   Converting HTTPS remote to use token authentication..."
-                # Extract repo path from HTTPS URL (remove https://github.com/ and .git)
-                REPO_PATH=$(echo "$REMOTE_URL" | sed 's|https://github.com/||' | sed 's|\.git$||' | sed 's|^github.com/||' | sed 's|.*@github.com/||')
-                # If repo path contains music.ninja, replace with puzo.fun
-                REPO_PATH=$(echo "$REPO_PATH" | sed 's|music\.ninja|puzo.fun|g')
-                echo "   Repo path: $REPO_PATH"
-                
-                # Use token from environment
-                if [ -n "$GIT_TOKEN" ]; then
-                    # Mask token in logs (show only first 4 chars)
-                    TOKEN_PREVIEW=$(echo "$GIT_TOKEN" | cut -c1-4)
-                    echo "   ✅ Using GitHub token (${TOKEN_PREVIEW}...)"
-                    git remote set-url origin "https://${GIT_TOKEN}@github.com/${REPO_PATH}.git"
-                    echo "   ✅ Updated remote to use token authentication"
-                else
-                    echo "   ⚠️  No token available, keeping current remote"
-                fi
+
+            # ALWAYS fix remote to use correct repository name and HTTPS with token
+            if [ -n "$GIT_TOKEN" ]; then
+                echo "   ✅ Fixing remote URL to use vitfury/puzo.fun with token authentication..."
+                # Mask token in logs (show only first 4 chars)
+                TOKEN_PREVIEW=$(echo "$GIT_TOKEN" | cut -c1-4)
+                echo "   Token preview: ${TOKEN_PREVIEW}..."
+                # Set correct repository URL with token
+                git remote set-url origin "https://${GIT_TOKEN}@github.com/vitfury/puzo.fun.git"
+                echo "   ✅ Remote URL updated successfully"
+                # Verify new URL (mask token in output)
+                NEW_URL=$(git remote get-url origin | sed 's/:.*@/:TOKEN@/')
+                echo "   New remote: $NEW_URL"
+            else
+                echo "   ❌ Cannot fix remote: no token available"
+                echo "   ⚠️  Falling back to SSH (may fail for private repos)"
+                # Try to use SSH as fallback
+                mkdir -p ~/.ssh
+                chmod 700 ~/.ssh 2>/dev/null || true
+                ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>/dev/null || true
+                chmod 644 ~/.ssh/known_hosts 2>/dev/null || true
+                git remote set-url origin "git@github.com:vitfury/puzo.fun.git"
             fi
-            
+
             # Fetch with retry logic
             echo "   Fetching from origin..."
             if ! git fetch origin; then
@@ -123,6 +106,7 @@ jobs:
                 git fetch origin || {
                     echo "   ❌ Git fetch failed. Checking remote configuration..."
                     git remote -v
+                    echo "   ❌ Debugging: check if token is valid and repo exists"
                     exit 1
                 }
             fi
