@@ -146,10 +146,10 @@ export function ActivitiesPage() {
               <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold text-white">{t('activities.title')}</h1>
-              {user && user.current_streak > 0 && !editMode && (
+              {user && user.current_music_walk_streak > 0 && !editMode && (
                 <div className="flex items-center gap-2 bg-gradient-to-r from-orange-900/40 to-amber-900/40 px-3 py-1.5 rounded-full border border-orange-600/40">
                   <span className="text-lg">🔥</span>
-                  <span className="text-lg font-bold text-orange-400">{user.current_streak}</span>
+                  <span className="text-lg font-bold text-orange-400">{user.current_music_walk_streak}</span>
                   <span className="text-xs text-orange-400/70">{t('profile.days')}</span>
                 </div>
               )}

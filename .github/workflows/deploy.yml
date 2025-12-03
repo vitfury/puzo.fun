@@ -44,7 +44,7 @@ jobs:
           script: |
             set -e
             echo "========================================="
-            echo "🚀 Starting Deployment"
+            echo "🚀 Starting Fast Deployment"
             echo "========================================="
 
             cd /var/www/puzo.fun
@@ -53,23 +53,28 @@ jobs:
             git fetch origin
             git reset --hard origin/${{ github.ref_name }}
 
-            echo "🛑 Stopping containers..."
-            docker-compose -f docker-compose.prod.yml down
+            # Запускаємо базу даних (якщо не запущена)
+            echo "🗄️ Ensuring database is running..."
+            docker-compose -f docker-compose.prod.yml up -d mysql redis
+            sleep 5
 
-            echo "🏗️ Building Docker images..."
-            docker-compose -f docker-compose.prod.yml build --no-cache php queue scheduler
+            # Docker build БЕЗ --no-cache (використовує кеш, швидше в 10 разів!)
+            # Перебілдиться тільки якщо змінився Dockerfile
+            echo "🏗️ Building Docker images (with cache)..."
+            docker-compose -f docker-compose.prod.yml build php queue scheduler || true
 
+            # Composer install (швидко, використовує кеш vendor/)
             echo "📦 Installing backend dependencies..."
             docker-compose -f docker-compose.prod.yml run --rm php composer install --no-dev --optimize-autoloader --no-interaction
 
+            # Міграції
             echo "🗄️ Running migrations..."
-            docker-compose -f docker-compose.prod.yml up -d mysql redis
-            sleep 10
             docker-compose -f docker-compose.prod.yml run --rm php php artisan migrate --force
 
+            # Frontend build (npm install використовує кеш node_modules/)
             echo "🎨 Building frontend..."
             cd frontend
-            npm ci
+            npm install  # Швидше ніж npm ci, використовує кеш
             npm run build
             cd ..
 
@@ -79,14 +84,12 @@ jobs:
             docker-compose -f docker-compose.prod.yml run --rm php php artisan route:clear
             docker-compose -f docker-compose.prod.yml run --rm php php artisan view:clear
 
-            echo "🚀 Starting all services..."
-            docker-compose -f docker-compose.prod.yml up -d
-
-            echo "🧹 Cleaning up..."
-            docker system prune -f
+            # Перезапускаємо тільки потрібні сервіси (не всі!)
+            echo "🚀 Restarting services..."
+            docker-compose -f docker-compose.prod.yml up -d --no-deps php queue scheduler nginx
 
             echo "⏳ Waiting for services..."
-            sleep 5
+            sleep 3
 
             echo "✅ Deployment complete!"
             docker-compose -f docker-compose.prod.yml ps
