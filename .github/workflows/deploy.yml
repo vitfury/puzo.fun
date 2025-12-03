@@ -90,16 +90,34 @@ jobs:
               npm run build
             }
             cd ..
-
+            
             echo "♻️ Clearing caches..."
             docker-compose -f docker-compose.prod.yml run --rm php php artisan config:clear
             docker-compose -f docker-compose.prod.yml run --rm php php artisan cache:clear
             docker-compose -f docker-compose.prod.yml run --rm php php artisan route:clear
             docker-compose -f docker-compose.prod.yml run --rm php php artisan view:clear
 
+            # Read version from file and inject into nginx config
+            if [ -f frontend/dist/.version ]; then
+                BUILD_VERSION=$(cat frontend/dist/.version)
+                echo "📝 Found build version: $BUILD_VERSION"
+                # Inject version into nginx config
+                sed -i "s/BUILD_VERSION/$BUILD_VERSION/g" docker/nginx/nginx.prod.conf
+                echo "✅ Injected version $BUILD_VERSION into nginx config"
+            else
+                echo "⚠️  No .version file found, using timestamp as fallback"
+                BUILD_VERSION=$(date +%s)
+                sed -i "s/BUILD_VERSION/$BUILD_VERSION/g" docker/nginx/nginx.prod.conf
+            fi
+
             # Перезапускаємо тільки потрібні сервіси (не всі!)
+            # Nginx буде перезапущений і підтягне новий конфіг з версією
             echo "🚀 Restarting services..."
             docker-compose -f docker-compose.prod.yml up -d --no-deps php queue scheduler nginx
+            
+            # Перезавантажуємо nginx конфіг без перезапуску контейнера (якщо можливо)
+            echo "🔄 Reloading nginx configuration..."
+            docker-compose -f docker-compose.prod.yml exec -T nginx nginx -s reload 2>/dev/null || echo "⚠️  Nginx reload failed, container will restart with new config"
 
             echo "⏳ Waiting for services..."
             sleep 3

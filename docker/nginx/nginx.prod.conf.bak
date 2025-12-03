@@ -33,6 +33,12 @@ http {
                application/rss+xml font/truetype font/opentype
                application/vnd.ms-fontobject image/svg+xml;
 
+    # Map to check if version query parameter exists
+    map $args $has_version {
+        default 0;
+        ~v= 1;
+    }
+
     # HTTP to HTTPS redirect
     server {
         listen 80;
@@ -49,7 +55,8 @@ http {
 
     # HTTPS server
     server {
-        listen 443 ssl http2;
+        listen 443 ssl;
+        http2 on;
         server_name puzo.fun www.puzo.fun;
 
         # SSL configuration
@@ -93,12 +100,6 @@ http {
             add_header Cache-Control "public, immutable";
         }
 
-        # Map to check if version query parameter exists
-        map $args $has_version {
-            default 0;
-            ~v= 1;
-        }
-
         # No-cache for index.html to prevent caching issues
         # Version will be added as query parameter via rewrite if not present
         location = /index.html {
@@ -108,8 +109,20 @@ http {
             if ($has_version = 0) {
                 # This will be replaced by deployment script with actual version
                 # For now, just serve without version - deployment script will update this
-                rewrite ^(.*)$ $1?v=BUILD_VERSION? permanent;
+                rewrite ^(.*)$ $1?v=0e6e626? permanent;
+            }
+            
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
+            add_header Pragma "no-cache";
+            add_header Expires "0";
+        }
 
+        # No-cache for JS and CSS files to prevent caching issues
+        location ~* \.(js|css)$ {
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
+            add_header Pragma "no-cache";
+            add_header Expires "0";
+        }
 
         # Static files from React build
         location / {
