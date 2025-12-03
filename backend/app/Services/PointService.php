@@ -52,7 +52,7 @@ class PointService
         return DB::transaction(function () use ($user, $amount, $reason, $source, $metadata) {
             $user->decrement('total_points', $amount);
 
-            return PointTransaction::create([
+            $transaction = PointTransaction::create([
                 'user_id' => $user->id,
                 'amount' => -$amount,
                 'reason' => $reason,
@@ -60,6 +60,12 @@ class PointService
                 'source_id' => $source?->id,
                 'metadata' => $metadata,
             ]);
+
+            // Update user level after deducting points
+            $user->refresh();
+            $this->levelService->updateUserLevel($user);
+
+            return $transaction;
         });
     }
 

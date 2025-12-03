@@ -46,13 +46,13 @@ export function ActivitiesPage() {
           });
         }
       } else {
-        await activitiesApi.uncompleteActivity(activityId);
-        const activity = activities.find(a => a.id === activityId);
-        if (user && activity) {
+        const response = await activitiesApi.uncompleteActivity(activityId);
+        if (user) {
           setUser({
             ...user,
-            total_points: Math.max(0, user.total_points - activity.experience),
-            coins: Math.max(0, user.coins - activity.coins),
+            total_points: response.new_total_points,
+            coins: response.new_coins,
+            level: response.new_level,
           });
         }
       }

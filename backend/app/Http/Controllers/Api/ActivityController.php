@@ -298,8 +298,13 @@ class ActivityController extends Controller
             }
         });
 
+        $user->refresh();
+
         return response()->json([
             'message' => 'Activity uncompleted successfully.',
+            'new_level' => $user->level,
+            'new_total_points' => $user->total_points,
+            'new_coins' => $user->coins,
         ]);
     }
 

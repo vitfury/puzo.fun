@@ -45,8 +45,11 @@ export const activitiesApi = {
     return response.data;
   },
 
-  async uncompleteActivity(activityId: number): Promise<void> {
-    await apiClient.delete(`/activities/${activityId}/complete`);
+  async uncompleteActivity(activityId: number): Promise<CompleteActivityResponse> {
+    const response = await apiClient.delete<CompleteActivityResponse>(
+      `/activities/${activityId}/complete`
+    );
+    return response.data;
   },
 
   async getHistory(days: number = 30): Promise<DailyStat[]> {
