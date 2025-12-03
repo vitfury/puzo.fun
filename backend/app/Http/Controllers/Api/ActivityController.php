@@ -338,10 +338,15 @@ class ActivityController extends Controller
             ->keyBy('activity_id');
         
         $streaksData = [];
-        $milestones = ActivityStreak::getStreakMilestones();
         
         foreach ($activities as $activity) {
             $streak = $userStreaks->get($activity->id);
+            
+            // Get appropriate milestones based on activity type
+            $isWeeklyTraining = ActivityStreak::isWeeklyTrainingActivity($activity);
+            $milestones = $isWeeklyTraining 
+                ? ActivityStreak::getWeeklyTrainingMilestones() 
+                : ActivityStreak::getStreakMilestones();
             
             // Get next milestone
             $currentStreak = $streak?->current_streak ?? 0;
@@ -354,7 +359,11 @@ class ActivityController extends Controller
             }
             
             // Get bonus for next milestone
-            $tempStreak = new ActivityStreak(['current_streak' => $nextMilestone]);
+            $tempStreak = new ActivityStreak([
+                'current_streak' => $nextMilestone,
+                'activity_id' => $activity->id,
+            ]);
+            $tempStreak->setRelation('activity', $activity);
             $nextBonus = $nextMilestone ? $tempStreak->getMilestoneBonus() : null;
             
             $streaksData[] = [
@@ -388,13 +397,36 @@ class ActivityController extends Controller
                     'activities_with_streak' => $activitiesWithStreak,
                     'total_activities' => count($streaksData),
                 ],
-                'milestones' => array_map(function ($days) {
-                    $tempStreak = new ActivityStreak(['current_streak' => $days]);
+                'milestones' => array_map(function ($value) {
                     return [
-                        'days' => $days,
-                        'bonus' => $tempStreak->getMilestoneBonus(),
+                        'value' => $value,
+                        'bonus' => [
+                            'coins' => match($value) {
+                                3 => 10, 7 => 50, 14 => 100, 21 => 200, 30 => 300, 60 => 500, 100 => 1000,
+                                default => 0,
+                            },
+                            'experience' => match($value) {
+                                3 => 5, 7 => 25, 14 => 50, 21 => 100, 30 => 150, 60 => 250, 100 => 500,
+                                default => 0,
+                            },
+                        ],
                     ];
-                }, $milestones),
+                }, ActivityStreak::getStreakMilestones()),
+                'weekly_training_milestones' => array_map(function ($weeks) {
+                    return [
+                        'weeks' => $weeks,
+                        'bonus' => [
+                            'coins' => match($weeks) {
+                                1 => 20, 2 => 50, 4 => 100, 8 => 200, 12 => 300, 24 => 500,
+                                default => 0,
+                            },
+                            'experience' => match($weeks) {
+                                1 => 10, 2 => 25, 4 => 50, 8 => 100, 12 => 150, 24 => 250,
+                                default => 0,
+                            },
+                        ],
+                    ];
+                }, ActivityStreak::getWeeklyTrainingMilestones()),
             ],
         ]);
     }
