@@ -23,6 +23,21 @@ class GenreResource extends JsonResource
                 ->first();
         }
 
+        // First root genre is always available by default
+        $isFirstRoot = $this->parent_id === null && $this->order_index === 1;
+        $isAvailable = false;
+        $isCompleted = false;
+        $completedAt = null;
+
+        if ($progress) {
+            $isAvailable = $progress->is_available;
+            $isCompleted = $progress->isCompleted();
+            $completedAt = $progress->completed_at?->toIso8601String();
+        } elseif ($isFirstRoot) {
+            // First root genre is available by default even without progress record
+            $isAvailable = true;
+        }
+
         return [
             'id' => $this->id,
             'parent_id' => $this->parent_id,
@@ -35,11 +50,11 @@ class GenreResource extends JsonResource
             'order_index' => $this->order_index,
             'children' => GenreResource::collection($this->whenLoaded('children')),
             'comments_count' => $this->whenCounted('comments'),
-            'user_progress' => $progress ? [
-                'is_available' => $progress->is_available,
-                'is_completed' => $progress->isCompleted(),
-                'completed_at' => $progress->completed_at?->toIso8601String(),
-            ] : null,
+            'user_progress' => [
+                'is_available' => $isAvailable,
+                'is_completed' => $isCompleted,
+                'completed_at' => $completedAt,
+            ],
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),
         ];
