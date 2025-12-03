@@ -247,12 +247,9 @@ class GenreUnlockService
      */
     private function isGenreAvailableForUser(User $user, Genre $genre): bool
     {
-        // First root genre is always available
+        // All root genres are always available
         if ($genre->parent_id === null) {
-            $firstRoot = Genre::roots()->first();
-            if ($genre->id === $firstRoot->id) {
-                return true;
-            }
+            return true;
         }
 
         // Check if user has progress record and genre is available

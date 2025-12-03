@@ -23,8 +23,6 @@ class GenreResource extends JsonResource
                 ->first();
         }
 
-        // First root genre is always available by default
-        $isFirstRoot = $this->parent_id === null && $this->order_index === 1;
         $isAvailable = false;
         $isCompleted = false;
         $completedAt = null;
@@ -33,8 +31,9 @@ class GenreResource extends JsonResource
             $isAvailable = $progress->is_available;
             $isCompleted = $progress->isCompleted();
             $completedAt = $progress->completed_at?->toIso8601String();
-        } elseif ($isFirstRoot) {
-            // First root genre is available by default even without progress record
+        } elseif ($this->parent_id === null) {
+            // Root genres should be available by default
+            // (they will be initialized on first access via initializeUserGenres)
             $isAvailable = true;
         }
 
