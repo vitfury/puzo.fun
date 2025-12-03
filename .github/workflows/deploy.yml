@@ -71,11 +71,24 @@ jobs:
             echo "🗄️ Running migrations..."
             docker-compose -f docker-compose.prod.yml run --rm php php artisan migrate --force
 
-            # Frontend build (npm install використовує кеш node_modules/)
-            echo "🎨 Building frontend..."
+            # Frontend build з обмеженням пам'яті для малих серверів (1GB RAM)
+            echo "🎨 Building frontend (with memory optimization)..."
             cd frontend
             npm install  # Швидше ніж npm ci, використовує кеш
-            npm run build
+            
+            # Збільшуємо heap size для Node.js (512MB з 1GB доступної пам'яті)
+            # Це дозволяє Node.js використовувати більше пам'яті для компіляції
+            export NODE_OPTIONS="--max-old-space-size=512"
+            export NODE_ENV=production
+            
+            # Білдимо з оптимізаціями (source maps вимкнено в vite.config.ts для production)
+            echo "Running TypeScript compilation and Vite build..."
+            npm run build || {
+              echo "❌ Build failed, trying with reduced memory..."
+              # Якщо не вистачило пам'яті, спробуємо з меншим heap
+              export NODE_OPTIONS="--max-old-space-size=384"
+              npm run build
+            }
             cd ..
 
             echo "♻️ Clearing caches..."

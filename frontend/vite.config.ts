@@ -72,7 +72,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: process.env.NODE_ENV !== 'production', // Вимикаємо source maps для production (економія пам'яті)
     rollupOptions: {
       output: {
         manualChunks: {
