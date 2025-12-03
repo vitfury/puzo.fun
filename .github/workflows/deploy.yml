@@ -11,6 +11,8 @@ jobs:
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
+    permissions:
+      contents: read  # Required for GITHUB_TOKEN to access private repository
 
     steps:
       - name: ✅ Validate Configuration
@@ -35,6 +37,9 @@ jobs:
 
       - name: 🚀 Deploy to DigitalOcean
         uses: appleboy/ssh-action@v1.0.0
+        env:
+          # Use custom PAT if available, otherwise use default GITHUB_TOKEN
+          GITHUB_TOKEN: ${{ secrets.GITHUB_PAT || secrets.GITHUB_TOKEN }}
         with:
           host: ${{ vars.DO_HOST || secrets.DO_HOST }}
           username: ${{ vars.DO_USERNAME || secrets.DO_USERNAME }}
@@ -50,8 +55,60 @@ jobs:
             cd /var/www/puzo.fun
 
             echo "📥 Pulling latest code..."
-            git fetch origin
+            # Check current remote URL and fix authentication if needed
+            REMOTE_URL=$(git remote get-url origin 2>/dev/null || echo "")
+            echo "   Current remote: $REMOTE_URL"
+            
+            # Clear any cached credentials that might be invalid
+            git config --global --unset credential.helper 2>/dev/null || true
+            git config --local --unset credential.helper 2>/dev/null || true
+            
+            if [[ "$REMOTE_URL" == *"https://github.com"* ]]; then
+                echo "   Converting HTTPS remote to use token authentication..."
+                # Extract repo path from HTTPS URL (remove https://github.com/ and .git)
+                REPO_PATH=$(echo "$REMOTE_URL" | sed 's|https://github.com/||' | sed 's|\.git$||' | sed 's|^github.com/||')
+                
+                # Use GITHUB_TOKEN or GITHUB_PAT from environment (passed from GitHub Actions)
+                # Format: https://TOKEN@github.com/OWNER/REPO.git
+                if [ -n "$GITHUB_TOKEN" ]; then
+                    # Mask token in logs (show only first 4 chars)
+                    TOKEN_PREVIEW=$(echo "$GITHUB_TOKEN" | cut -c1-4)
+                    echo "   ✅ Using GitHub token (${TOKEN_PREVIEW}...)"
+                    git remote set-url origin "https://${GITHUB_TOKEN}@github.com/${REPO_PATH}.git"
+                    echo "   ✅ Updated remote to use token authentication"
+                else
+                    echo "   ⚠️  GITHUB_TOKEN not available, trying SSH..."
+                    # Try to convert to SSH
+                    git remote set-url origin "git@github.com:${REPO_PATH}.git"
+                    # Add GitHub to known_hosts
+                    mkdir -p ~/.ssh
+                    chmod 700 ~/.ssh 2>/dev/null || true
+                    ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>/dev/null || true
+                    chmod 644 ~/.ssh/known_hosts 2>/dev/null || true
+                    echo "   ✅ Updated remote to use SSH"
+                fi
+            elif [[ "$REMOTE_URL" == *"git@github.com"* ]]; then
+                echo "   Remote is already using SSH, ensuring known_hosts..."
+                mkdir -p ~/.ssh
+                chmod 700 ~/.ssh 2>/dev/null || true
+                ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>/dev/null || true
+                chmod 644 ~/.ssh/known_hosts 2>/dev/null || true
+            fi
+            
+            # Fetch with retry logic
+            echo "   Fetching from origin..."
+            if ! git fetch origin; then
+                echo "   ⚠️  First fetch failed, retrying..."
+                sleep 2
+                git fetch origin || {
+                    echo "   ❌ Git fetch failed. Checking remote configuration..."
+                    git remote -v
+                    exit 1
+                }
+            fi
+            
             git reset --hard origin/${{ github.ref_name }}
+            echo "   ✅ Code updated to ${{ github.ref_name }}"
 
             # Запускаємо базу даних (якщо не запущена)
             echo "🗄️ Ensuring database is running..."
