@@ -33,21 +33,63 @@ class GenreUnlockService
     }
 
     /**
+     * Check and unlock child genres for all completed parent genres
+     * This is called when loading genre tree to ensure genres unlock on the next day
+     */
+    public function checkAndUnlockPendingGenres(User $user): void
+    {
+        // Get all completed genres
+        $completedProgresses = UserGenreProgress::where('user_id', $user->id)
+            ->whereNotNull('completed_at')
+            ->with('genre.children')
+            ->get();
+
+        foreach ($completedProgresses as $progress) {
+            if (!$progress->genre) {
+                continue;
+            }
+
+            // Check if this genre has children
+            if ($progress->genre->children->isEmpty()) {
+                continue;
+            }
+
+            // Try to unlock child genres (will only unlock if conditions are met)
+            $this->unlockChildGenres($user, $progress->genre);
+        }
+    }
+
+    /**
      * Check if user can unlock new genres today
+     * Child genres unlock on the next day after completing parent genre and music walk
+     * Note: Streak continuity is NOT required - streak only affects bonus coins, not genre unlocking
      */
     public function canUnlockGenres(User $user): bool
     {
-        // Check if user completed music walk today
-        if (!$this->hasCompletedMusicWalkToday($user)) {
+        // Check if user completed music walk yesterday (not today)
+        // This ensures genres unlock on the next day
+        return $this->hasCompletedMusicWalkYesterday($user);
+    }
+
+    /**
+     * Check if user completed music walk activity yesterday
+     * This is used to unlock child genres on the next day
+     */
+    public function hasCompletedMusicWalkYesterday(User $user): bool
+    {
+        $musicWalk = Activity::where('type', 'music_walk')->first();
+
+        if (!$musicWalk) {
             return false;
         }
 
-        // Check if streak is not broken (previous day activity exists)
-        if (!$this->hasStreakContinuity($user)) {
-            return false;
-        }
+        $yesterday = Carbon::yesterday();
+        $completedYesterday = UserActivityLog::where('user_id', $user->id)
+            ->where('activity_id', $musicWalk->id)
+            ->whereDate('completed_at', $yesterday)
+            ->exists();
 
-        return true;
+        return $completedYesterday;
     }
 
     /**
@@ -94,10 +136,30 @@ class GenreUnlockService
 
     /**
      * Unlock child genres of completed genre
+     * Child genres unlock on the next day after completing parent genre
      */
     public function unlockChildGenres(User $user, Genre $completedGenre): int
     {
         if (!$this->canUnlockGenres($user)) {
+            return 0;
+        }
+
+        // Check if parent genre was completed yesterday or earlier (not today)
+        // This ensures child genres unlock on the next day
+        $parentProgress = UserGenreProgress::where('user_id', $user->id)
+            ->where('genre_id', $completedGenre->id)
+            ->first();
+
+        if (!$parentProgress || !$parentProgress->completed_at) {
+            return 0;
+        }
+
+        $completedDate = Carbon::parse($parentProgress->completed_at)->startOfDay();
+        $today = Carbon::today();
+
+        // If parent genre was completed today, don't unlock children yet
+        // They will unlock tomorrow
+        if ($completedDate->isSameDay($today)) {
             return 0;
         }
 
@@ -219,12 +281,8 @@ class GenreUnlockService
      */
     private function getUnlockBlockReason(User $user): string
     {
-        if (!$this->hasCompletedMusicWalkToday($user)) {
-            return 'Must complete music walk today to unlock new genres';
-        }
-
-        if (!$this->hasStreakContinuity($user)) {
-            return 'Streak broken - complete activities daily to unlock genres';
+        if (!$this->hasCompletedMusicWalkYesterday($user)) {
+            return 'Complete music walk today, and child genres will unlock tomorrow';
         }
 
         return 'Unknown reason';

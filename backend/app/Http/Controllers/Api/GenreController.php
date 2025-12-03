@@ -20,6 +20,14 @@ class GenreController extends Controller
     }
     public function tree(Request $request): AnonymousResourceCollection
     {
+        $user = $request->user();
+        
+        // Check and unlock child genres that should be unlocked today
+        // (completed yesterday with music walk yesterday)
+        if ($user) {
+            $this->unlockService->checkAndUnlockPendingGenres($user);
+        }
+
         $genres = Genre::roots()
             ->with(['children' => function ($query) {
                 $query->with('children');
