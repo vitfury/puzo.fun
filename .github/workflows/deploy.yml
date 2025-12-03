@@ -13,29 +13,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ✅ Validate Secrets
+      - name: ✅ Validate Configuration
         run: |
-          if [ -z "${{ secrets.DO_HOST }}" ]; then
-            echo "❌ Error: DO_HOST secret is missing!"
+          if [ -z "${{ vars.DO_HOST || secrets.DO_HOST }}" ]; then
+            echo "❌ Error: DO_HOST is missing!"
+            echo "   Додайте DO_HOST як Variable або Secret в GitHub:"
+            echo "   Settings → Secrets and variables → Actions"
             exit 1
           fi
-          if [ -z "${{ secrets.DO_USERNAME }}" ]; then
-            echo "❌ Error: DO_USERNAME secret is missing!"
+          if [ -z "${{ vars.DO_USERNAME || secrets.DO_USERNAME }}" ]; then
+            echo "❌ Error: DO_USERNAME is missing!"
+            echo "   Додайте DO_USERNAME як Variable або Secret"
             exit 1
           fi
           if [ -z "${{ secrets.DO_SSH_KEY }}" ]; then
             echo "❌ Error: DO_SSH_KEY secret is missing!"
+            echo "   DO_SSH_KEY має бути Secret (не Variable)!"
             exit 1
           fi
-          echo "✅ All secrets are configured"
+          echo "✅ All configuration is set"
 
       - name: 🚀 Deploy to DigitalOcean
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.DO_HOST }}
-          username: ${{ secrets.DO_USERNAME }}
+          host: ${{ vars.DO_HOST || secrets.DO_HOST }}
+          username: ${{ vars.DO_USERNAME || secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
-          port: ${{ secrets.DO_SSH_PORT || 22 }}
+          port: ${{ vars.DO_SSH_PORT || secrets.DO_SSH_PORT || 22 }}
           script_timeout: 30m
           script: |
             set -e
@@ -90,10 +94,10 @@ jobs:
       - name: 🧪 Test Deployment
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.DO_HOST }}
-          username: ${{ secrets.DO_USERNAME }}
+          host: ${{ vars.DO_HOST || secrets.DO_HOST }}
+          username: ${{ vars.DO_USERNAME || secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
-          port: ${{ secrets.DO_SSH_PORT || 22 }}
+          port: ${{ vars.DO_SSH_PORT || secrets.DO_SSH_PORT || 22 }}
           script: |
             echo "Testing API health endpoint..."
             sleep 3

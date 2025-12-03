@@ -1,36 +1,64 @@
-# 🔐 GitHub Secrets - Швидка інструкція
+# 🔐 GitHub Secrets & Variables - Швидка інструкція
 
-## ❌ Помилка: "missing server host"
+## ❌ Помилка: "DO_HOST is missing!"
 
-Ця помилка означає, що в GitHub репозиторії не налаштовані потрібні secrets.
+Ця помилка означає, що в GitHub репозиторії не налаштовані потрібні змінні.
+
+---
+
+## 📚 Різниця між Secrets та Variables
+
+**Variables** - для нечутливих даних (IP адреси, порти, URL):
+- Видно в логах GitHub Actions
+- Можна використовувати для публічних даних
+
+**Secrets** - для чутливих даних (паролі, ключі, токени):
+- НЕ видно в логах (маскуються)
+- Обов'язково для SSH ключів, паролів
+
+**Рекомендація:**
+- `DO_HOST`, `DO_USERNAME`, `DO_SSH_PORT` → можна як **Variable** або **Secret**
+- `DO_SSH_KEY` → **ОБОВ'ЯЗКОВО Secret** (чутливі дані)
 
 ---
 
 ## ✅ Що потрібно зробити:
 
-### 1️⃣ Відкрити налаштування Secrets
+### 1️⃣ Відкрити налаштування
 
 1. Перейдіть на GitHub репозиторій: `https://github.com/YOUR_USERNAME/music.ninja`
 2. Натисніть **Settings** (вгорі справа)
 3. В лівому меню: **Secrets and variables** → **Actions**
-4. Натисніть **New repository secret**
 
 ---
 
-### 2️⃣ Додати 4 обов'язкові Secrets
+### 2️⃣ Додати Variables (рекомендовано для нечутливих даних)
 
-#### Secret 1: `DO_HOST`
+Натисніть вкладку **Variables** → **New repository variable**
+
+#### Variable 1: `DO_HOST`
 - **Name:** `DO_HOST`
 - **Value:** IP адреса вашого DigitalOcean Droplet
   - Приклад: `123.456.789.012`
   - Знайти IP можна в DigitalOcean Dashboard → Droplets → ваш droplet
 
-#### Secret 2: `DO_USERNAME`
+#### Variable 2: `DO_USERNAME`
 - **Name:** `DO_USERNAME`
 - **Value:** SSH користувач (зазвичай `root`)
   - Приклад: `root`
 
-#### Secret 3: `DO_SSH_KEY`
+#### Variable 3: `DO_SSH_PORT` (опційно)
+- **Name:** `DO_SSH_PORT`
+- **Value:** SSH порт (за замовчуванням `22`)
+  - Приклад: `22`
+
+---
+
+### 3️⃣ Додати Secret (обов'язково для SSH ключа)
+
+Натисніть вкладку **Secrets** → **New repository secret**
+
+#### Secret: `DO_SSH_KEY`
 - **Name:** `DO_SSH_KEY`
 - **Value:** Приватний SSH ключ (весь ключ, включаючи BEGIN/END)
 
@@ -67,28 +95,38 @@ echo "ssh-ed25519 AAAA... github-actions@music.ninja" >> ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 ```
 
-#### Secret 4: `DO_SSH_PORT`
-- **Name:** `DO_SSH_PORT`
-- **Value:** SSH порт (за замовчуванням `22`)
-  - Приклад: `22`
-  - Якщо змінили порт - вкажіть ваш порт
+---
+
+### 4️⃣ Альтернатива: Використовувати Secrets замість Variables
+
+Якщо хочете все зберігати як Secrets (для безпеки):
+
+1. Перейдіть в **Secrets** → **New repository secret**
+2. Додайте:
+   - `DO_HOST` (як Secret)
+   - `DO_USERNAME` (як Secret)
+   - `DO_SSH_KEY` (як Secret - обов'язково!)
+   - `DO_SSH_PORT` (як Secret, опційно)
+
+**Workflow підтримує обидва варіанти!** Спочатку перевіряє Variables, потім Secrets.
 
 ---
 
-### 3️⃣ Перевірка
+### 5️⃣ Перевірка
 
-Після додавання всіх 4 secrets, перевірте:
+Після налаштування, перевірте:
 
 1. В GitHub → Settings → Secrets and variables → Actions
-2. Має бути 4 secrets:
+2. **Variables** (рекомендовано):
    - ✅ `DO_HOST`
    - ✅ `DO_USERNAME`
+   - ✅ `DO_SSH_PORT` (опційно)
+3. **Secrets** (обов'язково):
    - ✅ `DO_SSH_KEY`
-   - ✅ `DO_SSH_PORT`
 
 ---
 
-### 4️⃣ Тестування
+### 6️⃣ Тестування
 
 **Варіант 1: Push в master**
 ```bash
@@ -135,11 +173,12 @@ chmod 600 ~/.ssh/authorized_keys
 - [ ] SSH ключ створено БЕЗ passphrase
 - [ ] Публічний ключ додано на сервер (`~/.ssh/authorized_keys`)
 - [ ] SSH підключення працює без пароля: `ssh -i ~/.ssh/music_deploy root@YOUR_DROPLET_IP`
-- [ ] 4 GitHub Secrets налаштовано:
+- [ ] GitHub Variables налаштовано (рекомендовано):
   - [ ] `DO_HOST` - IP адреса сервера
   - [ ] `DO_USERNAME` - SSH користувач (root)
+  - [ ] `DO_SSH_PORT` - SSH порт (22, опційно)
+- [ ] GitHub Secret налаштовано (обов'язково):
   - [ ] `DO_SSH_KEY` - Приватний SSH ключ (весь)
-  - [ ] `DO_SSH_PORT` - SSH порт (22)
 - [ ] Тестовий push в master тригерить deployment
 - [ ] GitHub Actions показує зелену галочку ✅
 
@@ -147,7 +186,7 @@ chmod 600 ~/.ssh/authorized_keys
 
 ## 🎉 Готово!
 
-Після налаштування всіх secrets, GitHub Actions автоматично деплоїтиме ваш код при кожному push в `master` branch.
+Після налаштування Variables та Secrets, GitHub Actions автоматично деплоїтиме ваш код при кожному push в `master` branch.
 
 **Час deployment:** ~3-5 хвилин
 
