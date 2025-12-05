@@ -18,6 +18,7 @@ class Activity extends Model
         'active_from',
         'active_to',
         'is_active',
+        'daily_streak_enabled',
         'order_index',
     ];
 
@@ -25,6 +26,7 @@ class Activity extends Model
         'active_from' => 'date',
         'active_to' => 'date',
         'is_active' => 'boolean',
+        'daily_streak_enabled' => 'boolean',
         'points' => 'integer',
         'coins' => 'integer',
         'experience' => 'integer',

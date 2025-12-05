@@ -157,6 +157,21 @@ const ActivityForm = ({ formData, setFormData, onSubmit, onCancel, isEdit = fals
             <span>{t('admin.activities.isActive')}</span>
           </label>
         </div>
+
+        <div className="md:col-span-2">
+          <label className="flex items-center gap-2 text-gray-300 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.daily_streak_enabled ?? true}
+              onChange={(e) => setFormData({ ...formData, daily_streak_enabled: e.target.checked })}
+              className="w-5 h-5 rounded border-gray-700 bg-gray-900/50 focus:ring-purple-500"
+            />
+            <span>{t('admin.activities.dailyStreakEnabled', 'Daily Streak Enabled')}</span>
+            <span className="text-xs text-gray-500 ml-2">
+              ({t('admin.activities.dailyStreakHint', 'If enabled: streak counts days. If disabled: streak counts weeks (3 trainings per week)')})
+            </span>
+          </label>
+        </div>
       </div>
 
       <div className="flex gap-3 mt-6">
@@ -313,6 +328,7 @@ export const AdminActivitiesPage = () => {
       active_from: activity.active_from,
       active_to: activity.active_to,
       is_active: activity.is_active,
+      daily_streak_enabled: activity.daily_streak_enabled ?? true,
       order_index: activity.order_index,
     });
   };
@@ -333,6 +349,7 @@ export const AdminActivitiesPage = () => {
       active_from: null,
       active_to: null,
       is_active: true,
+      daily_streak_enabled: true,
       order_index: 0,
     });
   };

@@ -22,6 +22,7 @@ class UpdateActivityRequest extends FormRequest
             'active_from' => ['nullable', 'date'],
             'active_to' => ['nullable', 'date', 'after_or_equal:active_from'],
             'is_active' => ['boolean'],
+            'daily_streak_enabled' => ['boolean'],
             'order_index' => ['integer', 'min:0'],
         ];
     }

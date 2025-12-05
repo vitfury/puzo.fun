@@ -47,19 +47,14 @@ class ActivityStreak extends Model
     }
 
     /**
-     * Check if an activity is a weekly training (gym or functional training)
+     * Check if an activity is a weekly training
+     * If daily_streak_enabled is false, it's a weekly training (streak works by weeks)
+     * If daily_streak_enabled is true, it's a daily streak (streak works by days)
      */
     public static function isWeeklyTrainingActivity(Activity $activity): bool
     {
-        $activityName = strtolower($activity->name);
-        $weeklyTrainingNames = [
-            'gym workout',
-            'тренажерний зал',
-            'functional training',
-            'функціональне тренування',
-        ];
-
-        return in_array($activityName, $weeklyTrainingNames);
+        // If daily_streak_enabled is false, use weekly training logic
+        return !$activity->daily_streak_enabled;
     }
 
     /**
@@ -247,7 +242,7 @@ class ActivityStreak extends Model
      */
     public static function getWeeklyTrainingMilestones(): array
     {
-        return [1, 2, 4, 8, 12, 24];
+        return [2, 4, 8, 12, 24];
     }
 
     /**
@@ -270,7 +265,6 @@ class ActivityStreak extends Model
         if ($this->isWeeklyTraining()) {
             // Milestones for weekly trainings (in weeks)
             $milestones = [
-                1 => ['coins' => 20, 'experience' => 10],   // 1 week (3 trainings)
                 2 => ['coins' => 50, 'experience' => 25],   // 2 weeks
                 4 => ['coins' => 100, 'experience' => 50],   // 4 weeks (1 month)
                 8 => ['coins' => 200, 'experience' => 100],  // 8 weeks (2 months)

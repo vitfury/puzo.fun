@@ -346,6 +346,8 @@
             "activeFrom": "Active From",
             "activeTo": "Active To",
             "isActive": "Is Active",
+            "dailyStreakEnabled": "Daily Streak Enabled",
+            "dailyStreakHint": "If enabled: streak counts days. If disabled: streak counts weeks (3 trainings per week)",
             "orderIndex": "Order Index",
             "order": "Order",
             "selectDate": "Select Date",

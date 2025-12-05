@@ -13,6 +13,7 @@ export interface Activity {
   active_from: string | null;
   active_to: string | null;
   is_active: boolean;
+  daily_streak_enabled: boolean;
   order_index: number;
   created_at?: string;
   updated_at?: string;
@@ -28,6 +29,7 @@ export interface CreateActivityData {
   active_from?: string | null;
   active_to?: string | null;
   is_active?: boolean;
+  daily_streak_enabled?: boolean;
   order_index?: number;
 }
 

@@ -467,7 +467,7 @@ class ActivityController extends Controller
                 ],
                 'milestones' => array_map(function ($value) {
                     return [
-                        'value' => $value,
+                        'days' => $value,
                         'bonus' => [
                             'coins' => match($value) {
                                 3 => 10, 7 => 50, 14 => 100, 21 => 200, 30 => 300, 60 => 500, 100 => 1000,
@@ -482,6 +482,7 @@ class ActivityController extends Controller
                 }, ActivityStreak::getStreakMilestones()),
                 'weekly_training_milestones' => array_map(function ($weeks) {
                     return [
+                        'days' => $weeks,
                         'weeks' => $weeks,
                         'bonus' => [
                             'coins' => match($weeks) {

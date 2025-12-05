@@ -28,6 +28,7 @@ class ActivityResource extends JsonResource
             'active_from' => $this->active_from?->format('Y-m-d'),
             'active_to' => $this->active_to?->format('Y-m-d'),
             'is_active' => $this->is_active,
+            'daily_streak_enabled' => $this->daily_streak_enabled,
             'order_index' => $this->order_index,
             'completed_at' => $this->when(
                 isset($this->completed_at),
