@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { Layout } from '../components/Layout';
 import { ratingApi, type RatingPlayer, type SortField } from '../api/rating';
-import { getAvatarImagePath } from '../utils/avatar';
+import { getAvatarImagePath, getWeaponImagePath } from '../utils/avatar';
 
 // Grade colors
 const gradeColors: Record<string, string> = {
@@ -197,18 +197,30 @@ export const RatingPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Full Avatar */}
-                  <div 
-                    className="w-full aspect-[2/3] bg-no-repeat bg-center bg-gray-900"
-                    style={{
-                      backgroundImage: `url(${getAvatarImagePath(player.race, player.equipped_armor)})`,
-                      backgroundSize: '160%',
-                      backgroundPosition: '52% 80%',
-                    }}
-                  />
+                  {/* Full Avatar with Armor and Weapon */}
+                  <div className="w-full aspect-[2/3] bg-gray-900 relative overflow-hidden z-0">
+                    {/* Armor layer */}
+                    <div 
+                      className={`absolute inset-0 bg-no-repeat bg-center rating-armor race-${player.race}`}
+                      style={{
+                        backgroundImage: `url(${getAvatarImagePath(player.race, player.equipped_armor)})`,
+                        backgroundSize: '160%',
+                        backgroundPosition: '52% 80%',
+                      }}
+                    />
+                    {/* Weapon layer - on top of armor */}
+                    {player.equipped_weapon && getWeaponImagePath(player.equipped_weapon) && (
+                      <div
+                        className={`absolute rating-weapon race-${player.race}`}
+                        style={{
+                          backgroundImage: `url(${getWeaponImagePath(player.equipped_weapon)})`,
+                        }}
+                      />
+                    )}
+                  </div>
 
                   {/* Player Info Overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 via-gray-900/95 to-transparent pt-16 pb-4 px-4">
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 via-gray-900/95 to-transparent pt-16 pb-4 px-4 z-30">
                     {/* Nickname */}
                     <h3 className={`font-bold text-lg text-center truncate mb-2 ${
                       isCurrentUser ? 'text-purple-300' : 'text-white'

@@ -267,6 +267,92 @@ right: 285px;
 }
 
 /* =====================================================
+   Rating Page Avatar (Card)
+   Parent container: aspect-[2/3], overflow-hidden
+   All values in PERCENTAGE relative to parent block
+   ===================================================== */
+
+/* Armor layer for rating cards */
+.rating-armor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  background-repeat: no-repeat;
+}
+
+
+.rating-armor.race-dwarf {
+  background-size: 120% !important;
+  background-position: 52% 50% !important;
+}
+
+.rating-armor.race-orc{
+  background-size: 175%;
+  background-position: 52% 69%;
+}
+
+/* Weapon layer for rating cards - positioned on top of armor */
+.rating-weapon {
+  position: absolute;
+  z-index: 20;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Human race weapon positioning */
+.rating-weapon.race-human {
+  right: 195px;
+  top: 137px;
+  width: 65%;
+  height: 65%;
+  background-size: contain;
+  transform: rotate(5deg);
+}
+
+/* Elf race weapon positioning */
+.rating-weapon.race-elf {
+  right: 185px;
+  top: 145px;
+  width: 65%;
+  height: 65%;
+  background-size: contain;
+  transform: rotate(5deg);
+}
+
+/* Dark Elf race weapon positioning */
+.rating-weapon.race-dark_elf {
+  right: 179px;
+  top: 141px;
+  width: 65%;
+  height: 65%;
+  background-size: contain;
+  transform: rotate(5deg);
+}
+
+/* Orc race weapon positioning */
+.rating-weapon.race-orc {
+  right: 191px;
+  top: 193px;
+  width: 100%;
+  height: 65%;
+  background-size: contain;
+  transform: rotate(5deg);
+}
+
+/* Dwarf race weapon positioning */
+.rating-weapon.race-dwarf {
+  right: 187px;
+  top: 183px;
+  width: 65%;
+  height: 65%;
+  background-size: contain;
+  transform: rotate(-5deg);
+}
+
+/* =====================================================
    Custom Scrollbar for Profile Charts
    ===================================================== */
 
