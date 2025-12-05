@@ -134,13 +134,12 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,ico,png,svg,woff,woff2}'],
         // Don't precache index.html - we want it to always be fresh
         globIgnores: ['**/index.html'],
-        // Use NetworkFirst for navigation requests to always get fresh index.html
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/_/, /^\/storage\//],
+        // Don't use navigateFallback - let React Router handle all routing
+        // This prevents service worker from intercepting navigation requests
         runtimeCaching: [
           {
             // Always fetch index.html from network (no caching)
-            urlPattern: /\/index\.html$/i,
+            urlPattern: /\/index\.html(\?.*)?$/i,
             handler: 'NetworkOnly',
             options: {
               cacheName: 'html-cache',
