@@ -20,18 +20,18 @@ class CleanupDuplicateTransactions extends Command
         $this->info('This will remove all pairs of positive and negative transactions that cancel each other out.');
 
         // Get all unique combinations of (user_id, activity_id, date) from transactions
-        $coinCombinations = CoinTransaction::where('source_type', Activity::class)
+        // Use DB::raw to get proper date format and ensure we get all combinations
+        $allCombinations = DB::table('coin_transactions')
+            ->where('source_type', Activity::class)
             ->selectRaw('user_id, source_id as activity_id, DATE(created_at) as date')
             ->distinct()
-            ->get();
-
-        $pointCombinations = PointTransaction::where('source_type', Activity::class)
-            ->selectRaw('user_id, source_id as activity_id, DATE(created_at) as date')
-            ->distinct()
-            ->get();
-
-        // Merge and get unique combinations
-        $allCombinations = $coinCombinations->merge($pointCombinations)
+            ->union(
+                DB::table('point_transactions')
+                    ->where('source_type', Activity::class)
+                    ->selectRaw('user_id, source_id as activity_id, DATE(created_at) as date')
+                    ->distinct()
+            )
+            ->get()
             ->unique(function ($item) {
                 return $item->user_id . '-' . $item->activity_id . '-' . $item->date;
             });
