@@ -22,6 +22,8 @@ export const LocalizationEditorPage = () => {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [isLoading, setIsLoading] = useState(true);
   const [hasChanges, setHasChanges] = useState(false);
+  // Track changed keys: Map<`${key}|${locale}`, { key, locale, value }>
+  const [changedKeys, setChangedKeys] = useState<Map<string, { key: string; locale: 'en' | 'uk'; value: string }>>(new Map());
 
   // Flatten nested object to key-value pairs
   const flattenObject = useCallback((obj: any, prefix = ''): Array<[string, string]> => {
@@ -66,21 +68,43 @@ export const LocalizationEditorPage = () => {
     return typeof current === 'string' ? current : '';
   }, [translations]);
 
-  // Filter keys by search query
+  // Get original value for a specific key and language (for search filtering)
+  const getOriginalValue = useCallback((key: string, lang: 'en' | 'uk'): string => {
+    const keys = key.split('.');
+    let current: any = originalTranslations[lang];
+
+    for (const k of keys) {
+      if (current && typeof current === 'object') {
+        current = current[k];
+      } else {
+        return '';
+      }
+    }
+
+    return typeof current === 'string' ? current : '';
+  }, [originalTranslations]);
+
+  // Filter keys by search query (use original values to prevent disappearing during editing)
   const filteredKeys = useMemo(() => {
     if (!searchQuery.trim()) return allKeys;
 
     const query = searchQuery.toLowerCase();
     return allKeys.filter((key) => {
-      const enValue = getValue(key, 'en').toLowerCase();
-      const ukValue = getValue(key, 'uk').toLowerCase();
+      // Use original values for search to prevent items from disappearing when editing
+      const enOriginalValue = getOriginalValue(key, 'en').toLowerCase();
+      const ukOriginalValue = getOriginalValue(key, 'uk').toLowerCase();
+      // Also check current values in case user is searching for something they just typed
+      const enCurrentValue = getValue(key, 'en').toLowerCase();
+      const ukCurrentValue = getValue(key, 'uk').toLowerCase();
       return (
         key.toLowerCase().includes(query) ||
-        enValue.includes(query) ||
-        ukValue.includes(query)
+        enOriginalValue.includes(query) ||
+        ukOriginalValue.includes(query) ||
+        enCurrentValue.includes(query) ||
+        ukCurrentValue.includes(query)
       );
     });
-  }, [allKeys, searchQuery, getValue]);
+  }, [allKeys, searchQuery, getValue, getOriginalValue]);
 
   // Load translations from server on mount
   useEffect(() => {
@@ -89,6 +113,7 @@ export const LocalizationEditorPage = () => {
         const data = await adminApi.getLocalizations();
         setTranslations(data);
         setOriginalTranslations(JSON.parse(JSON.stringify(data)));
+        setChangedKeys(new Map()); // Reset changed keys on load
       } catch (error) {
         console.error('Failed to load translations:', error);
       } finally {
@@ -118,25 +143,51 @@ export const LocalizationEditorPage = () => {
       return updated;
     });
 
-    setHasChanges(true);
-  }, []);
+    // Track changed key
+    const changeKey = `${key}|${lang}`;
+    const originalValue = getOriginalValue(key, lang);
+    
+    setChangedKeys((prev) => {
+      const updated = new Map(prev);
+      if (newValue === originalValue) {
+        // Value matches original, remove from changed keys
+        updated.delete(changeKey);
+      } else {
+        // Value is different, add/update in changed keys
+        updated.set(changeKey, { key, locale: lang, value: newValue });
+      }
+      // Update hasChanges based on whether there are any changed keys
+      setHasChanges(updated.size > 0);
+      return updated;
+    });
+  }, [getOriginalValue]);
 
-  // Save all changes
+  // Save only changed keys
   const handleSave = async () => {
+    if (changedKeys.size === 0) {
+      setHasChanges(false);
+      return;
+    }
+
     setSaveStatus('saving');
-    setHasChanges(false);
+    const changedCount = changedKeys.size;
 
     try {
-      // Save both languages
-      await Promise.all([
-        adminApi.updateLocalization('en', translations.en),
-        adminApi.updateLocalization('uk', translations.uk),
-      ]);
+      // Save only changed keys
+      const savePromises = Array.from(changedKeys.values()).map(({ key, locale, value }) =>
+        adminApi.updateLocalizationKey(locale, key, value)
+      );
 
+      await Promise.all(savePromises);
+
+      // Update original translations to match current state
       setOriginalTranslations(JSON.parse(JSON.stringify(translations)));
+      // Clear changed keys
+      setChangedKeys(new Map());
+      setHasChanges(false);
       setSaveStatus('saved');
 
-      console.log('✅ Translations saved successfully!');
+      console.log(`✅ ${changedCount} translation key(s) saved successfully!`);
 
       setTimeout(() => {
         setSaveStatus('idle');
@@ -151,6 +202,7 @@ export const LocalizationEditorPage = () => {
   // Discard changes
   const handleDiscard = () => {
     setTranslations(JSON.parse(JSON.stringify(originalTranslations)));
+    setChangedKeys(new Map());
     setHasChanges(false);
   };
 
@@ -206,7 +258,7 @@ export const LocalizationEditorPage = () => {
             <div className="flex items-center gap-3">
               <span className="text-yellow-400 text-lg">⚠️</span>
               <span className="text-yellow-200 font-medium">
-                You have unsaved changes
+                You have {changedKeys.size} unsaved change{changedKeys.size !== 1 ? 's' : ''}
               </span>
             </div>
             <div className="flex gap-3">
@@ -222,7 +274,7 @@ export const LocalizationEditorPage = () => {
                 className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors font-medium"
                 disabled={saveStatus === 'saving'}
               >
-                {saveStatus === 'saving' ? '💾 Saving...' : '💾 Save All Changes'}
+                {saveStatus === 'saving' ? `💾 Saving ${changedKeys.size} change${changedKeys.size !== 1 ? 's' : ''}...` : `💾 Save ${changedKeys.size} Change${changedKeys.size !== 1 ? 's' : ''}`}
               </button>
             </div>
           </div>
@@ -233,7 +285,7 @@ export const LocalizationEditorPage = () => {
           <div className="bg-green-600/20 border border-green-500/50 rounded-lg p-4 mb-6 flex items-center gap-3">
             <span className="text-green-400 text-lg">✓</span>
             <span className="text-green-200 font-medium">
-              Translations saved successfully! All users will see the updates after refreshing the page.
+              Translation changes saved successfully! All users will see the updates after refreshing the page.
             </span>
           </div>
         )}
