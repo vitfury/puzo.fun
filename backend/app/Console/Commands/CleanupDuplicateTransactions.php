@@ -79,6 +79,14 @@ class CleanupDuplicateTransactions extends Command
             // 2. Net change is zero (all transactions cancel out)
             $shouldDelete = !$isCompleted || ($coinNet == 0 && $pointNet == 0);
 
+            // Debug output for troubleshooting
+            if ($coinTransactions->count() > 0 || $pointTransactions->count() > 0) {
+                $this->line("   Checking: User {$userId}, Activity {$activityId}, Date {$date}");
+                $this->line("   Has log: " . ($isCompleted ? 'YES' : 'NO'));
+                $this->line("   Coin net: {$coinNet}, Point net: {$pointNet}");
+                $this->line("   Should delete: " . ($shouldDelete ? 'YES' : 'NO'));
+            }
+
             if ($shouldDelete && ($coinTransactions->count() > 0 || $pointTransactions->count() > 0)) {
                 // Delete all coin transactions
                 foreach ($coinTransactions as $tx) {
