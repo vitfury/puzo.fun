@@ -24,11 +24,49 @@ class RatingController extends Controller
             $sortBy = 'total_points';
         }
         
+        // Calculate total earned coins - sum of all positive transactions
+        // Exclude activity transactions that have corresponding negative "Uncompleted activity" transactions
+        // for the same activity on the same date (these were cancelled)
+        $totalEarnedCoinsSubquery = DB::table('coin_transactions as ct')
+            ->select('ct.user_id', DB::raw('COALESCE(SUM(ct.amount), 0) as total_earned_coins'))
+            ->where('ct.amount', '>', 0)
+            ->where(function ($query) {
+                // Include all positive transactions EXCEPT activity transactions that were cancelled
+                $query->where('ct.source_type', '!=', 'App\\Models\\Activity')
+                    ->orWhere(function ($q) {
+                        // For activity transactions, exclude those that have corresponding negative transactions
+                        $q->where('ct.source_type', 'App\\Models\\Activity')
+                            ->whereNotExists(function ($subQuery) {
+                                $subQuery->select(DB::raw(1))
+                                    ->from('coin_transactions as ct2')
+                                    ->whereColumn('ct2.user_id', 'ct.user_id')
+                                    ->whereColumn('ct2.source_type', 'ct.source_type')
+                                    ->whereColumn('ct2.source_id', 'ct.source_id')
+                                    ->where('ct2.amount', '<', 0)
+                                    ->whereRaw('DATE(ct2.created_at) = DATE(ct.created_at)')
+                                    ->where('ct2.reason', 'like', 'Uncompleted activity:%');
+                            });
+                    });
+            })
+            ->groupBy('ct.user_id');
+        
         $query = User::with(['equippedArmor', 'equippedWeapon'])
+            ->addSelect([
+                'users.*',
+                DB::raw('COALESCE(earned_coins.total_earned_coins, 0) as total_earned_coins')
+            ])
+            ->leftJoinSub($totalEarnedCoinsSubquery, 'earned_coins', function ($join) {
+                $join->on('users.id', '=', 'earned_coins.user_id');
+            })
             ->where('users.role', '!=', 'admin'); // Exclude admins from rating
         
         // Apply sorting
-        $query->orderBy("users.{$sortBy}", $sortDirection);
+        if ($sortBy === 'coins') {
+            // When sorting by coins, sort by total earned coins instead
+            $query->orderBy('total_earned_coins', $sortDirection);
+        } else {
+            $query->orderBy("users.{$sortBy}", $sortDirection);
+        }
         
         $users = $query->get()->map(function ($user, $index) {
                 return [
@@ -37,7 +75,7 @@ class RatingController extends Controller
                     'nickname' => $user->nickname,
                     'level' => $user->level ?? 1,
                     'total_points' => $user->total_points,
-                    'coins' => (int) $user->coins, // Use current balance
+                    'coins' => (int) $user->total_earned_coins, // Use total earned coins instead of current balance
                     'race' => $user->race ?? 'human',
                     'current_music_walk_streak' => $user->current_music_walk_streak,
                     'longest_music_walk_streak' => $user->longest_music_walk_streak,
