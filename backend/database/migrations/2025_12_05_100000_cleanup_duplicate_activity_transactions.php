@@ -8,155 +8,88 @@ use App\Models\CoinTransaction;
 use App\Models\PointTransaction;
 use App\Models\User;
 use App\Models\UserActivityLog;
+use App\Models\Activity;
 
 return new class extends Migration
 {
     /**
      * Run the migrations.
      * 
-     * This migration cleans up duplicate activity transactions where users
-     * repeatedly completed and uncompleted activities, creating pairs of
-     * positive and negative transactions that cancel each other out.
+     * This migration cleans up duplicate activity transactions.
+     * If an activity is not completed for a date (no UserActivityLog entry),
+     * all transactions (both positive and negative) for that activity on that date are deleted.
      */
     public function up(): void
     {
-        // Clean up coin transactions
-        $this->cleanupCoinTransactions();
-        
-        // Clean up point transactions
-        $this->cleanupPointTransactions();
-        
+        // Get all unique combinations of (user_id, activity_id, date) from transactions
+        $coinCombinations = CoinTransaction::where('source_type', Activity::class)
+            ->selectRaw('user_id, source_id as activity_id, DATE(created_at) as date')
+            ->distinct()
+            ->get();
+
+        $pointCombinations = PointTransaction::where('source_type', Activity::class)
+            ->selectRaw('user_id, source_id as activity_id, DATE(created_at) as date')
+            ->distinct()
+            ->get();
+
+        // Merge and get unique combinations
+        $allCombinations = $coinCombinations->merge($pointCombinations)
+            ->unique(function ($item) {
+                return $item->user_id . '-' . $item->activity_id . '-' . $item->date;
+            });
+
+        $totalDeletedCoins = 0;
+        $totalDeletedPoints = 0;
+        $affectedCount = 0;
+
+        foreach ($allCombinations as $combo) {
+            $userId = $combo->user_id;
+            $activityId = $combo->activity_id;
+            $date = is_string($combo->date) ? $combo->date : $combo->date->format('Y-m-d');
+
+            // Check if activity is completed for this user on this date
+            $isCompleted = UserActivityLog::where('user_id', $userId)
+                ->where('activity_id', $activityId)
+                ->whereDate('date', $date)
+                ->exists();
+
+            // If not completed, delete all transactions for this user, activity, and date
+            if (!$isCompleted) {
+                // Delete all coin transactions
+                $coinTransactions = CoinTransaction::where('user_id', $userId)
+                    ->where('source_type', Activity::class)
+                    ->where('source_id', $activityId)
+                    ->whereDate('created_at', $date)
+                    ->get();
+
+                foreach ($coinTransactions as $tx) {
+                    $tx->delete();
+                    $totalDeletedCoins++;
+                }
+
+                // Delete all point transactions
+                $pointTransactions = PointTransaction::where('user_id', $userId)
+                    ->where('source_type', Activity::class)
+                    ->where('source_id', $activityId)
+                    ->whereDate('created_at', $date)
+                    ->get();
+
+                foreach ($pointTransactions as $tx) {
+                    $tx->delete();
+                    $totalDeletedPoints++;
+                }
+
+                if (count($coinTransactions) > 0 || count($pointTransactions) > 0) {
+                    $affectedCount++;
+                }
+            }
+        }
+
         // Recalculate user balances
         $this->recalculateUserBalances();
-    }
 
-    /**
-     * Clean up duplicate coin transactions
-     * 
-     * Only removes pairs where both completed and uncompleted transactions exist
-     */
-    private function cleanupCoinTransactions(): void
-    {
-        // Find all negative "Uncompleted activity" transactions
-        $uncompletedTransactions = CoinTransaction::where('reason', 'like', 'Uncompleted activity:%')
-            ->where('amount', '<', 0)
-            ->orderBy('created_at', 'asc')
-            ->get();
-
-        $deletedCount = 0;
-        $affectedUsers = [];
-        $processedIds = [];
-
-        foreach ($uncompletedTransactions as $uncompletedTx) {
-            // Skip if already processed
-            if (in_array($uncompletedTx->id, $processedIds)) {
-                continue;
-            }
-
-            // Extract activity name from reason
-            // "Uncompleted activity: Activity Name" -> "Activity Name"
-            $activityName = str_replace('Uncompleted activity: ', '', $uncompletedTx->reason);
-            $completedReason = "Completed activity: {$activityName}";
-            
-            // Build query to find matching positive transaction
-            $query = CoinTransaction::where('user_id', $uncompletedTx->user_id)
-                ->where('reason', $completedReason)
-                ->where('amount', abs($uncompletedTx->amount))
-                ->where('amount', '>', 0)
-                ->whereNotIn('id', $processedIds);
-
-            // Match by source if available (most reliable)
-            if ($uncompletedTx->source_type && $uncompletedTx->source_id) {
-                $query->where('source_type', $uncompletedTx->source_type)
-                      ->where('source_id', $uncompletedTx->source_id);
-            }
-
-            // Completed transaction should be created before uncompleted one
-            // No time limit - can be from any previous date
-            $query->where('created_at', '<=', $uncompletedTx->created_at);
-
-            $matchingCompleted = $query->orderBy('created_at', 'desc')->first();
-
-            // Only delete if we found a matching pair
-            if ($matchingCompleted) {
-                // Verify they truly cancel each other out
-                if (abs($matchingCompleted->amount) === abs($uncompletedTx->amount)) {
-                    // Perfect match - delete both
-                    $matchingCompleted->delete();
-                    $uncompletedTx->delete();
-                    $deletedCount += 2;
-                    $processedIds[] = $matchingCompleted->id;
-                    $processedIds[] = $uncompletedTx->id;
-                    $affectedUsers[$uncompletedTx->user_id] = true;
-                }
-            }
-        }
-
-        echo "Cleaned up {$deletedCount} coin transactions (removed {$deletedCount / 2} pairs) for " . count($affectedUsers) . " users\n";
-    }
-
-    /**
-     * Clean up duplicate point transactions
-     * 
-     * Only removes pairs where both completed and uncompleted transactions exist
-     */
-    private function cleanupPointTransactions(): void
-    {
-        // Find all negative "Uncompleted activity" transactions
-        $uncompletedTransactions = PointTransaction::where('reason', 'like', 'Uncompleted activity:%')
-            ->where('amount', '<', 0)
-            ->orderBy('created_at', 'asc')
-            ->get();
-
-        $deletedCount = 0;
-        $affectedUsers = [];
-        $processedIds = [];
-
-        foreach ($uncompletedTransactions as $uncompletedTx) {
-            // Skip if already processed
-            if (in_array($uncompletedTx->id, $processedIds)) {
-                continue;
-            }
-
-            // Extract activity name from reason
-            $activityName = str_replace('Uncompleted activity: ', '', $uncompletedTx->reason);
-            $completedReason = "Completed activity: {$activityName}";
-            
-            // Build query to find matching positive transaction
-            $query = PointTransaction::where('user_id', $uncompletedTx->user_id)
-                ->where('reason', $completedReason)
-                ->where('amount', abs($uncompletedTx->amount))
-                ->where('amount', '>', 0)
-                ->whereNotIn('id', $processedIds);
-
-            // Match by source if available (most reliable)
-            if ($uncompletedTx->source_type && $uncompletedTx->source_id) {
-                $query->where('source_type', $uncompletedTx->source_type)
-                      ->where('source_id', $uncompletedTx->source_id);
-            }
-
-            // Completed transaction should be created before uncompleted one
-            // No time limit - can be from any previous date
-            $query->where('created_at', '<=', $uncompletedTx->created_at);
-
-            $matchingCompleted = $query->orderBy('created_at', 'desc')->first();
-
-            // Only delete if we found a matching pair
-            if ($matchingCompleted) {
-                // Verify they truly cancel each other out
-                if (abs($matchingCompleted->amount) === abs($uncompletedTx->amount)) {
-                    // Perfect match - delete both
-                    $matchingCompleted->delete();
-                    $uncompletedTx->delete();
-                    $deletedCount += 2;
-                    $processedIds[] = $matchingCompleted->id;
-                    $processedIds[] = $uncompletedTx->id;
-                    $affectedUsers[$uncompletedTx->user_id] = true;
-                }
-            }
-        }
-
-        echo "Cleaned up {$deletedCount} point transactions (removed {$deletedCount / 2} pairs) for " . count($affectedUsers) . " users\n";
+        echo "Cleaned up {$totalDeletedCoins} coin transactions and {$totalDeletedPoints} point transactions\n";
+        echo "Affected user-activity-date combinations: {$affectedCount}\n";
     }
 
     /**
@@ -196,4 +129,3 @@ return new class extends Migration
         echo "Cannot reverse this migration - duplicate transactions have been permanently removed\n";
     }
 };
-
