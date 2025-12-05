@@ -113,6 +113,22 @@ services:
       - puzo_network
     command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction & sleep 60; done"
 
+  # phpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: puzo_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "7710:80"
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+      - PMA_ARBITRARY=1
+    depends_on:
+      - mysql
+    networks:
+      - puzo_network
+
 volumes:
   mysql_data:
     driver: local
