@@ -55,17 +55,15 @@ class CleanupDuplicateTransactions extends Command
                 ->where('source_type', Activity::class)
                 ->where('source_id', $activityId)
                 ->whereDate('created_at', $date)
+                ->orderBy('created_at', 'asc')
                 ->get();
 
             $pointTransactions = PointTransaction::where('user_id', $userId)
                 ->where('source_type', Activity::class)
                 ->where('source_id', $activityId)
                 ->whereDate('created_at', $date)
+                ->orderBy('created_at', 'asc')
                 ->get();
-
-            // Calculate net change
-            $coinNet = $coinTransactions->sum('amount');
-            $pointNet = $pointTransactions->sum('amount');
 
             // Check if activity is completed for this user on this date
             $isCompleted = DB::table('user_activity_log')
@@ -74,25 +72,82 @@ class CleanupDuplicateTransactions extends Command
                 ->whereDate('date', $date)
                 ->exists();
 
-            // Delete transactions if:
-            // 1. Activity is not completed (no log entry), OR
-            // 2. Net change is zero (all transactions cancel out)
-            $shouldDelete = !$isCompleted || ($coinNet == 0 && $pointNet == 0);
+            // Calculate net change
+            $coinNet = $coinTransactions->sum('amount');
+            $pointNet = $pointTransactions->sum('amount');
 
-            if ($shouldDelete && ($coinTransactions->count() > 0 || $pointTransactions->count() > 0)) {
-                // Delete all coin transactions
+            // Delete all transactions if activity is not completed
+            if (!$isCompleted) {
                 foreach ($coinTransactions as $tx) {
                     $tx->delete();
                     $totalDeletedCoins++;
                 }
-
-                // Delete all point transactions
                 foreach ($pointTransactions as $tx) {
                     $tx->delete();
                     $totalDeletedPoints++;
                 }
-
-                $affectedCount++;
+                if ($coinTransactions->count() > 0 || $pointTransactions->count() > 0) {
+                    $affectedCount++;
+                }
+            } else {
+                // If activity is completed, delete pairs of positive and negative transactions
+                // that cancel each other out (even if there are other transactions)
+                
+                // For coin transactions: find and delete pairs
+                $processedCoinIds = [];
+                foreach ($coinTransactions as $positiveTx) {
+                    if (in_array($positiveTx->id, $processedCoinIds) || $positiveTx->amount <= 0) {
+                        continue;
+                    }
+                    
+                    // Find matching negative transaction
+                    $negativeTx = $coinTransactions->first(function ($tx) use ($positiveTx, $processedCoinIds) {
+                        return !in_array($tx->id, $processedCoinIds)
+                            && $tx->amount < 0
+                            && abs($tx->amount) === $positiveTx->amount
+                            && $tx->reason === str_replace('Completed activity: ', 'Uncompleted activity: ', $positiveTx->reason)
+                            && $tx->created_at->gt($positiveTx->created_at)
+                            && $tx->created_at->diffInMinutes($positiveTx->created_at) < 60; // Within 1 hour
+                    });
+                    
+                    if ($negativeTx) {
+                        $positiveTx->delete();
+                        $negativeTx->delete();
+                        $totalDeletedCoins += 2;
+                        $processedCoinIds[] = $positiveTx->id;
+                        $processedCoinIds[] = $negativeTx->id;
+                    }
+                }
+                
+                // For point transactions: find and delete pairs
+                $processedPointIds = [];
+                foreach ($pointTransactions as $positiveTx) {
+                    if (in_array($positiveTx->id, $processedPointIds) || $positiveTx->amount <= 0) {
+                        continue;
+                    }
+                    
+                    // Find matching negative transaction
+                    $negativeTx = $pointTransactions->first(function ($tx) use ($positiveTx, $processedPointIds) {
+                        return !in_array($tx->id, $processedPointIds)
+                            && $tx->amount < 0
+                            && abs($tx->amount) === $positiveTx->amount
+                            && $tx->reason === str_replace('Completed activity: ', 'Uncompleted activity: ', $positiveTx->reason)
+                            && $tx->created_at->gt($positiveTx->created_at)
+                            && $tx->created_at->diffInMinutes($positiveTx->created_at) < 60; // Within 1 hour
+                    });
+                    
+                    if ($negativeTx) {
+                        $positiveTx->delete();
+                        $negativeTx->delete();
+                        $totalDeletedPoints += 2;
+                        $processedPointIds[] = $positiveTx->id;
+                        $processedPointIds[] = $negativeTx->id;
+                    }
+                }
+                
+                if (count($processedCoinIds) > 0 || count($processedPointIds) > 0) {
+                    $affectedCount++;
+                }
             }
 
             $bar->advance();
