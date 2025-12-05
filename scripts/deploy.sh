@@ -68,7 +68,7 @@ if [ -f frontend/dist/.version ]; then
 fi
 
 echo "🚀 Restarting services..."
-docker-compose -f $COMPOSE_FILE up -d --no-deps php queue scheduler nginx
+docker-compose -f $COMPOSE_FILE up -d --no-deps php queue scheduler nginx phpmyadmin
 docker-compose -f $COMPOSE_FILE exec -T nginx nginx -s reload 2>/dev/null || true
 sleep 3
 
