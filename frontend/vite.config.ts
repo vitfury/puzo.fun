@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 import { execSync } from 'child_process'
-import { writeFileSync } from 'fs'
+import { writeFileSync, readFileSync } from 'fs'
 
 // Plugin to inject build version into index.html and create version file
 function injectVersion() {
@@ -60,6 +60,41 @@ function injectVersion() {
       // Create version file for nginx to read
       const versionFile = path.resolve(__dirname, 'dist', '.version')
       writeFileSync(versionFile, buildVersion, 'utf-8')
+      
+      // Modify index.html after bundle is written to add version query params
+      const indexPath = path.resolve(__dirname, 'dist', 'index.html')
+      try {
+        let html = readFileSync(indexPath, 'utf-8')
+        
+        // Add version as query parameter to all script and link tags for cache busting
+        // This ensures browsers fetch new files even if they have cached the HTML
+        html = html.replace(
+          /(<script[^>]*src=["'])([^"']+)(["'][^>]*>)/gi,
+          (match, prefix, src, suffix) => {
+            // Skip if already has version param or is inline script
+            if (src.startsWith('data:') || src.startsWith('blob:') || src.includes('v=')) {
+              return match
+            }
+            const separator = src.includes('?') ? '&' : '?'
+            return `${prefix}${src}${separator}v=${buildVersion}${suffix}`
+          }
+        )
+        html = html.replace(
+          /(<link[^>]*href=["'])([^"']+)(["'][^>]*rel=["']stylesheet["'][^>]*>)/gi,
+          (match, prefix, href, suffix) => {
+            // Skip if already has version param
+            if (href.includes('v=')) {
+              return match
+            }
+            const separator = href.includes('?') ? '&' : '?'
+            return `${prefix}${href}${separator}v=${buildVersion}${suffix}`
+          }
+        )
+        
+        writeFileSync(indexPath, html, 'utf-8')
+      } catch (error) {
+        console.warn('Could not modify index.html for cache busting:', error)
+      }
     }
   }
 }
@@ -135,8 +170,23 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: process.env.NODE_ENV !== 'production', // Вимикаємо source maps для production (економія пам'яті)
+    // Ensure content-based hashing for cache busting
     rollupOptions: {
       output: {
+        // Use content hash for better cache busting
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name?.split('.') || []
+          const ext = info[info.length - 1]
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
+            return `images/[name]-[hash][extname]`
+          }
+          if (/woff2?|eot|ttf|otf/i.test(ext)) {
+            return `fonts/[name]-[hash][extname]`
+          }
+          return `assets/[name]-[hash][extname]`
+        },
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'query-vendor': ['@tanstack/react-query'],
