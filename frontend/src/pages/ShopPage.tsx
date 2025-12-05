@@ -627,19 +627,15 @@ export const ShopPage: React.FC = () => {
                 ) : (
                   // Weapon preview - avatar with equipped armor + weapon overlay
                   <div className="weapon-shop-preview">
-                    {/* Avatar background with current armor */}
-                    {user.equipped_armor ? (
-                      <div
-                        className={`armor-preview-weapon-shop race-${race}`}
-                        style={{
-                          backgroundImage: `url(/images/armor/${race}/${getGradeFolder(user.equipped_armor.grade)}/${getAvatarImageName(user.equipped_armor.name)}.png)`,
-                        }}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center z-10">
-                        <div className="text-8xl opacity-20">👤</div>
-                      </div>
-                    )}
+                    {/* Avatar background with current armor or default apprentice armor */}
+                    <div
+                      className={`armor-preview-weapon-shop race-${race}`}
+                      style={{
+                        backgroundImage: user.equipped_armor
+                          ? `url(/images/armor/${race}/${getGradeFolder(user.equipped_armor.grade)}/${getAvatarImageName(user.equipped_armor.name)}.png)`
+                          : `url(/images/armor/${race}/N/${getAvatarImageName('Apprentice')}.png)`,
+                      }}
+                    />
                     
                     {/* Weapon overlay */}
                     {selectedItem ? (
