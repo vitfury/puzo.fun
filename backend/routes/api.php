@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ActivityController;
 use App\Http\Controllers\Api\Admin\AdminActivityController;
+use App\Http\Controllers\Api\Admin\AdminAnalyticsController;
 use App\Http\Controllers\Api\Admin\AdminEquipmentController;
 use App\Http\Controllers\Api\Admin\AdminSettingsController;
 use App\Http\Controllers\Api\AdminGenreController;
@@ -127,6 +128,13 @@ Route::prefix('v1')->name('v1.')->group(function () {
                 Route::get('/{locale}', [LocalizationController::class, 'show'])->name('show');
                 Route::put('/{locale}', [LocalizationController::class, 'update'])->name('update');
                 Route::post('/update-key', [LocalizationController::class, 'updateKey'])->name('updateKey');
+            });
+
+            // Analytics
+            Route::prefix('analytics')->name('analytics.')->group(function () {
+                Route::get('/daily', [AdminAnalyticsController::class, 'dailyAnalytics'])->name('daily');
+                Route::get('/summary', [AdminAnalyticsController::class, 'summary'])->name('summary');
+                Route::get('/users', [AdminAnalyticsController::class, 'users'])->name('users');
             });
         });
 

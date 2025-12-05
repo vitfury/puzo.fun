@@ -381,6 +381,39 @@
             "deleteKey": "Delete Key",
             "saveChanges": "Save Changes",
             "saved": "Changes saved successfully"
+        },
+        "analytics": {
+            "title": "User Analytics",
+            "subtitle": "View user activities and balances by day",
+            "user": "User",
+            "allUsers": "All Users",
+            "days": "Days",
+            "startDate": "Start Date",
+            "endDate": "End Date",
+            "summary": "Summary Statistics",
+            "totalActivities": "Total Activities",
+            "coinsEarned": "Coins Earned",
+            "coinsSpent": "Coins Spent",
+            "coinsNet": "Coins (Net)",
+            "activities": "Activities",
+            "coins": "Coins",
+            "points": "Points",
+            "users": "users",
+            "completedActivities": "Completed Activities",
+            "coinTransactions": "Coin Transactions",
+            "pointTransactions": "Point Transactions",
+            "noData": "No data for the selected period",
+            "reason": {
+                "musicWalk": "Music Walk",
+                "streakBonus": "Streak Bonus",
+                "purchase": "Purchase",
+                "sell": "Sell",
+                "admin": "Administrator",
+                "stepBonus": "Step Bonus",
+                "stepBonusAdjustment": "Step Bonus Adjustment",
+                "completedActivity": "Completed Activity",
+                "streakBonusActivity": "Activity Streak Bonus"
+            }
         }
     },
     "shop": {

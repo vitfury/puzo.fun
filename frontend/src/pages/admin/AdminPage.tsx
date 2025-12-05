@@ -30,6 +30,12 @@ export const AdminPage = () => {
       path: '/admin/localization',
       icon: '🌐',
     },
+    {
+      title: t('admin.analytics.title', 'Аналітика користувачів'),
+      description: t('admin.analytics.subtitle', 'Перегляд активностей та балансів користувачів по днях'),
+      path: '/admin/analytics',
+      icon: '📊',
+    },
   ];
 
   return (

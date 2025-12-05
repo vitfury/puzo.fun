@@ -381,6 +381,39 @@
             "deleteKey": "Видалити ключ",
             "saveChanges": "Зберегти зміни",
             "saved": "Зміни успішно збережено"
+        },
+        "analytics": {
+            "title": "Аналітика користувачів",
+            "subtitle": "Перегляд активностей та балансів користувачів по днях",
+            "user": "Користувач",
+            "allUsers": "Всі користувачі",
+            "days": "Днів",
+            "startDate": "Дата початку",
+            "endDate": "Дата кінця",
+            "summary": "Загальна статистика",
+            "totalActivities": "Всього активностей",
+            "coinsEarned": "Монет отримано",
+            "coinsSpent": "Монет витрачено",
+            "coinsNet": "Монети (нетто)",
+            "activities": "Активності",
+            "coins": "Монети",
+            "points": "Очки",
+            "users": "користувачів",
+            "completedActivities": "Виконані активності",
+            "coinTransactions": "Транзакції монет",
+            "pointTransactions": "Транзакції очок",
+            "noData": "Немає даних за вибраний період",
+            "reason": {
+                "musicWalk": "Музична прогулянка",
+                "streakBonus": "Бонус за стрік",
+                "purchase": "Покупка",
+                "sell": "Продаж",
+                "admin": "Адміністратор",
+                "stepBonus": "Бонус за кроки",
+                "stepBonusAdjustment": "Коригування бонусу за кроки",
+                "completedActivity": "Виконання активності",
+                "streakBonusActivity": "Бонус за стрік активності"
+            }
         }
     },
     "shop": {

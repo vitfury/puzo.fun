@@ -143,4 +143,94 @@ export const adminApi = {
     });
     return response.data.data;
   },
+
+  // Analytics
+  getDailyAnalytics: async (params?: {
+    user_id?: number;
+    start_date?: string;
+    end_date?: string;
+    days?: number;
+  }): Promise<{
+    data: Array<{
+      date: string;
+      user_id: number;
+      user_nickname: string;
+      user_email: string;
+      activities: Array<{
+        id: number;
+        name: string;
+        type: string;
+        coins: number;
+        experience: number;
+        completed_at: string;
+      }>;
+      coin_transactions: Array<{
+        id: number;
+        amount: number;
+        reason: string;
+        created_at: string;
+        metadata: any;
+      }>;
+      point_transactions: Array<{
+        id: number;
+        amount: number;
+        reason: string;
+        created_at: string;
+        metadata: any;
+      }>;
+      summary: {
+        activities_count: number;
+        coins_earned: number;
+        coins_spent: number;
+        coins_net: number;
+        points_earned: number;
+        points_spent: number;
+        points_net: number;
+      };
+    }>;
+    meta: {
+      start_date: string;
+      end_date: string;
+      total_days: number;
+      total_users: number;
+    };
+  }> => {
+    const response = await apiClient.get('/admin/analytics/daily', { params });
+    return response.data;
+  },
+
+  getAnalyticsSummary: async (params?: {
+    user_id?: number;
+    start_date?: string;
+    end_date?: string;
+    days?: number;
+  }): Promise<{
+    data: {
+      total_users: number;
+      total_activities: number;
+      total_coins_earned: number;
+      total_coins_spent: number;
+      total_coins_net: number;
+      total_points_earned: number;
+      total_points_spent: number;
+      total_points_net: number;
+    };
+    meta: {
+      start_date: string;
+      end_date: string;
+    };
+  }> => {
+    const response = await apiClient.get('/admin/analytics/summary', { params });
+    return response.data;
+  },
+
+  getAnalyticsUsers: async (): Promise<Array<{
+    id: number;
+    nickname: string;
+    email: string;
+    role: string;
+  }>> => {
+    const response = await apiClient.get('/admin/analytics/users');
+    return response.data.data;
+  },
 };

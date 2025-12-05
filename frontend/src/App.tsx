@@ -19,6 +19,7 @@ import AdminGenresPage from './pages/admin/AdminGenresPage';
 import AdminActivitiesPage from './pages/admin/AdminActivitiesPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import LocalizationEditorPage from './pages/admin/LocalizationEditorPage';
+import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -138,6 +139,14 @@ function App() {
               element={
                 <AdminRoute>
                   <AdminSettingsPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/analytics"
+              element={
+                <AdminRoute>
+                  <AdminAnalyticsPage />
                 </AdminRoute>
               }
             />
