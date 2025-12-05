@@ -27,15 +27,33 @@ class ActivityController extends Controller
     public function today(Request $request): AnonymousResourceCollection
     {
         $user = $request->user();
+        
+        // Allow date parameter to get activities for a specific date (up to 7 days ago)
+        $requestedDate = $request->input('date');
+        if ($requestedDate) {
+            try {
+                $date = Carbon::parse($requestedDate)->startOfDay();
         $today = Carbon::today();
+                $sevenDaysAgo = $today->copy()->subDays(7);
+                
+                // Only allow dates from 7 days ago to today
+                if ($date->isAfter($today) || $date->isBefore($sevenDaysAgo)) {
+                    abort(422, 'Date must be within the last 7 days.');
+                }
+            } catch (\Exception $e) {
+                abort(422, 'Invalid date format.');
+            }
+        } else {
+            $date = Carbon::today();
+        }
 
         $activities = Activity::with('translations')
-            ->activeOnDate($today)
+            ->activeOnDate($date)
             ->ordered()
             ->get();
 
         $completedActivityIds = UserActivityLog::forUser($user->id)
-            ->forDate($today)
+            ->forDate($date)
             ->pluck('activity_id')
             ->toArray();
 
@@ -47,10 +65,10 @@ class ActivityController extends Controller
             ->get()
             ->keyBy('id');
 
-        $activities->transform(function ($activity) use ($completedActivityIds, $favoriteActivityIds, $favoritesWithTimestamps, $user, $today) {
+        $activities->transform(function ($activity) use ($completedActivityIds, $favoriteActivityIds, $favoritesWithTimestamps, $user, $date) {
             $log = UserActivityLog::where('user_id', $user->id)
                 ->where('activity_id', $activity->id)
-                ->whereDate('date', $today)
+                ->whereDate('date', $date)
                 ->first();
 
             $activity->is_completed = in_array($activity->id, $completedActivityIds);
@@ -107,35 +125,58 @@ class ActivityController extends Controller
     public function complete(Request $request, int $activityId): JsonResponse
     {
         $user = $request->user();
+        
+        // Allow date parameter to complete activity for a specific date (up to 7 days ago)
+        $requestedDate = $request->input('date');
+        if ($requestedDate) {
+            try {
+                $date = Carbon::parse($requestedDate)->startOfDay();
         $today = Carbon::today();
+                $sevenDaysAgo = $today->copy()->subDays(7);
+                
+                // Only allow dates from 7 days ago to today
+                if ($date->isAfter($today) || $date->isBefore($sevenDaysAgo)) {
+                    return response()->json([
+                        'message' => 'Date must be within the last 7 days.',
+                    ], 422);
+                }
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Invalid date format.',
+                ], 422);
+            }
+        } else {
+            $date = Carbon::today();
+        }
+        
         $now = Carbon::now();
 
         $activity = Activity::findOrFail($activityId);
 
-        if (!$activity->isActiveOnDate($today)) {
+        if (!$activity->isActiveOnDate($date)) {
             return response()->json([
-                'message' => 'This activity is not available today.',
+                'message' => 'This activity is not available for the selected date.',
             ], 422);
         }
 
         $existingLog = UserActivityLog::where('user_id', $user->id)
             ->where('activity_id', $activityId)
-            ->whereDate('date', $today)
+            ->whereDate('date', $date)
             ->first();
 
         if ($existingLog) {
             return response()->json([
-                'message' => 'Activity already completed today.',
+                'message' => 'Activity already completed for this date.',
             ], 422);
         }
 
         $streakBonus = null;
         
-        DB::transaction(function () use ($user, $activity, $today, $now, &$streakBonus) {
+        DB::transaction(function () use ($user, $activity, $date, $now, &$streakBonus) {
             $log = UserActivityLog::create([
                 'user_id' => $user->id,
                 'activity_id' => $activity->id,
-                'date' => $today,
+                'date' => $date,
                 'completed_at' => $now,
             ]);
 
@@ -162,7 +203,7 @@ class ActivityController extends Controller
             $dailyStat = DailyStat::firstOrCreate(
                 [
                     'user_id' => $user->id,
-                    'date' => $today,
+                    'date' => $date,
                 ],
                 [
                     'steps' => 0,
@@ -189,7 +230,7 @@ class ActivityController extends Controller
                 ]
             );
             
-            $streak->recordCompletion($today);
+            $streak->recordCompletion($date);
             
             // Check for streak milestone bonus
             if ($streak->isAtMilestone()) {
@@ -222,7 +263,7 @@ class ActivityController extends Controller
             // Update music walk streak for music_walk activities (legacy support)
             if ($activity->type === 'music_walk') {
                 $user->refresh();
-                $user->updateMusicWalkStreak($today);
+                $user->updateMusicWalkStreak($date);
 
                 // Check and award streak bonuses
                 $this->coinService->checkAndAwardStreakBonus($user);
@@ -250,22 +291,44 @@ class ActivityController extends Controller
     public function uncomplete(Request $request, int $activityId): JsonResponse
     {
         $user = $request->user();
+        
+        // Allow date parameter to uncomplete activity for a specific date (up to 7 days ago)
+        $requestedDate = $request->input('date');
+        if ($requestedDate) {
+            try {
+                $date = Carbon::parse($requestedDate)->startOfDay();
         $today = Carbon::today();
+                $sevenDaysAgo = $today->copy()->subDays(7);
+                
+                // Only allow dates from 7 days ago to today
+                if ($date->isAfter($today) || $date->isBefore($sevenDaysAgo)) {
+                    return response()->json([
+                        'message' => 'Date must be within the last 7 days.',
+                    ], 422);
+                }
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Invalid date format.',
+                ], 422);
+            }
+        } else {
+            $date = Carbon::today();
+        }
 
         $activity = Activity::findOrFail($activityId);
 
         $log = UserActivityLog::where('user_id', $user->id)
             ->where('activity_id', $activityId)
-            ->whereDate('date', $today)
+            ->whereDate('date', $date)
             ->first();
 
         if (!$log) {
             return response()->json([
-                'message' => 'Activity is not completed.',
+                'message' => 'Activity is not completed for this date.',
             ], 422);
         }
 
-        DB::transaction(function () use ($user, $activity, $log, $today) {
+        DB::transaction(function () use ($user, $activity, $log, $date) {
             $log->delete();
 
             // Deduct experience if activity had experience
@@ -289,7 +352,7 @@ class ActivityController extends Controller
             }
 
             $dailyStat = DailyStat::forUser($user->id)
-                ->forDate($today)
+                ->forDate($date)
                 ->first();
 
             if ($dailyStat) {

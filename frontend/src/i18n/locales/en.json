@@ -118,7 +118,11 @@
     },
     "activities": {
         "title": "Daily Activities",
-        "today": "Today's Activities",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "selectDate": "Select Date",
+        "viewingPastDate": "You are viewing activities for a past date",
+        "todayActivities": "Today's Activities",
         "completed": "Completed",
         "pending": "Pending",
         "dailyTasks": "Daily Tasks",

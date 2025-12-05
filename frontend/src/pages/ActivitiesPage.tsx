@@ -14,12 +14,46 @@ export function ActivitiesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    // Default to today in YYYY-MM-DD format
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
+
+  // Generate list of available dates (last 7 days including today)
+  const getAvailableDates = () => {
+    const dates: { value: string; label: string; isToday: boolean }[] = [];
+    const today = new Date();
+    
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      const isToday = i === 0;
+      
+      let label: string;
+      if (isToday) {
+        label = t('activities.today');
+      } else if (i === 1) {
+        label = t('activities.yesterday');
+      } else {
+        const dayName = date.toLocaleDateString(i18n.language, { weekday: 'short' });
+        const day = date.getDate();
+        const month = date.toLocaleDateString(i18n.language, { month: 'short' });
+        label = `${dayName}, ${day} ${month}`;
+      }
+      
+      dates.push({ value: dateStr, label, isToday });
+    }
+    
+    return dates;
+  };
 
   const loadActivities = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await activitiesApi.getTodayActivities();
+      const data = await activitiesApi.getTodayActivities(selectedDate);
       setActivities(data);
     } catch (err) {
       setError('Failed to load activities. Please try again.');
@@ -31,12 +65,12 @@ export function ActivitiesPage() {
 
   useEffect(() => {
     loadActivities();
-  }, [i18n.language]);
+  }, [i18n.language, selectedDate]);
 
   const handleToggle = async (activityId: number, isCompleted: boolean) => {
     try {
       if (isCompleted) {
-        const response = await activitiesApi.completeActivity(activityId);
+        const response = await activitiesApi.completeActivity(activityId, selectedDate);
         if (user) {
           setUser({
             ...user,
@@ -46,7 +80,7 @@ export function ActivitiesPage() {
           });
         }
       } else {
-        const response = await activitiesApi.uncompleteActivity(activityId);
+        const response = await activitiesApi.uncompleteActivity(activityId, selectedDate);
         if (user) {
           setUser({
             ...user,
@@ -142,6 +176,33 @@ export function ActivitiesPage() {
       <div className="container mx-auto max-w-3xl px-4 pb-8">
         {/* Header Card with Progress */}
         <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 rounded-2xl p-5 border border-gray-700/50 mb-6 backdrop-blur-sm">
+          {/* Date Selector */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              {t('activities.selectDate')}
+            </label>
+            <select
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-full px-4 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+            >
+              {getAvailableDates().map((date) => (
+                <option key={date.value} value={date.value}>
+                  {date.label}
+                </option>
+              ))}
+            </select>
+            {(() => {
+              const today = new Date().toISOString().split('T')[0];
+              return selectedDate !== today && (
+                <div className="mt-2 text-sm text-yellow-400 flex items-center gap-2">
+                  <span>⚠️</span>
+                  <span>{t('activities.viewingPastDate')}</span>
+                </div>
+              );
+            })()}
+          </div>
+
           {/* Top row: Title + Streak + Edit Button */}
               <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">

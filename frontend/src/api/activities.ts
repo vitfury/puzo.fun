@@ -33,21 +33,26 @@ export interface StreaksResponse {
 }
 
 export const activitiesApi = {
-  async getTodayActivities(): Promise<Activity[]> {
-    const response = await apiClient.get<{ data: Activity[] }>('/activities/today');
+  async getTodayActivities(date?: string): Promise<Activity[]> {
+    const params = date ? { date } : {};
+    const response = await apiClient.get<{ data: Activity[] }>('/activities/today', { params });
     return response.data.data;
   },
 
-  async completeActivity(activityId: number): Promise<CompleteActivityResponse> {
+  async completeActivity(activityId: number, date?: string): Promise<CompleteActivityResponse> {
+    const data = date ? { date } : {};
     const response = await apiClient.post<CompleteActivityResponse>(
-      `/activities/${activityId}/complete`
+      `/activities/${activityId}/complete`,
+      data
     );
     return response.data;
   },
 
-  async uncompleteActivity(activityId: number): Promise<CompleteActivityResponse> {
+  async uncompleteActivity(activityId: number, date?: string): Promise<CompleteActivityResponse> {
+    const params = date ? { date } : {};
     const response = await apiClient.delete<CompleteActivityResponse>(
-      `/activities/${activityId}/complete`
+      `/activities/${activityId}/complete`,
+      { params }
     );
     return response.data;
   },

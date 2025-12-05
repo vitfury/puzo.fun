@@ -152,7 +152,7 @@ jobs:
             }
             cd ..
             
-            echo "♻️ Clearing caches..."
+             echo "♻️ Clearing caches..."
             docker-compose -f docker-compose.prod.yml run --rm php php artisan config:clear
             docker-compose -f docker-compose.prod.yml run --rm php php artisan cache:clear
             docker-compose -f docker-compose.prod.yml run --rm php php artisan route:clear

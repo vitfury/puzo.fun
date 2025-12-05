@@ -200,11 +200,68 @@ export const AdminActivitiesPage = () => {
     loadActivities();
   }, []);
 
+  const isCurrentlyActive = (activity: Activity): boolean => {
+    if (!activity.is_active) {
+      return false;
+    }
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    if (activity.active_from) {
+      const activeFrom = new Date(activity.active_from);
+      if (activeFrom > today) {
+        return false;
+      }
+    }
+
+    if (activity.active_to) {
+      const activeTo = new Date(activity.active_to);
+      if (activeTo < today) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const sortActivities = (activities: Activity[]): Activity[] => {
+    // Define type order for consistent sorting
+    const typeOrder: Record<string, number> = {
+      daily_task: 1,
+      ongoing_rule: 2,
+      training: 3,
+      music_walk: 4,
+    };
+
+    return [...activities].sort((a, b) => {
+      // First sort by active status (active first)
+      const aIsActive = isCurrentlyActive(a);
+      const bIsActive = isCurrentlyActive(b);
+      
+      if (aIsActive !== bIsActive) {
+        return aIsActive ? -1 : 1; // Active activities come first
+      }
+      
+      // Then sort by type
+      const aTypeOrder = typeOrder[a.type] || 999;
+      const bTypeOrder = typeOrder[b.type] || 999;
+      
+      if (aTypeOrder !== bTypeOrder) {
+        return aTypeOrder - bTypeOrder;
+      }
+      
+      // Finally sort by name for same type
+      return a.name.localeCompare(b.name);
+    });
+  };
+
   const loadActivities = async () => {
     try {
       setLoading(true);
       const data = await adminApi.getActivities();
-      setActivities(data);
+      const sortedData = sortActivities(data);
+      setActivities(sortedData);
     } catch (error) {
       console.error('Failed to load activities:', error);
     } finally {
@@ -335,8 +392,17 @@ export const AdminActivitiesPage = () => {
         )}
 
         <div className="space-y-4">
-          {activities.map((activity) => (
-            <div key={activity.id} className="bg-gray-800/50 backdrop-blur-sm border border-purple-500/30 rounded-lg p-6">
+          {activities.map((activity) => {
+            const isActive = isCurrentlyActive(activity);
+            const borderColor = isActive 
+              ? 'border-green-500/50' 
+              : 'border-red-500/50';
+            const bgColor = isActive 
+              ? 'bg-gray-800/50' 
+              : 'bg-gray-800/30';
+            
+            return (
+            <div key={activity.id} className={`${bgColor} backdrop-blur-sm border-2 ${borderColor} rounded-lg p-6`}>
               {editingId === activity.id ? (
                 <ActivityForm
                   formData={formData}
@@ -399,7 +465,8 @@ export const AdminActivitiesPage = () => {
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {activities.length === 0 && (
