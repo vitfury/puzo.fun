@@ -132,6 +132,10 @@ jobs:
             echo "🗄️ Running migrations..."
             docker-compose -f docker-compose.prod.yml run --rm php php artisan migrate --force
 
+            # Очищення дублікатів транзакцій (якщо потрібно)
+            echo "🧹 Cleaning up duplicate transactions..."
+            docker-compose -f docker-compose.prod.yml run --rm php php artisan transactions:cleanup-duplicates || echo "⚠️  Cleanup command completed (may have found nothing to clean)"
+
             # Frontend build з обмеженням пам'яті для малих серверів (1GB RAM)
             echo "🎨 Building frontend (with memory optimization)..."
             cd frontend
