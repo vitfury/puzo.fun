@@ -403,6 +403,26 @@
             "coinTransactions": "Транзакції монет",
             "pointTransactions": "Транзакції очок",
             "noData": "Немає даних за вибраний період",
+            "noTransactions": "Немає транзакцій за вибраний період",
+            "tab": {
+                "daily": "По днях",
+                "transactions": "Лог транзакцій"
+            },
+            "transactionType": "Тип транзакцій",
+            "allTypes": "Всі типи",
+            "transactionTotals": "Підсумки транзакцій",
+            "pointsEarned": "Очок отримано",
+            "pointsSpent": "Очок витрачено",
+            "viewDetails": "Деталі",
+            "totalTransactions": "Всього транзакцій",
+            "table": {
+                "date": "Дата/Час",
+                "user": "Користувач",
+                "type": "Тип",
+                "amount": "Сума",
+                "reason": "Причина",
+                "details": "Деталі"
+            },
             "reason": {
                 "musicWalk": "Музична прогулянка",
                 "streakBonus": "Бонус за стрік",

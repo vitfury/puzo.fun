@@ -135,6 +135,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
                 Route::get('/daily', [AdminAnalyticsController::class, 'dailyAnalytics'])->name('daily');
                 Route::get('/summary', [AdminAnalyticsController::class, 'summary'])->name('summary');
                 Route::get('/users', [AdminAnalyticsController::class, 'users'])->name('users');
+                Route::get('/transactions', [AdminAnalyticsController::class, 'transactionLog'])->name('transactions');
             });
         });
 

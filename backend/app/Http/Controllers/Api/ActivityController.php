@@ -10,6 +10,7 @@ use App\Models\ActivityStreak;
 use App\Models\CoinTransaction;
 use App\Models\DailyStat;
 use App\Models\PointTransaction;
+use App\Models\User;
 use App\Models\UserActivityLog;
 use App\Services\CoinService;
 use App\Services\PointService;
@@ -19,6 +20,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ActivityController extends Controller
 {
@@ -329,81 +331,128 @@ class ActivityController extends Controller
             ], 422);
         }
 
-        DB::transaction(function () use ($user, $activity, $log, $date) {
-            $log->delete();
-
-            // Deduct experience if activity had experience
-            if ($activity->experience > 0) {
-                $this->pointService->deductPoints(
-                    user: $user,
-                    amount: $activity->experience,
-                    reason: "Uncompleted activity: {$activity->name}",
-                    source: $activity
-                );
-            }
-
-            // Deduct coins if activity had coins
-            if ($activity->coins > 0) {
-                $this->coinService->deductCoins(
-                    user: $user,
-                    amount: $activity->coins,
-                    reason: "Uncompleted activity: {$activity->name}",
-                    source: $activity
-                );
-            }
-
-            $dailyStat = DailyStat::forUser($user->id)
-                ->forDate($date)
-                ->first();
-
-            if ($dailyStat) {
-                $dailyStat->decrement('activities_completed');
-                $dailyStat->decrement('points_earned', $activity->experience);
-            }
-
-            // Recalculate streak after uncompleting
-            $streak = ActivityStreak::where('user_id', $user->id)
-                ->where('activity_id', $activity->id)
-                ->first();
-
-            if ($streak) {
-                $streakService = new StreakService();
+        try {
+            DB::transaction(function () use ($user, $activity, $log, $date) {
+                // Delete ALL transactions (both positive and negative) for this activity on this date
+                $searchDate = $date->toDateString();
                 
-                // Store old streak value before recalculation
-                $oldStreak = $streak->current_streak;
-                
-                // Decrement total completions
-                $streak->total_completions = max(0, $streak->total_completions - 1);
-                
-                // Recalculate streak based on remaining completions
-                if (ActivityStreak::isWeeklyTrainingActivity($activity)) {
-                    $streakService->recalculateWeeklyStreak($streak);
-                } else {
-                    // For daily activities, recalculate from all remaining completions
-                    $streakService->recalculateDailyStreak($streak);
+                // Find and delete ALL coin transactions for this activity on this date
+                // This includes both "Completed activity" and "Uncompleted activity" transactions
+                $allCoinTransactions = CoinTransaction::where('user_id', $user->id)
+                    ->where('source_type', get_class($activity))
+                    ->where('source_id', $activity->id)
+                    ->whereDate('created_at', $searchDate)
+                    ->where('created_at', '<=', now())
+                    ->get();
+
+                // Calculate net change: sum of all transactions (positive and negative)
+                // If net change is positive, we need to subtract it from balance
+                // If net change is negative, we need to add it to balance (subtract negative = add)
+                $totalCoinChange = 0;
+                foreach ($allCoinTransactions as $tx) {
+                    $totalCoinChange += $tx->amount;
+                    $tx->delete();
                 }
-                
-                // Update last_completed_date to most recent remaining completion
-                $lastCompletion = UserActivityLog::where('user_id', $user->id)
-                    ->where('activity_id', $activity->id)
-                    ->orderBy('date', 'desc')
+
+                // Adjust user's coin balance: subtract the net change
+                // If net change was +20, we subtract 20 (decrement)
+                // If net change was -20, we subtract -20 = add 20 (increment)
+                if ($totalCoinChange != 0) {
+                    $user->decrement('coins', $totalCoinChange);
+                }
+
+                // Find and delete ALL point transactions for this activity on this date
+                $allPointTransactions = PointTransaction::where('user_id', $user->id)
+                    ->where('source_type', get_class($activity))
+                    ->where('source_id', $activity->id)
+                    ->whereDate('created_at', $searchDate)
+                    ->where('created_at', '<=', now())
+                    ->get();
+
+                // Calculate net change for points
+                $totalPointChange = 0;
+                foreach ($allPointTransactions as $tx) {
+                    $totalPointChange += $tx->amount;
+                    $tx->delete();
+                }
+
+                // Adjust user's point balance: subtract the net change
+                if ($totalPointChange != 0) {
+                    $user->decrement('total_points', $totalPointChange);
+                }
+
+                // Recalculate user level after deleting point transactions
+                $user->refresh();
+                $levelService = new \App\Services\LevelService();
+                $levelService->updateUserLevel($user);
+
+                // Delete the activity log
+                $log->delete();
+
+                $dailyStat = DailyStat::forUser($user->id)
+                    ->forDate($date)
                     ->first();
-                
-                if ($lastCompletion) {
-                    $streak->last_completed_date = $lastCompletion->date;
-                } else {
-                    $streak->last_completed_date = null;
+
+                if ($dailyStat) {
+                    $dailyStat->decrement('activities_completed');
+                    $dailyStat->decrement('points_earned', $activity->experience);
                 }
-                
-                $streak->save();
-                
-                // If streak decreased, deduct streak bonus coins and experience
-                $newStreak = $streak->current_streak;
-                if ($newStreak < $oldStreak) {
-                    $this->deductStreakBonuses($user, $activity, $oldStreak, $newStreak);
+
+                // Recalculate streak after uncompleting
+                $streak = ActivityStreak::where('user_id', $user->id)
+                    ->where('activity_id', $activity->id)
+                    ->first();
+
+                if ($streak) {
+                    $streakService = new StreakService();
+                    
+                    // Store old streak value before recalculation
+                    $oldStreak = $streak->current_streak;
+                    
+                    // Decrement total completions
+                    $streak->total_completions = max(0, $streak->total_completions - 1);
+                    
+                    // Recalculate streak based on remaining completions
+                    if (ActivityStreak::isWeeklyTrainingActivity($activity)) {
+                        $streakService->recalculateWeeklyStreak($streak);
+                    } else {
+                        // For daily activities, recalculate from all remaining completions
+                        $streakService->recalculateDailyStreak($streak);
+                    }
+                    
+                    // Update last_completed_date to most recent remaining completion
+                    $lastCompletion = UserActivityLog::where('user_id', $user->id)
+                        ->where('activity_id', $activity->id)
+                        ->orderBy('date', 'desc')
+                        ->first();
+                    
+                    if ($lastCompletion) {
+                        $streak->last_completed_date = $lastCompletion->date;
+                    } else {
+                        $streak->last_completed_date = null;
+                    }
+                    
+                    $streak->save();
+                    
+                    // If streak decreased, deduct streak bonus coins and experience
+                    $newStreak = $streak->current_streak;
+                    if ($newStreak < $oldStreak) {
+                        $this->deductStreakBonuses($user, $activity, $oldStreak, $newStreak);
+                    }
                 }
-            }
-        });
+            });
+        } catch (\Exception $e) {
+            Log::error('Error uncompleting activity: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'activity_id' => $activityId,
+                'date' => $date->toDateString(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return response()->json([
+                'message' => 'Failed to uncomplete activity: ' . $e->getMessage(),
+            ], 500);
+        }
 
         $user->refresh();
 

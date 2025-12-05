@@ -233,4 +233,41 @@ export const adminApi = {
     const response = await apiClient.get('/admin/analytics/users');
     return response.data.data;
   },
+
+  getTransactionLog: async (params?: {
+    user_id?: number;
+    start_date?: string;
+    end_date?: string;
+    days?: number;
+    type?: 'coins' | 'points' | 'all';
+    limit?: number;
+  }): Promise<{
+    data: Array<{
+      id: number;
+      type: 'coin' | 'point';
+      user_id: number;
+      user_nickname: string;
+      user_email: string;
+      amount: number;
+      reason: string;
+      metadata: any;
+      created_at: string;
+      date: string;
+    }>;
+    totals: {
+      coins_earned: number;
+      coins_spent: number;
+      points_earned: number;
+      points_spent: number;
+    };
+    meta: {
+      start_date: string;
+      end_date: string;
+      total_transactions: number;
+      type: string;
+    };
+  }> => {
+    const response = await apiClient.get('/admin/analytics/transactions', { params });
+    return response.data;
+  },
 };

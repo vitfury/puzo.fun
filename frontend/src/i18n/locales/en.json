@@ -403,6 +403,26 @@
             "coinTransactions": "Coin Transactions",
             "pointTransactions": "Point Transactions",
             "noData": "No data for the selected period",
+            "noTransactions": "No transactions for the selected period",
+            "tab": {
+                "daily": "By Day",
+                "transactions": "Transaction Log"
+            },
+            "transactionType": "Transaction Type",
+            "allTypes": "All Types",
+            "transactionTotals": "Transaction Totals",
+            "pointsEarned": "Points Earned",
+            "pointsSpent": "Points Spent",
+            "viewDetails": "Details",
+            "totalTransactions": "Total Transactions",
+            "table": {
+                "date": "Date/Time",
+                "user": "User",
+                "type": "Type",
+                "amount": "Amount",
+                "reason": "Reason",
+                "details": "Details"
+            },
             "reason": {
                 "musicWalk": "Music Walk",
                 "streakBonus": "Streak Bonus",

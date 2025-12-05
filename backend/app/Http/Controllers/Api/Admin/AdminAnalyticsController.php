@@ -181,6 +181,134 @@ class AdminAnalyticsController extends Controller
     }
 
     /**
+     * Get detailed transaction log for coins and points
+     */
+    public function transactionLog(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'user_id' => 'nullable|integer|exists:users,id',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'days' => 'nullable|integer|min:1|max:365',
+            'type' => 'nullable|in:coins,points,all',
+            'limit' => 'nullable|integer|min:1|max:1000',
+        ]);
+
+        $userId = $validated['user_id'] ?? null;
+        $days = $validated['days'] ?? 30;
+        $type = $validated['type'] ?? 'all';
+        $limit = $validated['limit'] ?? 500;
+        
+        $endDate = isset($validated['end_date']) 
+            ? Carbon::parse($validated['end_date'])->endOfDay()
+            : Carbon::today()->endOfDay();
+        
+        $startDate = isset($validated['start_date'])
+            ? Carbon::parse($validated['start_date'])->startOfDay()
+            : $endDate->copy()->subDays($days)->startOfDay();
+
+        $transactions = [];
+
+        // Get coin transactions
+        if ($type === 'all' || $type === 'coins') {
+            $coinQuery = CoinTransaction::whereBetween('created_at', [$startDate, $endDate])
+                ->when($userId, fn($q) => $q->where('user_id', $userId))
+                ->with('user:id,nickname,email')
+                ->orderBy('created_at', 'desc');
+
+            // If type is 'all', get more transactions to allow mixing
+            $coinLimit = $type === 'all' ? $limit * 2 : $limit;
+            $coinTransactions = $coinQuery->limit($coinLimit)->get();
+
+            foreach ($coinTransactions as $tx) {
+                $transactions[] = [
+                    'id' => $tx->id,
+                    'type' => 'coin',
+                    'user_id' => $tx->user_id,
+                    'user_nickname' => $tx->user->nickname ?? 'Unknown',
+                    'user_email' => $tx->user->email ?? '',
+                    'amount' => $tx->amount,
+                    'reason' => $tx->reason,
+                    'metadata' => $tx->metadata,
+                    'created_at' => $tx->created_at->format('Y-m-d H:i:s'),
+                    'date' => $tx->created_at->format('Y-m-d'),
+                ];
+            }
+        }
+
+        // Get point transactions
+        if ($type === 'all' || $type === 'points') {
+            $pointQuery = PointTransaction::whereBetween('created_at', [$startDate, $endDate])
+                ->when($userId, fn($q) => $q->where('user_id', $userId))
+                ->with('user:id,nickname,email')
+                ->orderBy('created_at', 'desc');
+
+            // If type is 'all', get more transactions to allow mixing
+            $pointLimit = $type === 'all' ? $limit * 2 : $limit;
+            $pointTransactions = $pointQuery->limit($pointLimit)->get();
+
+            foreach ($pointTransactions as $tx) {
+                $transactions[] = [
+                    'id' => $tx->id,
+                    'type' => 'point',
+                    'user_id' => $tx->user_id,
+                    'user_nickname' => $tx->user->nickname ?? 'Unknown',
+                    'user_email' => $tx->user->email ?? '',
+                    'amount' => $tx->amount,
+                    'reason' => $tx->reason,
+                    'metadata' => $tx->metadata,
+                    'created_at' => $tx->created_at->format('Y-m-d H:i:s'),
+                    'date' => $tx->created_at->format('Y-m-d'),
+                ];
+            }
+        }
+
+        // Sort by created_at descending
+        usort($transactions, function ($a, $b) {
+            return strcmp($b['created_at'], $a['created_at']);
+        });
+
+        // Limit total results
+        $transactions = array_slice($transactions, 0, $limit);
+
+        // Calculate totals
+        $totals = [
+            'coins_earned' => 0,
+            'coins_spent' => 0,
+            'points_earned' => 0,
+            'points_spent' => 0,
+        ];
+
+        foreach ($transactions as $tx) {
+            if ($tx['type'] === 'coin') {
+                if ($tx['amount'] > 0) {
+                    $totals['coins_earned'] += $tx['amount'];
+                } else {
+                    $totals['coins_spent'] += abs($tx['amount']);
+                }
+            } else {
+                if ($tx['amount'] > 0) {
+                    $totals['points_earned'] += $tx['amount'];
+                } else {
+                    $totals['points_spent'] += abs($tx['amount']);
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $transactions,
+            'totals' => $totals,
+            'meta' => [
+                'start_date' => $startDate->format('Y-m-d'),
+                'end_date' => $endDate->format('Y-m-d'),
+                'total_transactions' => count($transactions),
+                'type' => $type,
+            ],
+        ]);
+    }
+
+    /**
      * Get summary statistics
      */
     public function summary(Request $request): JsonResponse

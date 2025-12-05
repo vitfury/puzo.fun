@@ -49,6 +49,19 @@ interface User {
   role: string;
 }
 
+interface Transaction {
+  id: number;
+  type: 'coin' | 'point';
+  user_id: number;
+  user_nickname: string;
+  user_email: string;
+  amount: number;
+  reason: string;
+  metadata: any;
+  created_at: string;
+  date: string;
+}
+
 export const AdminAnalyticsPage = () => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -60,11 +73,24 @@ export const AdminAnalyticsPage = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState<'daily' | 'transactions'>('daily');
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactionTotals, setTransactionTotals] = useState<any>(null);
+  const [transactionType, setTransactionType] = useState<'all' | 'coins' | 'points'>('all');
+  const [transactionLoading, setTransactionLoading] = useState(false);
 
   useEffect(() => {
     loadUsers();
-    loadData();
+    if (activeTab === 'daily') {
+      loadData();
+    }
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'transactions') {
+      loadTransactions();
+    }
+  }, [activeTab, selectedUserId, startDate, endDate, days, transactionType]);
 
   const loadUsers = async () => {
     try {
@@ -97,6 +123,33 @@ export const AdminAnalyticsPage = () => {
       setLoading(false);
     }
   };
+
+  const loadTransactions = async () => {
+    setTransactionLoading(true);
+    try {
+      const params: any = {};
+      if (selectedUserId) params.user_id = selectedUserId;
+      if (startDate) params.start_date = startDate;
+      if (endDate) params.end_date = endDate;
+      if (!startDate && !endDate) params.days = days;
+      params.type = transactionType;
+      params.limit = 1000;
+
+      const transactionData = await adminApi.getTransactionLog(params);
+      setTransactions(transactionData.data);
+      setTransactionTotals(transactionData.totals);
+    } catch (error) {
+      console.error('Failed to load transactions:', error);
+    } finally {
+      setTransactionLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'transactions') {
+      loadTransactions();
+    }
+  }, [activeTab, selectedUserId, startDate, endDate, days, transactionType]);
 
   const toggleDate = (date: string) => {
     const newExpanded = new Set(expandedDates);
@@ -241,8 +294,32 @@ export const AdminAnalyticsPage = () => {
           </button>
         </div>
 
+        {/* Tabs */}
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-purple-500/30 rounded-lg p-2 mb-6 flex gap-2">
+          <button
+            onClick={() => setActiveTab('daily')}
+            className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
+              activeTab === 'daily'
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700'
+            }`}
+          >
+            {t('admin.analytics.tab.daily', 'По днях')}
+          </button>
+          <button
+            onClick={() => setActiveTab('transactions')}
+            className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
+              activeTab === 'transactions'
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700'
+            }`}
+          >
+            {t('admin.analytics.tab.transactions', 'Лог транзакцій')}
+          </button>
+        </div>
+
         {/* Summary */}
-        {summary && (
+        {summary && activeTab === 'daily' && (
           <div className="bg-gray-800/50 backdrop-blur-sm border border-purple-500/30 rounded-lg p-6 mb-6">
             <h2 className="text-2xl font-bold text-white mb-4">
               {t('admin.analytics.summary', 'Загальна статистика')}
@@ -278,8 +355,189 @@ export const AdminAnalyticsPage = () => {
           </div>
         )}
 
+        {/* Transaction Log Tab */}
+        {activeTab === 'transactions' && (
+          <>
+            {/* Transaction Filters */}
+            <div className="bg-gray-800/50 backdrop-blur-sm border border-purple-500/30 rounded-lg p-6 mb-6">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    {t('admin.analytics.transactionType', 'Тип транзакцій')}
+                  </label>
+                  <select
+                    value={transactionType}
+                    onChange={(e) => setTransactionType(e.target.value as 'all' | 'coins' | 'points')}
+                    className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white"
+                  >
+                    <option value="all">{t('admin.analytics.allTypes', 'Всі типи')}</option>
+                    <option value="coins">{t('admin.analytics.coins', 'Монети')}</option>
+                    <option value="points">{t('admin.analytics.points', 'Очки')}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Transaction Totals */}
+            {transactionTotals && (
+              <div className="bg-gray-800/50 backdrop-blur-sm border border-purple-500/30 rounded-lg p-6 mb-6">
+                <h2 className="text-2xl font-bold text-white mb-4">
+                  {t('admin.analytics.transactionTotals', 'Підсумки транзакцій')}
+                </h2>
+                <div className="grid md:grid-cols-4 gap-4">
+                  <div className="bg-gray-700/50 rounded p-4">
+                    <div className="text-gray-400 text-sm mb-1">
+                      {t('admin.analytics.coinsEarned', 'Монет отримано')}
+                    </div>
+                    <div className="text-2xl font-bold text-green-400">+{transactionTotals.coins_earned}</div>
+                  </div>
+                  <div className="bg-gray-700/50 rounded p-4">
+                    <div className="text-gray-400 text-sm mb-1">
+                      {t('admin.analytics.coinsSpent', 'Монет витрачено')}
+                    </div>
+                    <div className="text-2xl font-bold text-red-400">-{transactionTotals.coins_spent}</div>
+                  </div>
+                  <div className="bg-gray-700/50 rounded p-4">
+                    <div className="text-gray-400 text-sm mb-1">
+                      {t('admin.analytics.pointsEarned', 'Очок отримано')}
+                    </div>
+                    <div className="text-2xl font-bold text-blue-400">+{transactionTotals.points_earned}</div>
+                  </div>
+                  <div className="bg-gray-700/50 rounded p-4">
+                    <div className="text-gray-400 text-sm mb-1">
+                      {t('admin.analytics.pointsSpent', 'Очок витрачено')}
+                    </div>
+                    <div className="text-2xl font-bold text-red-400">-{transactionTotals.points_spent}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Transaction List */}
+            {transactionLoading ? (
+              <div className="text-center py-12 text-gray-400">
+                {t('common.loading', 'Завантаження...')}
+              </div>
+            ) : transactions.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                {t('admin.analytics.noTransactions', 'Немає транзакцій за вибраний період')}
+              </div>
+            ) : (
+              <>
+                {/* Transaction Stats */}
+                <div className="bg-gray-800/50 backdrop-blur-sm border border-purple-500/30 rounded-lg p-4 mb-4">
+                  <div className="flex gap-6 text-sm">
+                    <div>
+                      <span className="text-gray-400">
+                        {t('admin.analytics.totalTransactions', 'Всього транзакцій')}:
+                      </span>{' '}
+                      <span className="text-white font-medium">{transactions.length}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">
+                        {t('admin.analytics.coinTransactions', 'Транзакції монет')}:
+                      </span>{' '}
+                      <span className="text-yellow-400 font-medium">
+                        {transactions.filter(tx => tx.type === 'coin').length}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">
+                        {t('admin.analytics.pointTransactions', 'Транзакції очок')}:
+                      </span>{' '}
+                      <span className="text-blue-400 font-medium">
+                        {transactions.filter(tx => tx.type === 'point').length}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-800/50 backdrop-blur-sm border border-purple-500/30 rounded-lg overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                    <thead className="bg-gray-900/50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">
+                          {t('admin.analytics.table.date', 'Дата/Час')}
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">
+                          {t('admin.analytics.table.user', 'Користувач')}
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">
+                          {t('admin.analytics.table.type', 'Тип')}
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">
+                          {t('admin.analytics.table.amount', 'Сума')}
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">
+                          {t('admin.analytics.table.reason', 'Причина')}
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">
+                          {t('admin.analytics.table.details', 'Деталі')}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-700">
+                      {transactions.map((tx) => (
+                        <tr key={`${tx.type}-${tx.id}`} className="hover:bg-gray-700/30">
+                          <td className="px-4 py-3 text-sm text-gray-300">
+                            <div>{formatDate(tx.date)}</div>
+                            <div className="text-xs text-gray-500">
+                              {formatDateTime(tx.created_at).split(', ')[1]}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            <div className="text-white font-medium">{tx.user_nickname}</div>
+                            <div className="text-xs text-gray-400">{tx.user_email}</div>
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              tx.type === 'coin' 
+                                ? 'bg-yellow-500/20 text-yellow-400' 
+                                : 'bg-blue-500/20 text-blue-400'
+                            }`}>
+                              {tx.type === 'coin' ? '🪙 Монети' : '⚡ Очки'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            <span className={`font-bold ${
+                              tx.amount > 0 
+                                ? tx.type === 'coin' ? 'text-green-400' : 'text-blue-400'
+                                : 'text-red-400'
+                            }`}>
+                              {tx.amount > 0 ? '+' : ''}{tx.amount}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-300">
+                            {getReasonLabel(tx.reason)}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-400">
+                            {tx.metadata && Object.keys(tx.metadata).length > 0 ? (
+                              <details className="cursor-pointer">
+                                <summary className="text-purple-400 hover:text-purple-300">
+                                  {t('admin.analytics.viewDetails', 'Деталі')}
+                                </summary>
+                                <pre className="mt-2 text-xs bg-gray-900/50 p-2 rounded overflow-auto max-w-xs">
+                                  {JSON.stringify(tx.metadata, null, 2)}
+                                </pre>
+                              </details>
+                            ) : (
+                              <span className="text-gray-500">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              </>
+            )}
+          </>
+        )}
+
         {/* Daily Data */}
-        {loading ? (
+        {activeTab === 'daily' && loading ? (
           <div className="text-center py-12 text-gray-400">
             {t('common.loading', 'Завантаження...')}
           </div>
