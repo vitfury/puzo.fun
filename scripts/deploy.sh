@@ -35,88 +35,50 @@ if [ ! -f "backend/.env" ]; then
     exit 1
 fi
 
-echo "📥 Step 1/10: Pulling latest code from git..."
+echo "📥 Step 1/6: Pulling latest code from git..."
 git fetch origin
 git checkout $BRANCH
 git pull origin $BRANCH
 
-echo "🛑 Step 2/10: Stopping running containers..."
-docker-compose -f $COMPOSE_FILE down || true
-
-echo "🏗️  Step 3/10: Building Docker images..."
-docker-compose -f $COMPOSE_FILE build --no-cache
-
-echo "📦 Step 4/10: Installing backend dependencies..."
-docker-compose -f $COMPOSE_FILE run --rm php composer install --no-dev --optimize-autoloader
-
-echo "🔑 Step 5/10: Generating application key..."
-docker-compose -f $COMPOSE_FILE run --rm php php artisan key:generate --force
-
-echo "🗄️  Step 6/10: Running database migrations..."
+echo "🗄️  Step 2/6: Ensuring database is running..."
 docker-compose -f $COMPOSE_FILE up -d mysql redis
-echo "Waiting for MySQL to be ready..."
-sleep 10
+sleep 5
+
+echo "🏗️  Step 3/6: Building Docker images (with cache)..."
+docker-compose -f $COMPOSE_FILE build php queue scheduler
+
+echo "📦 Step 4/6: Installing backend dependencies..."
+docker-compose -f $COMPOSE_FILE run --rm php composer install --no-dev --optimize-autoloader --no-interaction
+
+echo "🗄️  Step 5/6: Running database migrations..."
 docker-compose -f $COMPOSE_FILE run --rm php php artisan migrate --force
 
-echo "🌱 Step 7/10: Seeding database (if needed)..."
-docker-compose -f $COMPOSE_FILE run --rm php php artisan db:seed --force --class=ComprehensiveActivitySeeder || true
-docker-compose -f $COMPOSE_FILE run --rm php php artisan db:seed --force --class=GameSettingsSeeder || true
-docker-compose -f $COMPOSE_FILE run --rm php php artisan db:seed --force --class=EquipmentSeeder || true
-
-echo "🎨 Step 8/10: Building frontend..."
+echo "🎨 Step 6/6: Building frontend..."
 cd frontend
 npm install
+export NODE_OPTIONS="--max-old-space-size=512"
+export NODE_ENV=production
 npm run build
 cd ..
 
-echo "🔐 Step 9/10: Setting up SSL certificate..."
-if [ ! -d "/etc/letsencrypt/live/$DOMAIN" ]; then
-    echo "Getting SSL certificate from Let's Encrypt..."
-    docker-compose -f $COMPOSE_FILE stop nginx || true
-    certbot certonly --standalone -d $DOMAIN -d www.$DOMAIN --email admin@$DOMAIN --agree-tos --no-eff-email
-    echo "✅ SSL certificate obtained"
-else
-    echo "ℹ️  SSL certificate already exists"
+# Inject version into nginx config if available
+if [ -f frontend/dist/.version ]; then
+    BUILD_VERSION=$(cat frontend/dist/.version)
+    sed -i "s/BUILD_VERSION/$BUILD_VERSION/g" docker/nginx/nginx.prod.conf
 fi
 
-echo "🚀 Step 10/10: Starting all services..."
-docker-compose -f $COMPOSE_FILE up -d
-
-echo "🧹 Cleaning up old Docker images..."
-docker system prune -f
-
-echo "⏳ Waiting for services to start..."
-sleep 5
+echo "🚀 Restarting services..."
+docker-compose -f $COMPOSE_FILE up -d --no-deps php queue scheduler nginx
+docker-compose -f $COMPOSE_FILE exec -T nginx nginx -s reload 2>/dev/null || true
+sleep 3
 
 echo ""
 echo "========================================="
 echo "✅ Deployment complete!"
 echo "========================================="
-echo ""
-echo "🌐 Your application is now running at:"
-echo "   https://$DOMAIN"
-echo ""
-echo "📊 Check status:"
-echo "   docker-compose -f $COMPOSE_FILE ps"
-echo ""
-echo "📝 View logs:"
-echo "   docker-compose -f $COMPOSE_FILE logs -f"
-echo ""
-echo "🔄 Container management:"
-echo "   Restart all: docker-compose -f $COMPOSE_FILE restart"
-echo "   Stop all: docker-compose -f $COMPOSE_FILE down"
-echo "   Start all: docker-compose -f $COMPOSE_FILE up -d"
-echo ""
+echo "🌐 https://$DOMAIN"
 
-# Test if site is accessible
-echo "🧪 Testing site accessibility..."
-sleep 3
+# Quick health check
 if curl -sSf -k https://$DOMAIN/api/v1/health > /dev/null 2>&1; then
     echo "✅ Site is accessible!"
-else
-    echo "⚠️  Warning: Site may not be accessible yet. Check logs:"
-    echo "   docker-compose -f $COMPOSE_FILE logs nginx php"
 fi
-
-echo ""
-echo "🎉 Deployment finished successfully!"

@@ -130,8 +130,22 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        // Exclude index.html from precache - always fetch it from network
+        globPatterns: ['**/*.{js,css,ico,png,svg,woff,woff2}'],
+        // Don't precache index.html - we want it to always be fresh
+        globIgnores: ['**/index.html'],
+        // Use NetworkFirst for navigation requests to always get fresh index.html
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//, /^\/_/, /^\/storage\//],
         runtimeCaching: [
+          {
+            // Always fetch index.html from network (no caching)
+            urlPattern: /\/index\.html$/i,
+            handler: 'NetworkOnly',
+            options: {
+              cacheName: 'html-cache',
+            }
+          },
           {
             urlPattern: /^https:\/\/api\.puzo\.fun\/.*/i,
             handler: 'NetworkFirst',
