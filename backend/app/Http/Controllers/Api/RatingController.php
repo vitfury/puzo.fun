@@ -24,28 +24,11 @@ class RatingController extends Controller
             $sortBy = 'total_points';
         }
         
-        // Calculate total earned coins using a subquery in select
-        $totalEarnedCoinsSubquery = DB::table('coin_transactions')
-            ->select('user_id', DB::raw('COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as total_earned_coins'))
-            ->groupBy('user_id');
-        
         $query = User::with(['equippedArmor', 'equippedWeapon'])
-            ->addSelect([
-                'users.*',
-                DB::raw('COALESCE(earned_coins.total_earned_coins, 0) as total_earned_coins')
-            ])
-            ->leftJoinSub($totalEarnedCoinsSubquery, 'earned_coins', function ($join) {
-                $join->on('users.id', '=', 'earned_coins.user_id');
-            })
             ->where('users.role', '!=', 'admin'); // Exclude admins from rating
         
         // Apply sorting
-        if ($sortBy === 'coins') {
-            // When sorting by coins, sort by total earned coins instead
-            $query->orderBy('total_earned_coins', $sortDirection);
-        } else {
-            $query->orderBy("users.{$sortBy}", $sortDirection);
-        }
+        $query->orderBy("users.{$sortBy}", $sortDirection);
         
         $users = $query->get()->map(function ($user, $index) {
                 return [
@@ -54,7 +37,7 @@ class RatingController extends Controller
                     'nickname' => $user->nickname,
                     'level' => $user->level ?? 1,
                     'total_points' => $user->total_points,
-                    'coins' => (int) $user->total_earned_coins, // Use total earned coins instead of current balance
+                    'coins' => (int) $user->coins, // Use current balance
                     'race' => $user->race ?? 'human',
                     'current_music_walk_streak' => $user->current_music_walk_streak,
                     'longest_music_walk_streak' => $user->longest_music_walk_streak,
