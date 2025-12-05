@@ -7,7 +7,7 @@
 ## Доступ
 
 1. Увійдіть як адміністратор:
-   - Email: `admin@melody.ninja`
+   - Email: `admin@puzo.fun`
    - Password: `admin123`
 
 2. Перейдіть до адмін панелі: `/admin`

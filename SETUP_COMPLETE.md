@@ -1,4 +1,4 @@
-# Melody Ninja - Docker Environment Setup Complete
+# Puzo Fun - Docker Environment Setup Complete
 
 ## What Has Been Created
 
@@ -23,7 +23,7 @@
 
 ### Frontend (React 18 + TypeScript)
 - **Build Tool**: Vite with hot module replacement
-- **Styling**: TailwindCSS with custom ninja theme
+- **Styling**: TailwindCSS with custom RPG theme
 - **State Management**: React Query configured
 - **PWA**: Progressive Web App support with service worker
 - **TypeScript**: Strict mode enabled with path aliases
@@ -116,7 +116,7 @@ docker compose exec frontend npm install package-name
 ## Project Structure
 
 ```
-music.ninja/
+puzo.fun/
 ├── docker/
 │   ├── nginx/           # Web server config
 │   ├── php/             # PHP-FPM Dockerfile
@@ -155,7 +155,7 @@ All services should show "running" status.
 
 ### 3. Access the application
 - Open http://localhost:5173 in your browser
-- You should see the Melody Ninja welcome page
+- You should see the Puzo Fun welcome page
 - API status should show "Connected ✓"
 
 ### 4. Begin feature development
@@ -275,7 +275,7 @@ docker compose exec php chown -R www-data:www-data storage bootstrap/cache
 You'll know the setup is complete when:
 
 1. ✓ All 7 Docker containers are running
-2. ✓ http://localhost:5173 shows the Melody Ninja welcome page
+2. ✓ http://localhost:5173 shows the Puzo Fun welcome page
 3. ✓ API status shows "Connected ✓"
 4. ✓ Changes to React files trigger instant browser updates
 5. ✓ Database is accessible via `make db-shell`

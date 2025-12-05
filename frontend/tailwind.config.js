@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        ninja: {
+        rpg: {
           dark: '#1a1a2e',
           darker: '#16213e',
           purple: '#533483',

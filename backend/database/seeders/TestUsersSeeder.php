@@ -31,12 +31,12 @@ class TestUsersSeeder extends Seeder
         $this->command->info('✅ Test users created successfully!');
         $this->command->info('');
         $this->command->info('🧔 Гном Thorin:');
-        $this->command->info('   Email: thorin@test.ninja');
+        $this->command->info('   Email: thorin@test.puzo.fun');
         $this->command->info('   Password: test123');
         $this->command->info('   Level: 25, D-grade equipment');
         $this->command->info('');
         $this->command->info('🧝 Ельф Legolas:');
-        $this->command->info('   Email: legolas@test.ninja');
+        $this->command->info('   Email: legolas@test.puzo.fun');
         $this->command->info('   Password: test123');
         $this->command->info('   Level: 15, Top no-grade equipment');
     }
@@ -44,12 +44,12 @@ class TestUsersSeeder extends Seeder
     private function createDwarfUser(): void
     {
         // Видаляємо попереднього користувача, якщо існує
-        User::where('email', 'thorin@test.ninja')->delete();
+        User::where('email', 'thorin@test.puzo.fun')->delete();
 
         // Створюємо гнома Торіна - рівень 25, D-grade
         $dwarf = User::create([
             'nickname' => 'Thorin',
-            'email' => 'thorin@test.ninja',
+            'email' => 'thorin@test.puzo.fun',
             'password' => Hash::make('test123'),
             'role' => 'user',
             'race' => 'dwarf',
@@ -140,12 +140,12 @@ class TestUsersSeeder extends Seeder
     private function createElfUser(): void
     {
         // Видаляємо попереднього користувача, якщо існує
-        User::where('email', 'legolas@test.ninja')->delete();
+        User::where('email', 'legolas@test.puzo.fun')->delete();
 
         // Створюємо ельфа Леголаса - рівень 15, топовий no-grade
         $elf = User::create([
             'nickname' => 'Legolas',
-            'email' => 'legolas@test.ninja',
+            'email' => 'legolas@test.puzo.fun',
             'password' => Hash::make('test123'),
             'role' => 'user',
             'race' => 'elf',

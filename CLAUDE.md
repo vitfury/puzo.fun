@@ -139,12 +139,12 @@ make logs     # View logs
 - ProtectedRoute component for route guards
 - Pages: LoginPage, RegisterPage, ProfilePage
 - API client with axios interceptors
-- Dark ninja-themed UI with Tailwind CSS
+- Dark RPG-themed UI with Tailwind CSS
 - Bilingual UI with language switcher (EN/UK) ✅
 
 **Test Accounts:**
-- Regular User: test@melody.ninja / password
-- Admin User: admin@melody.ninja / admin123
+- Regular User: test@puzo.fun / password
+- Admin User: admin@puzo.fun / admin123
 
 ### Activity System ✅
 **Backend:**

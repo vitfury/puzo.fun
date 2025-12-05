@@ -1,7 +1,7 @@
 # Internationalization Setup
 
 ## Overview
-The Melody Ninja application now supports bilingual interface in English (EN) and Ukrainian (UK).
+The Puzo Fun application now supports bilingual interface in English (EN) and Ukrainian (UK).
 
 ## Implementation Details
 

@@ -58,7 +58,7 @@ After running the setup, check:
 
 2. **Frontend is accessible**:
    Open http://localhost:5173
-   You should see the Melody Ninja welcome page.
+   You should see the Puzo Fun welcome page.
 
 3. **API is responding**:
    Open http://localhost/api/health
@@ -116,7 +116,7 @@ Key tables to implement:
    ```bash
    make db-shell
    # or
-   docker compose exec mysql mysql -u melody_user -pmelody_pass melody_ninja
+   docker compose exec mysql mysql -u puzo_user -ppuzo_pass puzo_fun
    ```
 
 ## Useful Commands Reference
@@ -152,7 +152,7 @@ make build           # Rebuild Docker images
 ## File Structure Created
 
 ```
-music.ninja/
+puzo.fun/
 ├── .env.example                    # Root environment config
 ├── .gitignore                      # Git ignore rules
 ├── docker-compose.yml              # Service orchestration

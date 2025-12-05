@@ -1,4 +1,4 @@
-# Melody Ninja - Epic Breakdown
+# Puzo Fun - Epic Breakdown
 
 ## Priority Legend
 - 🔴 **P0** - Critical MVP, must have first
@@ -186,7 +186,7 @@
 - Update avatar on level up
 - Display avatar in profile and leaderboard
 
-**Deliverable:** Users have ninja-themed avatars that change with level
+**Deliverable:** Users have RPG-themed avatars that change with level
 
 ---
 
@@ -678,15 +678,15 @@
 
 ## Epic 14: UI/UX Polish 🟡 P2
 
-### Feature 14.1: Dark Ninja Theme
+### Feature 14.1: Dark RPG Theme
 **Goal:** Apply consistent dark theme
 - Implement Tailwind dark theme tokens
 - Create color palette (dark grays, accent colors)
-- Design ninja-themed UI components
+- Design RPG-themed UI components
 - Add subtle animations and transitions
 - Ensure accessibility (contrast ratios)
 
-**Deliverable:** App has cohesive dark ninja aesthetic
+**Deliverable:** App has cohesive dark RPG aesthetic
 
 ---
 
@@ -706,7 +706,7 @@
 **Goal:** Smooth user experience
 - Skeleton loaders for all data fetching
 - Smooth transitions between pages
-- Loading spinners with ninja theme
+- Loading spinners with RPG theme
 - Success/error toast notifications
 - Animated progress bars and counters
 
@@ -1058,15 +1058,15 @@ src/
 
 ```bash
 # Application
-APP_NAME=MelodyNinja
+APP_NAME=PuzoFun
 APP_ENV=production
-APP_URL=https://melody.ninja
+APP_URL=https://puzo.fun
 
 # Database
 DB_CONNECTION=mysql
 DB_HOST=db
 DB_PORT=3306
-DB_DATABASE=melody_ninja
+DB_DATABASE=puzo_fun
 DB_USERNAME=root
 DB_PASSWORD=
 
@@ -1204,7 +1204,7 @@ FOR CLAUDE
 **Levels & Titles:**
 - User levels up based on completed genres
 - Each level has a title (Beginner → Music Lover → Rock Expert → Legend)
-- Avatar changes with each new title (ninja-themed)
+- Avatar changes with each new title (RPG-themed)
 
 **Side Quests:**
 - Unlocked after 3-day streak

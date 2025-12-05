@@ -30,7 +30,7 @@ services:
     environment:
       - DB_HOST=mysql
       - DB_PORT=3306
-      - DB_DATABASE=${DB_DATABASE:-melody_ninja}
+      - DB_DATABASE=${DB_DATABASE:-puzo_fun}
       - DB_USERNAME=${DB_USERNAME:-melody_user}
       - DB_PASSWORD=${DB_PASSWORD:-melody_pass}
       - REDIS_HOST=redis
@@ -50,7 +50,7 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-melody_ninja}
+      MYSQL_DATABASE: ${DB_DATABASE:-puzo_fun}
       MYSQL_USER: ${DB_USERNAME:-melody_user}
       MYSQL_PASSWORD: ${DB_PASSWORD:-melody_pass}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_secret}
@@ -94,7 +94,7 @@ services:
     environment:
       - DB_HOST=mysql
       - DB_PORT=3306
-      - DB_DATABASE=${DB_DATABASE:-melody_ninja}
+      - DB_DATABASE=${DB_DATABASE:-puzo_fun}
       - DB_USERNAME=${DB_USERNAME:-melody_user}
       - DB_PASSWORD=${DB_PASSWORD:-melody_pass}
       - REDIS_HOST=redis
@@ -124,7 +124,7 @@ services:
     environment:
       - DB_HOST=mysql
       - DB_PORT=3306
-      - DB_DATABASE=${DB_DATABASE:-melody_ninja}
+      - DB_DATABASE=${DB_DATABASE:-puzo_fun}
       - DB_USERNAME=${DB_USERNAME:-melody_user}
       - DB_PASSWORD=${DB_PASSWORD:-melody_pass}
       - REDIS_HOST=redis

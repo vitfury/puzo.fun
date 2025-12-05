@@ -26,7 +26,7 @@
 
 ### 1️⃣ Відкрити налаштування
 
-1. Перейдіть на GitHub репозиторій: `https://github.com/YOUR_USERNAME/music.ninja`
+1. Перейдіть на GitHub репозиторій: `https://github.com/YOUR_USERNAME/puzo.fun`
 2. Натисніть **Settings** (вгорі справа)
 3. В лівому меню: **Secrets and variables** → **Actions**
 
@@ -69,11 +69,11 @@
 cat ~/.ssh/id_rsa
 
 # АБО створити новий ключ БЕЗ passphrase:
-ssh-keygen -t ed25519 -C "github-actions@music.ninja" -f ~/.ssh/music_deploy
+ssh-keygen -t ed25519 -C "github-actions@puzo.fun" -f ~/.ssh/puzo_deploy
 # НЕ вводьте passphrase - просто натисніть Enter двічі!
 
 # Показати приватний ключ:
-cat ~/.ssh/music_deploy
+cat ~/.ssh/puzo_deploy
 
 # Скопіюйте ВСЕ, включаючи:
 # -----BEGIN OPENSSH PRIVATE KEY-----
@@ -85,13 +85,13 @@ cat ~/.ssh/music_deploy
 
 ```bash
 # Скопіювати публічний ключ на сервер
-ssh-copy-id -i ~/.ssh/music_deploy.pub root@YOUR_DROPLET_IP
+ssh-copy-id -i ~/.ssh/puzo_deploy.pub root@YOUR_DROPLET_IP
 
 # АБО вручну:
-cat ~/.ssh/music_deploy.pub
+cat ~/.ssh/puzo_deploy.pub
 # Потім на сервері:
 ssh root@YOUR_DROPLET_IP
-echo "ssh-ed25519 AAAA... github-actions@music.ninja" >> ~/.ssh/authorized_keys
+echo "ssh-ed25519 AAAA... github-actions@puzo.fun" >> ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 ```
 
@@ -172,7 +172,7 @@ chmod 600 ~/.ssh/authorized_keys
 
 - [ ] SSH ключ створено БЕЗ passphrase
 - [ ] Публічний ключ додано на сервер (`~/.ssh/authorized_keys`)
-- [ ] SSH підключення працює без пароля: `ssh -i ~/.ssh/music_deploy root@YOUR_DROPLET_IP`
+- [ ] SSH підключення працює без пароля: `ssh -i ~/.ssh/puzo_deploy root@YOUR_DROPLET_IP`
 - [ ] GitHub Variables налаштовано (рекомендовано):
   - [ ] `DO_HOST` - IP адреса сервера
   - [ ] `DO_USERNAME` - SSH користувач (root)

@@ -132,7 +132,7 @@ Response: `{"name": "Ранкова розминка", ...}`
 
 Run the application and switch between languages:
 1. Visit http://localhost:5173
-2. Login with test@melody.ninja / password
+2. Login with test@puzo.fun / password
 3. Go to Activities page
 4. Click 🇬🇧 / 🇺🇦 flags
 5. Watch all activity names translate instantly!

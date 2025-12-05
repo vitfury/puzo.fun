@@ -92,7 +92,7 @@ frontend-shell: ## Access frontend container shell
 	docker compose exec frontend sh
 
 db-shell: ## Access MySQL shell
-	docker compose exec mysql mysql -u melody_user -pmelody_pass melody_ninja
+	docker compose exec mysql mysql -u puzo_user -ppuzo_pass puzo_fun
 
 redis-cli: ## Access Redis CLI
 	docker compose exec redis redis-cli
