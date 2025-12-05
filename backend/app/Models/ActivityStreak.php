@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\StreakService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Carbon\Carbon;
@@ -78,7 +79,7 @@ class ActivityStreak extends Model
      */
     public function recordCompletion(Carbon $date): void
     {
-        // If already completed today, do nothing
+        // If already completed on this exact date, do nothing
         if ($this->last_completed_date && $this->last_completed_date->isSameDay($date)) {
             return;
         }
@@ -93,53 +94,69 @@ class ActivityStreak extends Model
             $this->recordDailyCompletion($date);
         }
 
-        $this->last_completed_date = $date;
+        // Update last_completed_date to the most recent date
+        if (!$this->last_completed_date || $date->isAfter($this->last_completed_date)) {
+            $this->last_completed_date = $date;
+        }
+        
         $this->save();
     }
 
     /**
      * Record completion for weekly trainings (3 times per week = 1 streak)
+     * Recalculates streak based on all completions to handle non-chronological marking
      */
     private function recordWeeklyTrainingCompletion(Carbon $date): void
     {
-        $completionsThisWeek = $this->getCompletionsInWeek($date);
-        $currentWeek = $date->copy()->startOfWeek();
+        // Recalculate streak from all completions to ensure accuracy
+        $streakService = new StreakService();
+        $streakService->recalculateWeeklyStreak($this);
+    }
 
-        // Only update streak when we reach exactly 3 completions in a week
-        // (to avoid incrementing multiple times in the same week)
-        if ($completionsThisWeek >= 3) {
-            // Check if we're in the same week as last completion
-            $lastWeek = $this->last_completed_date 
-                ? $this->last_completed_date->copy()->startOfWeek() 
-                : null;
-            
-            if (!$lastWeek || !$lastWeek->equalTo($currentWeek)) {
-                // This is a new week (or first completion ever)
-                // Check if previous week was completed (if it exists)
-                if ($lastWeek) {
-                    $previousWeek = $lastWeek;
-                    $previousWeekEnd = $previousWeek->copy()->endOfWeek();
-                    
-                    $completionsInPreviousWeek = UserActivityLog::where('user_id', $this->user_id)
-                        ->where('activity_id', $this->activity_id)
-                        ->whereBetween('date', [$previousWeek, $previousWeekEnd])
-                        ->count();
+    /**
+     * Record completion for daily activities
+     * Recalculates streak based on all completions in the database
+     */
+    private function recordDailyCompletion(Carbon $date): void
+    {
+        // Get all unique completion dates from database (including the one we just added)
+        $completionDates = UserActivityLog::where('user_id', $this->user_id)
+            ->where('activity_id', $this->activity_id)
+            ->orderBy('date', 'desc')
+            ->pluck('date')
+            ->map(fn($d) => Carbon::parse($d)->startOfDay()->format('Y-m-d'))
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
 
-                    if ($completionsInPreviousWeek >= 3) {
-                        // Previous week was completed - continue streak
-                        $this->current_streak++;
-                    } else {
-                        // Previous week wasn't completed - start new streak
-                        $this->current_streak = 1;
-                    }
-                } else {
-                    // First completion ever - start streak
-                    $this->current_streak = 1;
-                }
-            }
-            // If we're in the same week and already have streak > 0, don't increment again
-            // (we only count once per week when reaching 3 completions)
+        if (empty($completionDates)) {
+            $this->current_streak = 0;
+            return;
         }
+
+        // Calculate current streak from today backwards (or from most recent date if no completion today)
+        $today = Carbon::today()->startOfDay()->format('Y-m-d');
+        $startDate = in_array($today, $completionDates) 
+            ? Carbon::today()->startOfDay() 
+            : Carbon::parse(end($completionDates))->startOfDay();
+
+        $currentStreak = 0;
+        $checkDate = $startDate->copy();
+
+        // Count consecutive days backwards from start date
+        while (true) {
+            $dateString = $checkDate->format('Y-m-d');
+            
+            if (!in_array($dateString, $completionDates)) {
+                break;
+            }
+
+            $currentStreak++;
+            $checkDate->subDay();
+        }
+
+        $this->current_streak = $currentStreak;
 
         // Update longest streak
         if ($this->current_streak > $this->longest_streak) {
@@ -148,25 +165,12 @@ class ActivityStreak extends Model
     }
 
     /**
-     * Record completion for daily activities
+     * Get display streak value (0 if below minimum)
      */
-    private function recordDailyCompletion(Carbon $date): void
+    public function getDisplayStreak(): int
     {
-        if (!$this->last_completed_date) {
-            // First completion
-            $this->current_streak = 1;
-        } elseif ($this->last_completed_date->diffInDays($date) === 1) {
-            // Consecutive day - increase streak
-            $this->current_streak++;
-        } else {
-            // Streak broken - start new streak
-            $this->current_streak = 1;
-        }
-
-        // Update longest streak
-        if ($this->current_streak > $this->longest_streak) {
-            $this->longest_streak = $this->current_streak;
-        }
+        $streakService = new StreakService();
+        return $streakService->getDisplayStreak($this);
     }
 
     /**
@@ -234,7 +238,7 @@ class ActivityStreak extends Model
      */
     public static function getStreakMilestones(): array
     {
-        return [3, 7, 14, 21, 30, 60, 100];
+        return StreakService::getDailyStreakMilestones();
     }
 
     /**
@@ -242,7 +246,7 @@ class ActivityStreak extends Model
      */
     public static function getWeeklyTrainingMilestones(): array
     {
-        return [2, 4, 8, 12, 24];
+        return StreakService::getWeeklyStreakMilestones();
     }
 
     /**
@@ -250,11 +254,8 @@ class ActivityStreak extends Model
      */
     public function isAtMilestone(): bool
     {
-        if ($this->isWeeklyTraining()) {
-            return in_array($this->current_streak, self::getWeeklyTrainingMilestones());
-        }
-        
-        return in_array($this->current_streak, self::getStreakMilestones());
+        $streakService = new StreakService();
+        return $streakService->isAtMilestone($this);
     }
 
     /**
@@ -262,29 +263,8 @@ class ActivityStreak extends Model
      */
     public function getMilestoneBonus(): ?array
     {
-        if ($this->isWeeklyTraining()) {
-            // Milestones for weekly trainings (in weeks)
-            $milestones = [
-                2 => ['coins' => 50, 'experience' => 25],   // 2 weeks
-                4 => ['coins' => 100, 'experience' => 50],   // 4 weeks (1 month)
-                8 => ['coins' => 200, 'experience' => 100],  // 8 weeks (2 months)
-                12 => ['coins' => 300, 'experience' => 150], // 12 weeks (3 months)
-                24 => ['coins' => 500, 'experience' => 250], // 24 weeks (6 months)
-            ];
-        } else {
-            // Milestones for daily activities (in days)
-            $milestones = [
-                3 => ['coins' => 10, 'experience' => 5],
-                7 => ['coins' => 50, 'experience' => 25],
-                14 => ['coins' => 100, 'experience' => 50],
-                21 => ['coins' => 200, 'experience' => 100],
-                30 => ['coins' => 300, 'experience' => 150],
-                60 => ['coins' => 500, 'experience' => 250],
-                100 => ['coins' => 1000, 'experience' => 500],
-            ];
-        }
-
-        return $milestones[$this->current_streak] ?? null;
+        $streakService = new StreakService();
+        return $streakService->getMilestoneBonus($this);
     }
 }
 

@@ -25,6 +25,14 @@ const groupLabels: Record<string, { label: string; description: string }> = {
     label: '⭐ Система рівнів', 
     description: 'Налаштуй складність прокачки рівнів' 
   },
+  streaks: {
+    label: '🔥 Streak бонуси',
+    description: 'Бонуси за досягнення streak (використовується StreakService)'
+  },
+  streaks_legacy: {
+    label: '⚠️ Legacy Streak бонуси',
+    description: 'Застарілі налаштування (більше не використовуються)'
+  },
 };
 
 export const AdminSettingsPage = () => {

@@ -7,10 +7,13 @@ use App\Http\Resources\ActivityResource;
 use App\Http\Resources\DailyStatResource;
 use App\Models\Activity;
 use App\Models\ActivityStreak;
+use App\Models\CoinTransaction;
 use App\Models\DailyStat;
+use App\Models\PointTransaction;
 use App\Models\UserActivityLog;
 use App\Services\CoinService;
 use App\Services\PointService;
+use App\Services\StreakService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -242,11 +245,15 @@ class ActivityController extends Controller
                         'experience' => $bonus['experience'],
                     ];
                     
+                    // Determine if this is weekly training
+                    $isWeeklyTraining = ActivityStreak::isWeeklyTrainingActivity($activity);
+                    $streakUnit = $isWeeklyTraining ? 'weeks' : 'days';
+                    
                     // Award streak bonus coins
                     $this->coinService->awardCoins(
                         user: $user,
                         amount: $bonus['coins'],
-                        reason: "Streak bonus ({$streak->current_streak} days): {$activity->name}",
+                        reason: "Streak bonus ({$streak->current_streak} {$streakUnit}): {$activity->name}",
                         source: $activity
                     );
                     
@@ -254,20 +261,14 @@ class ActivityController extends Controller
                     $this->pointService->awardPoints(
                         user: $user,
                         amount: $bonus['experience'],
-                        reason: "Streak bonus ({$streak->current_streak} days): {$activity->name}",
+                        reason: "Streak bonus ({$streak->current_streak} {$streakUnit}): {$activity->name}",
                         source: $activity
                     );
                 }
             }
 
-            // Update music walk streak for music_walk activities (legacy support)
-            if ($activity->type === 'music_walk') {
-                $user->refresh();
-                $user->updateMusicWalkStreak($date);
-
-                // Check and award streak bonuses
-                $this->coinService->checkAndAwardStreakBonus($user);
-            }
+            // Music walk activities now use ActivityStreak system like other activities
+            // Legacy music_walk streak tracking is kept for backward compatibility but bonuses come from ActivityStreak
         });
 
         $user->refresh();
@@ -359,6 +360,49 @@ class ActivityController extends Controller
                 $dailyStat->decrement('activities_completed');
                 $dailyStat->decrement('points_earned', $activity->experience);
             }
+
+            // Recalculate streak after uncompleting
+            $streak = ActivityStreak::where('user_id', $user->id)
+                ->where('activity_id', $activity->id)
+                ->first();
+
+            if ($streak) {
+                $streakService = new StreakService();
+                
+                // Store old streak value before recalculation
+                $oldStreak = $streak->current_streak;
+                
+                // Decrement total completions
+                $streak->total_completions = max(0, $streak->total_completions - 1);
+                
+                // Recalculate streak based on remaining completions
+                if (ActivityStreak::isWeeklyTrainingActivity($activity)) {
+                    $streakService->recalculateWeeklyStreak($streak);
+                } else {
+                    // For daily activities, recalculate from all remaining completions
+                    $streakService->recalculateDailyStreak($streak);
+                }
+                
+                // Update last_completed_date to most recent remaining completion
+                $lastCompletion = UserActivityLog::where('user_id', $user->id)
+                    ->where('activity_id', $activity->id)
+                    ->orderBy('date', 'desc')
+                    ->first();
+                
+                if ($lastCompletion) {
+                    $streak->last_completed_date = $lastCompletion->date;
+                } else {
+                    $streak->last_completed_date = null;
+                }
+                
+                $streak->save();
+                
+                // If streak decreased, deduct streak bonus coins and experience
+                $newStreak = $streak->current_streak;
+                if ($newStreak < $oldStreak) {
+                    $this->deductStreakBonuses($user, $activity, $oldStreak, $newStreak);
+                }
+            }
         });
 
         $user->refresh();
@@ -402,8 +446,17 @@ class ActivityController extends Controller
         
         // Get user's streaks
         $userStreaks = ActivityStreak::where('user_id', $user->id)
+            ->with('activity')
             ->get()
             ->keyBy('activity_id');
+        
+        // Recalculate streaks for weekly trainings to ensure they're up to date
+        $streakService = new \App\Services\StreakService();
+        foreach ($userStreaks as $streak) {
+            if ($streak->activity && ActivityStreak::isWeeklyTrainingActivity($streak->activity)) {
+                $streakService->recalculateWeeklyStreak($streak);
+            }
+        }
         
         $streaksData = [];
         
@@ -416,35 +469,46 @@ class ActivityController extends Controller
                 ? ActivityStreak::getWeeklyTrainingMilestones() 
                 : ActivityStreak::getStreakMilestones();
             
-            // Get next milestone
-            $currentStreak = $streak?->current_streak ?? 0;
+            // Get display streak (0 if below minimum)
+            $displayStreak = $streak ? $streak->getDisplayStreak() : 0;
+            $rawStreak = $streak?->current_streak ?? 0;
+            
+            // Get next milestone (only if display streak > 0)
             $nextMilestone = null;
-            foreach ($milestones as $milestone) {
-                if ($milestone > $currentStreak) {
-                    $nextMilestone = $milestone;
-                    break;
+            if ($displayStreak > 0) {
+                foreach ($milestones as $milestone) {
+                    if ($milestone > $rawStreak) {
+                        $nextMilestone = $milestone;
+                        break;
+                    }
                 }
+            } else {
+                // If no streak yet, next milestone is the first one
+                $nextMilestone = !empty($milestones) ? $milestones[0] : null;
             }
             
             // Get bonus for next milestone
-            $tempStreak = new ActivityStreak([
-                'current_streak' => $nextMilestone,
-                'activity_id' => $activity->id,
-            ]);
-            $tempStreak->setRelation('activity', $activity);
-            $nextBonus = $nextMilestone ? $tempStreak->getMilestoneBonus() : null;
+            $nextBonus = null;
+            if ($nextMilestone) {
+                $tempStreak = new ActivityStreak([
+                    'current_streak' => $nextMilestone,
+                    'activity_id' => $activity->id,
+                ]);
+                $tempStreak->setRelation('activity', $activity);
+                $nextBonus = $tempStreak->getMilestoneBonus();
+            }
             
             $streaksData[] = [
                 'activity_id' => $activity->id,
                 'activity_name' => $activity->getTranslation(substr($request->header('Accept-Language', 'en'), 0, 2))?->name ?? $activity->name,
                 'activity_type' => $activity->type,
-                'current_streak' => $currentStreak,
+                'current_streak' => $displayStreak,
                 'longest_streak' => $streak?->longest_streak ?? 0,
                 'total_completions' => $streak?->total_completions ?? 0,
                 'last_completed' => $streak?->last_completed_date?->format('Y-m-d'),
                 'next_milestone' => $nextMilestone,
                 'next_milestone_bonus' => $nextBonus,
-                'days_to_next_milestone' => $nextMilestone ? $nextMilestone - $currentStreak : null,
+                'days_to_next_milestone' => $nextMilestone && $rawStreak > 0 ? $nextMilestone - $rawStreak : null,
             ];
         }
         
@@ -498,5 +562,101 @@ class ActivityController extends Controller
                 }, ActivityStreak::getWeeklyTrainingMilestones()),
             ],
         ]);
+    }
+
+    /**
+     * Deduct streak bonus coins and experience when streak decreases
+     */
+    private function deductStreakBonuses(User $user, Activity $activity, int $oldStreak, int $newStreak): void
+    {
+        // Get all milestones that are no longer valid (greater than new streak but were <= old streak)
+        $isWeeklyTraining = ActivityStreak::isWeeklyTrainingActivity($activity);
+        $milestones = $isWeeklyTraining 
+            ? StreakService::getWeeklyStreakMilestones()
+            : StreakService::getDailyStreakMilestones();
+
+        $invalidMilestones = array_filter($milestones, fn($m) => $m > $newStreak && $m <= $oldStreak);
+
+        if (empty($invalidMilestones)) {
+            return;
+        }
+
+        // Find all streak bonus transactions for this activity (both coins and points)
+        $coinTransactions = CoinTransaction::where('user_id', $user->id)
+            ->where('source_type', Activity::class)
+            ->where('source_id', $activity->id)
+            ->where('reason', 'like', 'Streak bonus%')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $pointTransactions = PointTransaction::where('user_id', $user->id)
+            ->where('source_type', Activity::class)
+            ->where('source_id', $activity->id)
+            ->where('reason', 'like', 'Streak bonus%')
+            ->where('amount', '>', 0) // Only positive amounts (bonuses)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Create temporary streak objects to get bonus amounts for each milestone
+        $streakService = new StreakService();
+        $tempStreak = new ActivityStreak(['activity_id' => $activity->id]);
+        $tempStreak->setRelation('activity', $activity);
+
+        $streakUnit = $isWeeklyTraining ? 'weeks' : 'days';
+
+        foreach ($invalidMilestones as $milestone) {
+            $tempStreak->current_streak = $milestone;
+            $bonus = $streakService->getMilestoneBonus($tempStreak);
+
+            if (!$bonus) {
+                continue;
+            }
+
+            // Check if we already processed this milestone (to avoid double deduction)
+            $coinsDeducted = false;
+            $pointsDeducted = false;
+
+            // Find and reverse coin transaction for this milestone
+            foreach ($coinTransactions as $transaction) {
+                if (preg_match('/Streak bonus \((\d+)\s*(?:days?|weeks?)\):/', $transaction->reason, $matches)) {
+                    $transactionStreak = (int)$matches[1];
+                    
+                    if ($transactionStreak === $milestone && !$coinsDeducted) {
+                        // Deduct coins
+                        if ($bonus['coins'] > 0) {
+                            $this->coinService->deductCoins(
+                                user: $user,
+                                amount: $bonus['coins'],
+                                reason: "Streak bonus reversed ({$milestone} {$streakUnit}): {$activity->name}",
+                                source: $activity
+                            );
+                            $coinsDeducted = true;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // Find and reverse point transaction for this milestone
+            foreach ($pointTransactions as $transaction) {
+                if (preg_match('/Streak bonus \((\d+)\s*(?:days?|weeks?)\):/', $transaction->reason, $matches)) {
+                    $transactionStreak = (int)$matches[1];
+                    
+                    if ($transactionStreak === $milestone && !$pointsDeducted) {
+                        // Deduct experience
+                        if ($bonus['experience'] > 0) {
+                            $this->pointService->deductPoints(
+                                user: $user,
+                                amount: $bonus['experience'],
+                                reason: "Streak bonus reversed ({$milestone} {$streakUnit}): {$activity->name}",
+                                source: $activity
+                            );
+                            $pointsDeducted = true;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
     }
 }

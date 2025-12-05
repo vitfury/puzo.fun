@@ -105,25 +105,13 @@ class CoinService
     }
 
     /**
-     * Check and award streak bonuses
+     * @deprecated Use StreakService for activity streak bonuses instead
+     * This method is kept for backward compatibility but should not be used for new code
      */
     public function checkAndAwardStreakBonus(User $user): ?CoinTransaction
     {
-        $streak = $user->current_music_walk_streak;
-        $streakBonuses = $this->getStreakBonuses();
-
-        foreach ($streakBonuses as $requiredStreak => $bonus) {
-            // Award bonus exactly at the threshold
-            if ($streak === $requiredStreak) {
-                return $this->awardCoins(
-                    user: $user,
-                    amount: $bonus,
-                    reason: CoinTransaction::REASON_STREAK_BONUS,
-                    metadata: ['streak' => $streak]
-                );
-            }
-        }
-
+        // Legacy method - no longer used
+        // Activity streaks now use StreakService::getMilestoneBonus()
         return null;
     }
 
