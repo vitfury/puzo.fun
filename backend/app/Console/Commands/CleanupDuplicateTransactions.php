@@ -17,7 +17,7 @@ class CleanupDuplicateTransactions extends Command
     public function handle(): int
     {
         $this->info('Starting cleanup of duplicate transactions...');
-        $this->info('This will remove all transactions for activities that are not currently completed.');
+        $this->info('This will remove all pairs of positive and negative transactions that cancel each other out.');
 
         // Get all unique combinations of (user_id, activity_id, date) from transactions
         $coinCombinations = CoinTransaction::where('source_type', Activity::class)
@@ -50,43 +50,49 @@ class CleanupDuplicateTransactions extends Command
             $activityId = $combo->activity_id;
             $date = is_string($combo->date) ? $combo->date : $combo->date->format('Y-m-d');
 
+            // Get all transactions for this combination
+            $coinTransactions = CoinTransaction::where('user_id', $userId)
+                ->where('source_type', Activity::class)
+                ->where('source_id', $activityId)
+                ->whereDate('created_at', $date)
+                ->get();
+
+            $pointTransactions = PointTransaction::where('user_id', $userId)
+                ->where('source_type', Activity::class)
+                ->where('source_id', $activityId)
+                ->whereDate('created_at', $date)
+                ->get();
+
+            // Calculate net change
+            $coinNet = $coinTransactions->sum('amount');
+            $pointNet = $pointTransactions->sum('amount');
+
             // Check if activity is completed for this user on this date
-            // Use DB::table to avoid model issues
             $isCompleted = DB::table('user_activity_log')
                 ->where('user_id', $userId)
                 ->where('activity_id', $activityId)
                 ->whereDate('date', $date)
                 ->exists();
 
-            // If not completed, delete all transactions for this user, activity, and date
-            if (!$isCompleted) {
-                // Delete all coin transactions
-                $coinTransactions = CoinTransaction::where('user_id', $userId)
-                    ->where('source_type', Activity::class)
-                    ->where('source_id', $activityId)
-                    ->whereDate('created_at', $date)
-                    ->get();
+            // Delete transactions if:
+            // 1. Activity is not completed (no log entry), OR
+            // 2. Net change is zero (all transactions cancel out)
+            $shouldDelete = !$isCompleted || ($coinNet == 0 && $pointNet == 0);
 
+            if ($shouldDelete && ($coinTransactions->count() > 0 || $pointTransactions->count() > 0)) {
+                // Delete all coin transactions
                 foreach ($coinTransactions as $tx) {
                     $tx->delete();
                     $totalDeletedCoins++;
                 }
 
                 // Delete all point transactions
-                $pointTransactions = PointTransaction::where('user_id', $userId)
-                    ->where('source_type', Activity::class)
-                    ->where('source_id', $activityId)
-                    ->whereDate('created_at', $date)
-                    ->get();
-
                 foreach ($pointTransactions as $tx) {
                     $tx->delete();
                     $totalDeletedPoints++;
                 }
 
-                if (count($coinTransactions) > 0 || count($pointTransactions) > 0) {
-                    $affectedCount++;
-                }
+                $affectedCount++;
             }
 
             $bar->advance();
