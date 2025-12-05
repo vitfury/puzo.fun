@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
+import { VersionDisplay } from './components/VersionDisplay';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
@@ -142,6 +143,7 @@ function App() {
             />
             <Route path="/" element={<Navigate to="/activities" replace />} />
           </Routes>
+          <VersionDisplay />
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

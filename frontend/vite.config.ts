@@ -8,6 +8,7 @@ import { writeFileSync } from 'fs'
 // Plugin to inject build version into index.html and create version file
 function injectVersion() {
   let buildVersion = 'unknown'
+  let buildDate = ''
   
   return {
     name: 'inject-version',
@@ -19,14 +20,39 @@ function injectVersion() {
         // Fallback to timestamp if git is not available
         buildVersion = Date.now().toString()
       }
+      
+      // Format deployment date/time in Kyiv timezone (DDMMYYYY:HHMMSS)
+      const now = new Date()
+      // Use Intl.DateTimeFormat to get Kyiv timezone values
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Europe/Kyiv',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      })
+      
+      const parts = formatter.formatToParts(now)
+      const day = parts.find(p => p.type === 'day')?.value || '01'
+      const month = parts.find(p => p.type === 'month')?.value || '01'
+      const year = parts.find(p => p.type === 'year')?.value || '2024'
+      const hours = parts.find(p => p.type === 'hour')?.value || '00'
+      const minutes = parts.find(p => p.type === 'minute')?.value || '00'
+      const seconds = parts.find(p => p.type === 'second')?.value || '00'
+      
+      buildDate = `${day}${month}${year}:${hours}${minutes}${seconds}`
     },
     transformIndexHtml(html: string) {
       // Inject version as meta tag and query parameter
       const versionMeta = `<meta name="build-version" content="${buildVersion}">`
-      const versionScript = `<script>window.BUILD_VERSION="${buildVersion}";</script>`
+      const buildDateMeta = `<meta name="build-date" content="${buildDate}">`
+      const versionScript = `<script>window.BUILD_VERSION="${buildVersion}";window.BUILD_DATE="${buildDate}";</script>`
       
       // Insert before closing </head>
-      html = html.replace('</head>', `  ${versionMeta}\n  ${versionScript}\n</head>`)
+      html = html.replace('</head>', `  ${versionMeta}\n  ${buildDateMeta}\n  ${versionScript}\n</head>`)
       
       return html
     },
