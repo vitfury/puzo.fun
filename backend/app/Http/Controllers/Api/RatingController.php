@@ -24,29 +24,23 @@ class RatingController extends Controller
             $sortBy = 'total_points';
         }
         
-        // Calculate total earned coins - sum of all positive transactions
+        // Calculate total earned coins - only count coins from activities (not from selling equipment)
         // Exclude activity transactions that have corresponding negative "Uncompleted activity" transactions
         // for the same activity on the same date (these were cancelled)
         $totalEarnedCoinsSubquery = DB::table('coin_transactions as ct')
             ->select('ct.user_id', DB::raw('COALESCE(SUM(ct.amount), 0) as total_earned_coins'))
             ->where('ct.amount', '>', 0)
-            ->where(function ($query) {
-                // Include all positive transactions EXCEPT activity transactions that were cancelled
-                $query->where('ct.source_type', '!=', 'App\\Models\\Activity')
-                    ->orWhere(function ($q) {
-                        // For activity transactions, exclude those that have corresponding negative transactions
-                        $q->where('ct.source_type', 'App\\Models\\Activity')
-                            ->whereNotExists(function ($subQuery) {
-                                $subQuery->select(DB::raw(1))
-                                    ->from('coin_transactions as ct2')
-                                    ->whereColumn('ct2.user_id', 'ct.user_id')
-                                    ->whereColumn('ct2.source_type', 'ct.source_type')
-                                    ->whereColumn('ct2.source_id', 'ct.source_id')
-                                    ->where('ct2.amount', '<', 0)
-                                    ->whereRaw('DATE(ct2.created_at) = DATE(ct.created_at)')
-                                    ->where('ct2.reason', 'like', 'Uncompleted activity:%');
-                            });
-                    });
+            ->where('ct.source_type', 'App\\Models\\Activity') // Only count activity transactions
+            ->whereNotExists(function ($subQuery) {
+                // Exclude transactions that have corresponding negative "Uncompleted activity" transactions
+                $subQuery->select(DB::raw(1))
+                    ->from('coin_transactions as ct2')
+                    ->whereColumn('ct2.user_id', 'ct.user_id')
+                    ->whereColumn('ct2.source_type', 'ct.source_type')
+                    ->whereColumn('ct2.source_id', 'ct.source_id')
+                    ->where('ct2.amount', '<', 0)
+                    ->whereRaw('DATE(ct2.created_at) = DATE(ct.created_at)')
+                    ->where('ct2.reason', 'like', 'Uncompleted activity:%');
             })
             ->groupBy('ct.user_id');
         
