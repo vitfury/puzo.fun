@@ -8,12 +8,14 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "7710:7710"
     volumes:
       - ./docker/nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
       - ./frontend/dist:/var/www/html:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - php
+      - phpmyadmin
     networks:
       - puzo_network
 
@@ -118,8 +120,9 @@ services:
     image: phpmyadmin/phpmyadmin:latest
     container_name: puzo_phpmyadmin
     restart: unless-stopped
-    ports:
-      - "7710:80"
+    # Port exposed through nginx proxy on 7710
+    expose:
+      - "80"
     environment:
       - PMA_HOST=mysql
       - PMA_PORT=3306
