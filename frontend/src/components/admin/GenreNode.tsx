@@ -39,7 +39,7 @@ function GenreNode({ data }: GenreNodeProps) {
           {/* Add Child Button */}
           <button
             onClick={() => onAddChild(genre)}
-            className="w-full px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors font-medium"
+            className="w-full px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors font-medium"
           >
             + Add Child
           </button>

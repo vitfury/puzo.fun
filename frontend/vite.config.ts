@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 import { execSync } from 'child_process'
 import { writeFileSync, readFileSync } from 'fs'
@@ -103,65 +102,7 @@ function injectVersion() {
 export default defineConfig({
   plugins: [
     react(),
-    injectVersion(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'favicon.svg', 'favicon-96x96.png', 'apple-touch-icon.png'],
-      manifest: {
-        name: 'Puzo Fun',
-        short_name: 'Puzo',
-        description: 'Gamified music discovery and fitness tracking',
-        theme_color: '#1a1a2e',
-        background_color: '#0f0f1e',
-        display: 'standalone',
-        icons: [
-          {
-            src: '/web-app-manifest-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'maskable'
-          },
-          {
-            src: '/web-app-manifest-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable'
-          }
-        ]
-      },
-      workbox: {
-        // Exclude index.html from precache - always fetch it from network
-        globPatterns: ['**/*.{js,css,ico,png,svg,woff,woff2}'],
-        // Don't precache index.html - we want it to always be fresh
-        globIgnores: ['**/index.html'],
-        // Don't use navigateFallback - let React Router handle all routing
-        // This prevents service worker from intercepting navigation requests
-        runtimeCaching: [
-          {
-            // Always fetch index.html from network (no caching)
-            urlPattern: /\/index\.html(\?.*)?$/i,
-            handler: 'NetworkOnly',
-            options: {
-              cacheName: 'html-cache',
-            }
-          },
-          {
-            urlPattern: /^https:\/\/api\.puzo\.fun\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 // 1 hour
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          }
-        ]
-      }
-    })
+    injectVersion()
   ],
   resolve: {
     alias: {
@@ -177,6 +118,7 @@ export default defineConfig({
     },
     hmr: {
       host: 'localhost',
+      port: 5173,
       protocol: 'ws'
     }
   },

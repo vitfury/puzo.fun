@@ -152,7 +152,7 @@ services:
     environment:
       - VITE_API_URL=http://localhost/api/v1
       - CHOKIDAR_USEPOLLING=true
-    command: npm run dev
+    command: sh -c "npm install && npm run dev"
     networks:
       - melody_network
 
@@ -178,8 +178,11 @@ networks:
 
 volumes:
   mysql_data:
-    driver: local
+    name: musicninja_mysql_data
+    external: true
   redis_data:
-    driver: local
+    name: musicninja_redis_data
+    external: true
   node_modules:
+    name: puzo_node_modules
     driver: local

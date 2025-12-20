@@ -107,6 +107,17 @@ export default function AdminGenresPage() {
     }
   };
 
+  const handleParentConnectionChange = async (genreId: number, parentIds: number[]) => {
+    try {
+      await genreApi.admin.update(genreId, { parent_ids: parentIds });
+      // Reload genres to get updated data
+      await loadGenres();
+    } catch (err) {
+      console.error('Failed to update parent connections:', err);
+      alert('Failed to update parent connections');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
@@ -192,6 +203,7 @@ export default function AdminGenresPage() {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onAddChild={handleAddChild}
+            onParentConnectionChange={handleParentConnectionChange}
           />
         )}
       </div>

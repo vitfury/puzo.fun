@@ -14,7 +14,7 @@ class AdminGenreController extends Controller
     public function index(): AnonymousResourceCollection
     {
         // For admin, return all genres as flat list (easier for editing)
-        $genres = Genre::orderBy('order_index')->get();
+        $genres = Genre::with('parents')->orderBy('order_index')->get();
 
         return GenreResource::collection($genres);
     }
@@ -23,6 +23,8 @@ class AdminGenreController extends Controller
     {
         $validated = $request->validate([
             'parent_id' => 'nullable|exists:genres,id',
+            'parent_ids' => 'nullable|array',
+            'parent_ids.*' => 'exists:genres,id',
             'name' => 'required|string|max:100',
             'description' => 'nullable|string',
             'playlist_url' => 'nullable|url',
@@ -32,7 +34,17 @@ class AdminGenreController extends Controller
             'order_index' => 'required|integer',
         ]);
 
+        $parentIds = $validated['parent_ids'] ?? [];
+        unset($validated['parent_ids']);
+
         $genre = Genre::create($validated);
+
+        // Sync many-to-many parents
+        if (!empty($parentIds)) {
+            $genre->parents()->sync($parentIds);
+        }
+
+        $genre->load('parents');
 
         return new GenreResource($genre);
     }
@@ -41,6 +53,8 @@ class AdminGenreController extends Controller
     {
         $validated = $request->validate([
             'parent_id' => 'nullable|exists:genres,id',
+            'parent_ids' => 'nullable|array',
+            'parent_ids.*' => 'exists:genres,id',
             'name' => 'sometimes|required|string|max:100',
             'description' => 'nullable|string',
             'playlist_url' => 'nullable|url',
@@ -50,7 +64,19 @@ class AdminGenreController extends Controller
             'order_index' => 'sometimes|required|integer',
         ]);
 
+        $parentIds = $validated['parent_ids'] ?? null;
+        if (isset($validated['parent_ids'])) {
+            unset($validated['parent_ids']);
+        }
+
         $genre->update($validated);
+
+        // Sync many-to-many parents if provided
+        if ($parentIds !== null) {
+            $genre->parents()->sync($parentIds);
+        }
+
+        $genre->load('parents');
 
         return new GenreResource($genre);
     }

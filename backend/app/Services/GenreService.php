@@ -11,7 +11,7 @@ class GenreService
     public function getGenreTreeForUser(int $userId): array
     {
         // Get all genres with their relationships
-        $genres = Genre::with(['parent', 'children'])
+        $genres = Genre::with(['parent', 'children', 'parents', 'childrenMany'])
             ->orderBy('order_index')
             ->get();
 
@@ -56,16 +56,36 @@ class GenreService
 
     private function isGenreAvailable(Genre $genre, $progress, $userId): bool
     {
-        // Root genres (no parent) are always available
-        if ($genre->parent_id === null) {
-            // Only the first root genre is available initially
+        // Check if it's a root genre (no parents)
+        $hasLegacyParent = $genre->parent_id !== null;
+        $hasManyToManyParents = $genre->parents()->exists();
+        
+        if (!$hasLegacyParent && !$hasManyToManyParents) {
+            // Root genre - only the first root genre is available initially
             $firstRoot = Genre::roots()->first();
-            return $genre->id === $firstRoot->id;
+            return $firstRoot && $genre->id === $firstRoot->id;
         }
 
-        // Child genres are available if parent is completed
-        $parentProgress = $progress[$genre->parent_id] ?? null;
-        return $parentProgress && $parentProgress->isCompleted();
+        // Child genres are available if at least one parent is completed
+        // Check legacy parent
+        if ($hasLegacyParent) {
+            $parentProgress = $progress[$genre->parent_id] ?? null;
+            if ($parentProgress && $parentProgress->isCompleted()) {
+                return true;
+            }
+        }
+        
+        // Check many-to-many parents
+        if ($hasManyToManyParents) {
+            foreach ($genre->parents as $parent) {
+                $parentProgress = $progress[$parent->id] ?? null;
+                if ($parentProgress && $parentProgress->isCompleted()) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 
     public function completeGenre(int $userId, int $genreId): UserGenreProgress
@@ -89,19 +109,40 @@ class GenreService
             ]
         );
 
-        // Make child genres available
+        // Make child genres available (from both legacy and many-to-many relationships)
         DB::transaction(function () use ($userId, $genre) {
+            // Legacy children
             $children = $genre->children;
             foreach ($children as $child) {
-                UserGenreProgress::updateOrCreate(
-                    [
-                        'user_id' => $userId,
-                        'genre_id' => $child->id,
-                    ],
-                    [
-                        'is_available' => true,
-                    ]
-                );
+                // Check if all parents are completed
+                if ($this->areAllParentsCompleted($userId, $child)) {
+                    UserGenreProgress::updateOrCreate(
+                        [
+                            'user_id' => $userId,
+                            'genre_id' => $child->id,
+                        ],
+                        [
+                            'is_available' => true,
+                        ]
+                    );
+                }
+            }
+            
+            // Many-to-many children
+            $childrenMany = $genre->childrenMany;
+            foreach ($childrenMany as $child) {
+                // Check if all parents are completed
+                if ($this->areAllParentsCompleted($userId, $child)) {
+                    UserGenreProgress::updateOrCreate(
+                        [
+                            'user_id' => $userId,
+                            'genre_id' => $child->id,
+                        ],
+                        [
+                            'is_available' => true,
+                        ]
+                    );
+                }
             }
         });
 
@@ -110,17 +151,81 @@ class GenreService
 
     private function canUserCompleteGenre(int $userId, Genre $genre): bool
     {
-        // Root genres can always be completed if available
-        if ($genre->parent_id === null) {
+        // Check if it's a root genre (no parents)
+        $hasLegacyParent = $genre->parent_id !== null;
+        $hasManyToManyParents = $genre->parents()->exists();
+        
+        if (!$hasLegacyParent && !$hasManyToManyParents) {
+            // Root genre - only the first root genre can be completed initially
             $firstRoot = Genre::roots()->first();
-            return $genre->id === $firstRoot->id;
+            return $firstRoot && $genre->id === $firstRoot->id;
         }
 
-        // Child genres require parent to be completed
-        $parentProgress = UserGenreProgress::where('user_id', $userId)
-            ->where('genre_id', $genre->parent_id)
-            ->first();
+        // Child genres require at least one parent to be completed
+        // Check legacy parent
+        if ($hasLegacyParent) {
+            $parentProgress = UserGenreProgress::where('user_id', $userId)
+                ->where('genre_id', $genre->parent_id)
+                ->first();
+            
+            if ($parentProgress && $parentProgress->isCompleted()) {
+                return true;
+            }
+        }
+        
+        // Check many-to-many parents
+        if ($hasManyToManyParents) {
+            foreach ($genre->parents as $parent) {
+                $parentProgress = UserGenreProgress::where('user_id', $userId)
+                    ->where('genre_id', $parent->id)
+                    ->first();
+                
+                if ($parentProgress && $parentProgress->isCompleted()) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
 
-        return $parentProgress && $parentProgress->isCompleted();
+    /**
+     * Check if all parents of a genre are completed
+     * For genres with multiple parents, at least one must be completed
+     */
+    private function areAllParentsCompleted(int $userId, Genre $genre): bool
+    {
+        // Get all parents (from both legacy parent_id and many-to-many)
+        $parents = collect();
+        
+        // Legacy single parent
+        if ($genre->parent_id) {
+            $parent = Genre::find($genre->parent_id);
+            if ($parent) {
+                $parents->push($parent);
+            }
+        }
+        
+        // Many-to-many parents
+        $manyToManyParents = $genre->parents;
+        $parents = $parents->merge($manyToManyParents)->unique('id');
+        
+        // If no parents, it's a root genre
+        if ($parents->isEmpty()) {
+            return true;
+        }
+        
+        // Check if at least one parent is completed
+        foreach ($parents as $parent) {
+            $parentProgress = UserGenreProgress::where('user_id', $userId)
+                ->where('genre_id', $parent->id)
+                ->first();
+            
+            if ($parentProgress && $parentProgress->isCompleted()) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

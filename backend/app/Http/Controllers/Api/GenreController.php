@@ -33,8 +33,8 @@ class GenreController extends Controller
 
         $genres = Genre::roots()
             ->with(['children' => function ($query) {
-                $query->with('children');
-            }])
+                $query->with(['children', 'parents']);
+            }, 'parents'])
             ->withCount('comments')
             ->get();
 
@@ -43,7 +43,7 @@ class GenreController extends Controller
 
     public function show(Genre $genre): GenreResource
     {
-        $genre->load(['children', 'comments' => function ($query) {
+        $genre->load(['children', 'parents', 'comments' => function ($query) {
             $query->with('user')->latest()->limit(10);
         }])->loadCount('comments');
 

@@ -21,12 +21,12 @@ function UserGenreNode({ data }: UserGenreNodeProps) {
   // Determine node style based on state
   const getNodeStyle = () => {
     if (isCompleted) {
-      return 'bg-green-900/30 border-green-500 hover:shadow-green-500/50';
+      return 'bg-gray-800/80 border-green-500/50 hover:border-green-500/70';
     }
     if (isAvailable) {
-      return 'bg-purple-900/30 border-purple-500 hover:shadow-purple-500/50 cursor-pointer';
+      return 'bg-gray-800/80 border-purple-500/50 hover:border-purple-500/70 cursor-pointer';
     }
-    return 'bg-gray-900/50 border-gray-700 opacity-60';
+    return 'bg-gray-800/40 border-gray-700/50 opacity-60';
   };
 
   const handleClick = () => {
@@ -37,61 +37,42 @@ function UserGenreNode({ data }: UserGenreNodeProps) {
 
   return (
     <div
-      className={`border-2 rounded-lg p-4 min-w-[220px] max-w-[300px] shadow-lg transition-all ${getNodeStyle()}`}
+      className={`border rounded-xl p-3 min-w-[200px] max-w-[280px] transition-all ${getNodeStyle()}`}
       onClick={handleClick}
     >
       <Handle
         type="target"
         position={Position.Top}
-        className={`${isCompleted ? '!bg-green-500' : isAvailable ? '!bg-purple-500' : '!bg-gray-600'}`}
+        className={`!w-2 !h-2 ${isCompleted ? '!bg-green-500/70' : isAvailable ? '!bg-purple-500/70' : '!bg-gray-600/50'}`}
       />
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <h3 className={`font-bold text-lg truncate ${isAvailable ? 'text-white' : 'text-gray-500'}`}>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h3 className={`font-semibold text-base truncate ${isAvailable || isCompleted ? 'text-gray-100' : 'text-gray-500'}`}>
               {genre.name}
             </h3>
-            {isCompleted && <span className="text-green-400 text-xl flex-shrink-0">✓</span>}
-            {!isAvailable && <span className="text-gray-600 text-lg flex-shrink-0">🔒</span>}
+            {isCompleted && <span className="text-green-400 text-sm flex-shrink-0">✓</span>}
+            {!isAvailable && <span className="text-gray-600 text-sm flex-shrink-0">🔒</span>}
           </div>
           {genre.year && (
-            <span className={`text-xs flex-shrink-0 ${isAvailable ? 'text-purple-400' : 'text-gray-600'}`}>
+            <span className={`text-xs flex-shrink-0 ${isAvailable || isCompleted ? 'text-gray-400' : 'text-gray-600'}`}>
               {genre.year}
             </span>
           )}
         </div>
 
         {genre.description && (
-          <p className={`text-sm line-clamp-2 break-words ${isAvailable ? 'text-gray-300' : 'text-gray-600'}`}>
+          <p className={`text-xs line-clamp-2 break-words ${isAvailable || isCompleted ? 'text-gray-400' : 'text-gray-600'}`}>
             {genre.description}
           </p>
         )}
-
-        {/* Status indicators */}
-        <div className="flex items-center gap-2 text-xs pt-1">
-          {isCompleted && (
-            <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full">
-              Completed
-            </span>
-          )}
-          {isAvailable && !isCompleted && (
-            <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded-full">
-              Available
-            </span>
-          )}
-          {!isAvailable && (
-            <span className="px-2 py-1 bg-gray-500/20 text-gray-500 rounded-full">
-              Locked
-            </span>
-          )}
-        </div>
       </div>
 
       <Handle
         type="source"
         position={Position.Bottom}
-        className={`${isCompleted ? '!bg-green-500' : isAvailable ? '!bg-purple-500' : '!bg-gray-600'}`}
+        className={`!w-2 !h-2 ${isCompleted ? '!bg-green-500/70' : isAvailable ? '!bg-purple-500/70' : '!bg-gray-600/50'}`}
       />
     </div>
   );

@@ -5,15 +5,16 @@ import {
   Edge,
   Background,
   Controls,
-  MiniMap,
   useNodesState,
   useEdgesState,
   NodeTypes,
+  EdgeTypes,
   ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Genre } from '../../types/genre';
 import UserGenreNode, { type UserGenreNodeData } from './UserGenreNode';
+import SmoothBezierEdge from './SmoothBezierEdge';
 
 interface UserGenreFlowMapProps {
   genres: Genre[];
@@ -36,31 +37,52 @@ export default function UserGenreFlowMap({
     }));
   }, [genres, onGenreClick]);
 
-  // Convert parent-child relationships to edges
+  // Convert parent-child relationships to edges (from both legacy parent_id and many-to-many parent_ids)
   const initialEdges: Edge[] = useMemo(() => {
-    return genres
-      .filter((genre) => genre.parent_id !== null)
-      .map((genre) => {
-        const isCompleted = genre.user_progress?.is_completed ?? false;
-        const isAvailable = genre.user_progress?.is_available ?? false;
+    const edges: Edge[] = [];
+    
+    genres.forEach((genre) => {
+      const isCompleted = genre.user_progress?.is_completed ?? false;
+      const isAvailable = genre.user_progress?.is_available ?? false;
 
-        // Edge color based on child genre state
-        let strokeColor = '#6b7280'; // gray for locked
-        if (isCompleted) {
-          strokeColor = '#10b981'; // green for completed
-        } else if (isAvailable) {
-          strokeColor = '#a855f7'; // purple for available
-        }
+      // Edge color based on child genre state
+      let strokeColor = '#6b7280'; // gray for locked
+      if (isCompleted) {
+        strokeColor = '#10b981'; // green for completed
+      } else if (isAvailable) {
+        strokeColor = '#a855f7'; // purple for available
+      }
 
-        return {
+      // Legacy single parent
+      if (genre.parent_id !== null) {
+        edges.push({
           id: `e${genre.parent_id}-${genre.id}`,
           source: String(genre.parent_id),
           target: String(genre.id),
-          type: 'smoothstep',
+          type: 'smoothBezier',
           animated: isAvailable && !isCompleted,
           style: { stroke: strokeColor, strokeWidth: 2 },
-        };
+        });
+      }
+      
+      // Many-to-many parents
+      const parentIds = genre.parent_ids || [];
+      parentIds.forEach((parentId) => {
+        // Skip if already added as legacy parent
+        if (parentId !== genre.parent_id) {
+          edges.push({
+            id: `e${parentId}-${genre.id}`,
+            source: String(parentId),
+            target: String(genre.id),
+            type: 'smoothBezier',
+            animated: isAvailable && !isCompleted,
+            style: { stroke: strokeColor, strokeWidth: 2 },
+          });
+        }
       });
+    });
+    
+    return edges;
   }, [genres]);
 
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
@@ -69,6 +91,13 @@ export default function UserGenreFlowMap({
   const nodeTypes: NodeTypes = useMemo(
     () => ({
       userGenreNode: UserGenreNode,
+    }),
+    []
+  );
+
+  const edgeTypes: EdgeTypes = useMemo(
+    () => ({
+      smoothBezier: SmoothBezierEdge,
     }),
     []
   );
@@ -82,30 +111,18 @@ export default function UserGenreFlowMap({
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           fitView
           attributionPosition="bottom-right"
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable={true}
-          panOnScroll
+          panOnScroll={false}
           zoomOnScroll
           zoomOnPinch
         >
-          <Background color="#4b5563" gap={16} />
+          <Background color="#1f2937" gap={20} />
           <Controls showInteractive={false} />
-          <MiniMap
-            nodeColor={(node) => {
-              const genre = (node.data as UserGenreNodeData).genre;
-              const isCompleted = genre.user_progress?.is_completed ?? false;
-              const isAvailable = genre.user_progress?.is_available ?? false;
-
-              if (isCompleted) return '#10b981';
-              if (isAvailable) return '#a855f7';
-              return '#6b7280';
-            }}
-            maskColor="rgba(0, 0, 0, 0.6)"
-            className="bg-gray-800"
-          />
         </ReactFlow>
       </ReactFlowProvider>
     </div>

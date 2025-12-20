@@ -1,6 +1,8 @@
 export interface Genre {
   id: number;
-  parent_id: number | null;
+  parent_id: number | null; // Legacy single parent (for backward compatibility)
+  parent_ids?: number[]; // All parent IDs (from both legacy and many-to-many)
+  parents?: Genre[]; // Many-to-many parents
   name: string;
   description: string | null;
   playlist_url: string | null;
@@ -35,7 +37,8 @@ export interface GenreTreeResponse {
 }
 
 export interface GenreFormData {
-  parent_id: number | null;
+  parent_id: number | null; // Legacy single parent
+  parent_ids?: number[]; // Many-to-many parents
   name: string;
   description: string;
   playlist_url: string;

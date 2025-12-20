@@ -31,15 +31,31 @@ class GenreResource extends JsonResource
             $isAvailable = $progress->is_available;
             $isCompleted = $progress->isCompleted();
             $completedAt = $progress->completed_at?->toIso8601String();
-        } elseif ($this->parent_id === null) {
-            // Root genres should be available by default
-            // (they will be initialized on first access via initializeUserGenres)
-            $isAvailable = true;
+        } else {
+            // Check if it's a root genre (no parents)
+            $hasLegacyParent = $this->parent_id !== null;
+            $hasManyToManyParents = $this->whenLoaded('parents') ? $this->parents->isNotEmpty() : $this->parents()->exists();
+            
+            if (!$hasLegacyParent && !$hasManyToManyParents) {
+                // Root genres should be available by default
+                // (they will be initialized on first access via initializeUserGenres)
+                $isAvailable = true;
+            }
+        }
+
+        // Get parent IDs from both legacy and many-to-many relationships
+        $parentIds = collect();
+        if ($this->parent_id) {
+            $parentIds->push($this->parent_id);
+        }
+        if ($this->whenLoaded('parents')) {
+            $parentIds = $parentIds->merge($this->parents->pluck('id'));
         }
 
         return [
             'id' => $this->id,
-            'parent_id' => $this->parent_id,
+            'parent_id' => $this->parent_id, // Legacy single parent (for backward compatibility)
+            'parent_ids' => $parentIds->unique()->values()->toArray(), // All parent IDs
             'name' => $this->name,
             'description' => $this->description,
             'playlist_url' => $this->playlist_url,
@@ -48,6 +64,7 @@ class GenreResource extends JsonResource
             'y_position' => $this->y_position,
             'order_index' => $this->order_index,
             'children' => GenreResource::collection($this->whenLoaded('children')),
+            'parents' => GenreResource::collection($this->whenLoaded('parents')), // Many-to-many parents
             'comments_count' => $this->whenCounted('comments'),
             'user_progress' => [
                 'is_available' => $isAvailable,
