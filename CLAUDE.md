@@ -106,7 +106,7 @@ Puzo Fun is a gamified music discovery and fitness tracking web application desi
 
 ### API Structure ✅
 - **Base URL:** `/api/v1/...`
-- **Health Check:** GET `/api/v1/health` (checks DB, Redis, API)
+- **Health Check:** GET `/api/health` (checks DB, Redis, API) — note: NOT under the `v1` prefix
 - **CORS:** Configured for React frontend (localhost:5173)
 - **Authentication:** Laravel Sanctum (email/password login) ✅
   - POST `/api/v1/auth/register` - Register new user
@@ -123,8 +123,13 @@ make logs     # View logs
 ```
 
 ### Access Points
-- Frontend: http://localhost:5173
-- Backend API: http://localhost/api/v1/health
+> ⚠️ Local ports are remapped in `docker-compose.override.yml` to avoid clashing
+> with other stacks on this host (e.g. pickme on :80). nginx → host **8080**,
+> Vite dev server → host **5174**.
+- Frontend (via nginx): http://localhost:8080
+- Frontend (Vite direct): http://localhost:5174
+- Backend API base: http://localhost:8080/api/v1/...
+- Health check: http://localhost:8080/api/health
 
 ### Authentication & User System ✅
 **Backend:**
