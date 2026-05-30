@@ -1,0 +1,13 @@
+services:
+  nginx:
+    ports: !override
+      - "8080:80"
+  frontend:
+    ports: !override
+      - "5174:5173"
+    environment:
+      - VITE_API_URL=/api/v1
+      - CHOKIDAR_USEPOLLING=false
+  mysql:
+    ports: !override
+      - "3306:3306"
