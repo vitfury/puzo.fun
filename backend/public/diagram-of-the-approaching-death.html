@@ -1,0 +1,2175 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Чекап · Омельченко · 2022—2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F4F1EA;
+    --bg-2: #EDE9DF;
+    --surface: #FFFFFF;
+    --surface-2: #FBF9F4;
+    --border: #E5E0D5;
+    --border-strong: #C8C0AE;
+    --ink: #0E1820;
+    --ink-muted: #5E6B7A;
+    --ink-soft: #8A95A3;
+    --primary: #1F5D54;
+    --primary-strong: #133E38;
+    --primary-soft: #DFEFEB;
+    --accent: #C6883D;
+    --accent-soft: #F5E9D2;
+    --critical: #B4391E;
+    --critical-soft: #F4DFD8;
+    --good: #4F8D5A;
+    --good-soft: #DDEBDC;
+    --shadow-sm: 0 1px 2px rgba(14, 24, 32, 0.04);
+    --shadow-md: 0 4px 24px rgba(14, 24, 32, 0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-style: normal; }
+
+  body {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.4;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  .page {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 12px 20px 48px;
+  }
+
+  /* ============ FILTERS ============ */
+  .filters {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-sm);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 14px;
+    align-items: center;
+  }
+
+  .filter-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    grid-column: 1 / -1;
+    margin-bottom: 2px;
+  }
+
+  .filter-title-main {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+  }
+  .filter-title-meta {
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .filter-title-meta b {
+    color: var(--ink-muted);
+    font-weight: 500;
+    margin-right: 14px;
+  }
+
+  .filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    transition: all 0.18s ease;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .chip:hover {
+    color: var(--ink);
+    border-color: var(--ink-muted);
+    background: var(--bg-2);
+  }
+  .chip.active {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+  .chip.chip-issues {
+    border-color: rgba(180, 57, 30, 0.35);
+    color: var(--critical);
+    background: rgba(244, 223, 216, 0.4);
+  }
+  .chip.chip-issues:hover {
+    background: var(--critical-soft);
+    border-color: var(--critical);
+    color: var(--critical);
+  }
+  .chip.chip-issues.active {
+    background: var(--critical);
+    border-color: var(--critical);
+    color: white;
+  }
+  .chip.chip-issues .count { opacity: 0.85; }
+  .chip .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    opacity: 0.55;
+    font-variant-numeric: tabular-nums;
+  }
+  .chip.active .count { opacity: 0.7; }
+
+  .chip.icon {
+    font-size: 11px;
+    opacity: 0.55;
+    margin-right: 1px;
+  }
+
+  .filter-row-flex {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .filter-row-flex > .chips { flex: 1; min-width: 0; }
+
+  .year-picker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 3px;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+  .year-picker .yp-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    padding: 0 10px 0 6px;
+    font-weight: 600;
+  }
+  .year-picker button {
+    border: none;
+    background: transparent;
+    padding: 5px 11px;
+    border-radius: 100px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink-muted);
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.15s;
+    font-variant-numeric: tabular-nums;
+  }
+  .year-picker button:hover { color: var(--ink); background: rgba(255,255,255,0.6); }
+  .year-picker button.active { background: var(--ink); color: var(--bg); }
+  .year-picker button.in-range { background: var(--primary-soft); color: var(--primary-strong); }
+  .year-picker button.endpoint { background: var(--primary); color: white; }
+
+  .empty-state-big {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 24px;
+    text-align: center;
+    background: var(--surface);
+    border: 1px dashed var(--border-strong);
+    border-radius: 14px;
+    gap: 16px;
+  }
+  .empty-state-big .es-icon {
+    font-size: 36px;
+    color: var(--ink-soft);
+  }
+  .empty-state-big .es-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .empty-state-big .es-sub {
+    font-size: 13px;
+    color: var(--ink-muted);
+    max-width: 420px;
+    line-height: 1.5;
+  }
+  .empty-state-big .es-cta {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 4px;
+    transition: background 0.2s;
+  }
+  .empty-state-big .es-cta:hover { background: var(--primary-strong); }
+
+  /* Custom multi-select */
+  .custom-wrap {
+    position: relative;
+    display: inline-block;
+  }
+
+  .custom-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+    border: 1px dashed var(--primary);
+    background: var(--primary-soft);
+    transition: all 0.18s ease;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .custom-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-style: solid;
+  }
+  .custom-btn[aria-expanded="true"] {
+    background: var(--primary);
+    color: white;
+    border-style: solid;
+  }
+
+  .custom-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 480px;
+    max-height: 460px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    box-shadow: 0 12px 48px rgba(14, 24, 32, 0.18);
+    z-index: 100;
+    display: none;
+    overflow: hidden;
+    flex-direction: column;
+  }
+  .custom-panel[data-open="true"] { display: flex; }
+
+  .custom-search {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+  }
+  .custom-search input {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: white;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: var(--ink);
+    outline: none;
+  }
+  .custom-search input:focus {
+    border-color: var(--primary);
+  }
+
+  .custom-list {
+    overflow-y: auto;
+    padding: 8px 0;
+    flex: 1;
+  }
+  .custom-group {
+    padding: 4px 0;
+  }
+  .custom-group-title {
+    padding: 8px 16px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+  }
+  .custom-item {
+    padding: 7px 16px;
+    font-size: 12.5px;
+    color: var(--ink);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.1s;
+  }
+  .custom-item:hover { background: var(--bg-2); }
+  .custom-item .checkbox {
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.1s;
+  }
+  .custom-item[data-selected="true"] .checkbox {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+  .custom-item[data-selected="true"] .checkbox::after {
+    content: '';
+    width: 4px;
+    height: 7px;
+    border: solid white;
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg) translateY(-1px);
+  }
+  .custom-item-name { flex: 1; }
+  .custom-item-meta {
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .chip-removable {
+    background: var(--primary-soft);
+    color: var(--primary-strong);
+    border-color: transparent;
+    padding-right: 6px;
+  }
+  .chip-removable:hover {
+    background: var(--primary);
+    color: white;
+  }
+  .chip-removable .x {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    color: var(--primary-strong);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    line-height: 1;
+    margin-left: 2px;
+    transition: all 0.15s;
+  }
+  .chip-removable:hover .x {
+    background: rgba(255,255,255,0.25);
+    color: white;
+  }
+
+  .clear-btn {
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 4px 10px;
+    font-family: inherit;
+    font-weight: 500;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+  .clear-btn:hover { color: var(--critical); }
+
+  .legend-bar {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+    font-size: 11px;
+    color: var(--ink-muted);
+  }
+  .legend-bar-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    padding-right: 6px;
+    border-right: 1px solid var(--border);
+    margin-right: 4px;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+    font-size: 11px;
+    color: var(--ink-muted);
+  }
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+  .legend-swatch {
+    width: 18px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .legend-swatch.sw-opt { background: rgba(79,141,90,0.20); border: 1px solid rgba(79,141,90,0.4); }
+  .legend-swatch.sw-ref {
+    background: transparent;
+    border: 0;
+    height: 0;
+    border-top: 1.5px dashed rgba(180,57,30,0.7);
+    border-radius: 0;
+    margin-top: 1px;
+  }
+  .legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1.5px solid #fff;
+    box-shadow: 0 0 0 1px rgba(14,24,32,0.1);
+  }
+  .legend-dot.dt-good { background: var(--good); }
+  .legend-dot.dt-warn { background: var(--accent); }
+  .legend-dot.dt-crit { background: var(--critical); }
+
+  /* ============ CARDS GRID ============ */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 500px;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+  }
+  .card .card-chart { flex: 1; min-height: 200px; }
+  .card:hover {
+    border-color: var(--ink-muted);
+    box-shadow: var(--shadow-md);
+  }
+  .card.alert { border-color: rgba(180,57,30,0.35); background: linear-gradient(180deg, #FFFFFF 0%, #FDF7F5 100%); }
+  .card.warn { border-color: rgba(198,136,61,0.35); }
+
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .card-name-block {
+    flex: 1;
+    min-width: 0;
+  }
+  .card-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 2px;
+  }
+  .card-desc {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .status-dot[data-status="good"] { background: var(--good); }
+  .status-dot[data-status="warning"] { background: var(--accent); }
+  .status-dot[data-status="critical"] { background: var(--critical); }
+
+  .card-value-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .card-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    transition: color 0.15s;
+  }
+  .card-value[data-status="critical"] { color: var(--critical); }
+  .card-value[data-status="warning"] { color: var(--accent); }
+  .card-value[data-status="good"] { color: var(--ink); }
+  .card-value[data-status="empty"] { color: var(--ink-soft); }
+  .card-unit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-muted);
+  }
+  .card-date {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .card-trend {
+    font-size: 11px;
+    color: var(--ink-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 14px;
+  }
+  .trend-up { color: var(--good); font-weight: 600; }
+  .trend-down { color: var(--critical); font-weight: 600; }
+  .trend-flat { color: var(--ink-soft); font-weight: 600; }
+
+  /* ============ MINI CHART ============ */
+  .card-chart {
+    position: relative;
+    width: 100%;
+    margin: 0;
+  }
+  .card-chart svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: crosshair;
+  }
+  .chart-overlay {
+    position: absolute;
+    inset: 0;
+    cursor: crosshair;
+  }
+  .data-point { transition: r 0.12s ease; }
+  .data-point.active { stroke-width: 2; }
+
+  .card-meta {
+    font-size: 10.5px;
+    color: var(--ink-muted);
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    border-top: 1px dashed var(--border);
+    padding-top: 8px;
+  }
+  .card-meta > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .meta-swatch {
+    display: inline-block;
+    width: 16px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 2px;
+  }
+  .meta-swatch.sw-opt {
+    background: rgba(79,141,90,0.18);
+    border: 1px solid rgba(79,141,90,0.5);
+  }
+  .meta-swatch.sw-ref {
+    background: transparent;
+    border: 0;
+    height: 0;
+    border-top: 1.5px dashed rgba(180,57,30,0.7);
+    border-radius: 0;
+  }
+
+  .card-impact {
+    font-size: 11.5px;
+    color: var(--primary-strong);
+    line-height: 1.4;
+    background: var(--primary-soft);
+    padding: 9px 12px;
+    border-radius: 7px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card-impact::before {
+    content: '⟶ ';
+    font-weight: 700;
+    color: var(--primary);
+    margin-right: 4px;
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+  /* ============ INSIGHTS ============ */
+  .insights {
+    background: linear-gradient(135deg, #0E1820 0%, #1A2B33 60%, #1F3D38 100%);
+    color: white;
+    border-radius: 18px;
+    padding: 36px 40px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .insights::before {
+    content: '';
+    position: absolute;
+    top: -160px;
+    right: -160px;
+    width: 480px;
+    height: 480px;
+    background: radial-gradient(circle, rgba(31,93,84,0.45) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .insights > * { position: relative; z-index: 1; }
+
+  .insights-label {
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 10px;
+    font-weight: 700;
+    color: #88C7BC;
+    margin-bottom: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .insights-label::before {
+    content: '';
+    width: 22px;
+    height: 1px;
+    background: #88C7BC;
+  }
+
+  .insights-title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 26px;
+    color: #FAF8F2;
+    max-width: 760px;
+    line-height: 1.15;
+  }
+  .insights-title b {
+    color: #88C7BC;
+    font-weight: 800;
+  }
+
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .insight-item {
+    padding: 22px 24px;
+    background: linear-gradient(135deg, #0E1820 0%, #182832 100%);
+  }
+  .insight-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: #88C7BC;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .insight-title-row {
+    font-size: 16px;
+    font-weight: 700;
+    color: #FAF8F2;
+    margin-bottom: 10px;
+    line-height: 1.25;
+  }
+  .insight-body {
+    font-size: 12.5px;
+    color: #B7C3CC;
+    line-height: 1.55;
+  }
+  .insight-body b { color: #FFFFFF; font-weight: 600; }
+
+  /* ============ HYPOTHESIS ============ */
+  .hypothesis {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .hyp-label {
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 12px;
+  }
+  .hyp-title {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--ink);
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+  .hyp-title b { color: var(--primary); }
+  .hyp-body {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink-muted);
+    max-width: 900px;
+  }
+  .hyp-body b { color: var(--ink); font-weight: 600; }
+
+  /* ============ DOCTORS ============ */
+  .doctors {
+    margin-bottom: 24px;
+  }
+  .doc-head {
+    margin-bottom: 16px;
+  }
+  .doc-label {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .doc-sub {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+  }
+  .doc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .doc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .doc-card:hover {
+    border-color: var(--ink-muted);
+    box-shadow: var(--shadow-md);
+  }
+  .doc-card.priority-1 { border-top: 3px solid var(--critical); }
+  .doc-card.priority-2 { border-top: 3px solid var(--accent); }
+  .doc-card.priority-3 { border-top: 3px solid var(--primary); }
+  .doc-card.priority-4 { border-top: 3px solid var(--ink-soft); }
+  .doc-priority {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .doc-spec {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .doc-spec-sub {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-muted);
+  }
+  .doc-why, .doc-ask {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--ink-muted);
+  }
+  .doc-why b, .doc-ask b { color: var(--ink); font-weight: 600; }
+  .doc-ask {
+    background: var(--bg-2);
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-top: auto;
+  }
+
+  /* ============ CHECKLIST ============ */
+  .checklist {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .check-head { margin-bottom: 20px; }
+  .check-label {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .check-sub {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+  }
+  .check-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .check-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .check-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary-strong);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .check-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .check-list li {
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--ink-muted);
+    padding-left: 16px;
+    position: relative;
+  }
+  .check-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 6px;
+    height: 6px;
+    border: 1.5px solid var(--primary);
+    border-radius: 1px;
+  }
+  .check-list li b { color: var(--ink); font-weight: 600; }
+
+  /* ============ LIFESTYLE LEVERS ============ */
+  .levers {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .lev-label {
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 10px;
+  }
+  .lev-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin-bottom: 20px;
+    line-height: 1.3;
+  }
+  .lev-title b { color: var(--primary); font-weight: 700; }
+  .lev-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .lev-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .lev-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--good);
+    line-height: 1;
+  }
+  .lev-item:nth-child(n+6) .lev-num { color: var(--critical); }
+  .lev-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .lev-detail {
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--ink-muted);
+  }
+
+  /* ============ DISCLAIMER ============ */
+  .disclaimer-section {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .disc-icon {
+    font-size: 22px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .disc-body { flex: 1; }
+  .disc-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .disc-body p {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--ink-muted);
+    margin: 0;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1100px) {
+    .cards-grid { grid-template-columns: repeat(2, 1fr); }
+    .insights-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 760px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .insights-grid { grid-template-columns: 1fr; }
+    .filters { grid-template-columns: 1fr; }
+    .custom-panel { width: 100%; left: 0; }
+    .page { padding: 12px 14px 40px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============ FILTERS ============ -->
+  <div class="filters">
+    <div class="filter-label">Категорія</div>
+    <div class="filter-row-flex">
+      <div class="chips" id="categoryChips"></div>
+      <div class="year-picker" id="yearPicker"></div>
+    </div>
+
+    <div class="filter-label">Окремі<br>показники</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+      <div class="custom-wrap">
+        <button class="custom-btn" id="customBtn" aria-expanded="false">+ Додати показник</button>
+        <div class="custom-panel" id="customPanel" data-open="false">
+          <div class="custom-search">
+            <input id="customSearch" type="text" placeholder="Шукати показник..." autocomplete="off"/>
+          </div>
+          <div class="custom-list" id="customList"></div>
+        </div>
+      </div>
+      <div id="customChips" class="chips"></div>
+      <button class="clear-btn" id="customClear" style="display:none">очистити (Esc)</button>
+    </div>
+
+  </div>
+
+  <div class="legend-bar">
+    <span class="legend-bar-label">Легенда</span>
+    <span class="legend-item"><span class="legend-swatch sw-opt"></span> оптимум для 33 р</span>
+    <span class="legend-item"><span class="legend-swatch sw-ref"></span> межі норми лабораторії</span>
+    <span class="legend-item"><span class="legend-dot dt-good"></span> в оптимумі</span>
+    <span class="legend-item"><span class="legend-dot dt-warn"></span> в нормі, поза оптимумом</span>
+    <span class="legend-item"><span class="legend-dot dt-crit"></span> поза нормою</span>
+  </div>
+
+  <!-- ============ CARDS GRID ============ -->
+  <div class="cards-grid" id="cardsGrid"></div>
+
+  <!-- ============ INSIGHTS ============ -->
+  <section class="insights">
+    <div class="insights-label">Чому не йде прогрес у залі</div>
+    <h2 class="insights-title">Картина за п'ять років стала <b>складнішою</b>: одна криза вже минула, але <b>нова повільно набирає обертів</b>.</h2>
+    <div class="insights-grid">
+      <div class="insight-item">
+        <div class="insight-num">01 · Гормони</div>
+        <div class="insight-title-row">Тестостерон зробив дно у 2024 і поступово повертається</div>
+        <div class="insight-body">Загальний тестостерон ішов так: <b>394 → 339 → 219 → 294 → 275</b> нг/дл за п'ять років. Найгірша точка була у березні 2024, далі видно поступове відновлення. Однак свіжий показник за травень 2026 нижче, ніж за квітень 2025 — тому варто перездати, аби впевнитися, що це не регрес. У будь-якому випадку рівень досі помітно нижче оптимуму 450–700 для здорового чоловіка цього віку.</div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">02 · Вісь гіпофіза</div>
+        <div class="insight-title-row">LH стабільно низько-нормальний — підтверджує вторинний гіпогонадизм</div>
+        <div class="insight-body">Лютеїнізуючий гормон становив <b>3.53</b> у квітні 2025 і <b>3.04</b> у травні 2026 — обидва рази нижче половини норми. При такому низькому тестостероні гіпофіз мав би тиснути сильніше, але не тисне. Це означає, що проблема не в самих яєчках, а в центральній регуляції. Найчастіша причина — комбінація запалення, дефіциту вітаміну D і хронічного стресу.</div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">03 · Печінка</div>
+        <div class="insight-title-row">Удар 2023–2025 пройшов, печінка стабілізувалась</div>
+        <div class="insight-body">ГГТ доходив до <b>129</b> у 2023, АЛТ і АСТ підіймались до <b>77 і 52</b> у січні 2025. Це був явний токсичний або інфекційний епізод. Зараз ферменти повернулися в норму — це позитив. Але треба зрозуміти першопричину, аби це не повторилось.</div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">04 · Запалення</div>
+        <div class="insight-title-row">Гостра криза січня 2025 минула, але CRP залишається трохи підвищеним</div>
+        <div class="insight-body">СРБ ішов <b>34.7 → 6.1 → 2.1</b> за чотири місяці у 2025, а потім стабілізувався на 2.1 до травня 2026. Гостра інфекція пройшла, але хронічного маркера &lt;1 поки не вдалося досягти. ШОЕ і паличкоядерні нейтрофіли також нормалізувалися. Це добра новина для відновлення гормонального фону.</div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">05 · Вітамін D і нутрієнти</div>
+        <div class="insight-title-row">Систематичне відновлення дефіцитів, але не всіх</div>
+        <div class="insight-body">Вітамін D піднявся з <b>18.6</b> (2024) через <b>28.0</b> (квітень 2025) до <b>34.5</b> (травень 2026) — це правильна траєкторія. B12 теж відновився до 533. Однак B9 нестабільний (2.69 → 6.39 → 5.00), а цинк впав зі <b>117</b> у квітні 2025 до <b>84</b> у травні 2026, ніби ти припинив його прийом.</div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">06 · Ліпіди (нова проблема)</div>
+        <div class="insight-title-row">За рік ліпідний профіль помітно погіршився</div>
+        <div class="insight-body">Між квітнем 2025 і травнем 2026 ситуація різко змінилась на гірше. ЛПНЩ виріс із <b>3.30</b> до <b>4.05</b>, не-ЛПВЩ із <b>3.45</b> до <b>4.15</b>, індекс атерогенності пробив поріг 3.0 і досяг <b>3.24</b>, холестерин піднявся з <b>4.83</b> до <b>5.43</b>. Це не одиничний показник, а синхронний рух — фактор ризику, який треба прибирати зараз.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HYPOTHESIS / PATTERN ============ -->
+  <section class="hypothesis">
+    <div class="hyp-label">Загальний патерн</div>
+    <h2 class="hyp-title">У тебе одночасно <b>зворотний вторинний гіпогонадизм</b> на фазі відновлення і <b>новий метаболічний зсув</b>, який щойно почав проявлятись.</h2>
+    <p class="hyp-body">
+      Якщо дивитись на гормональну вісь, то картина така: тестостерон загальний у 2024 році впав до 219 нг/дл,
+      що для здорового тридцятирічного чоловіка є межею клінічного гіпогонадизму. У квітні 2025 він піднявся
+      до <b>294</b>, у травні 2026 — <b>275</b>. Тобто загальний тренд позитивний, але повільний. При цьому
+      лютеїнізуючий гормон обидва рази був на рівні приблизно <b>3 мОд/мл</b> — це нижня половина норми. У нормі
+      при такому низькому тестостероні гіпофіз мав би тиснути сильніше, але він цього не робить. Це підтверджує,
+      що проблема не в яєчках, а в центральній регуляції — типовий вторинний гіпогонадизм.
+    </p>
+    <p class="hyp-body" style="margin-top:12px">
+      Хороша новина в тому, що передумови для відновлення вже створені: вітамін D піднявся з 18.6 до 34.5,
+      СРБ упав з 34.7 до 2.1, печінкові ферменти повернулися в норму. Тестостерон поки відстає, але це
+      нормально — від моменту, коли причини усунуто, до повного повернення гіпофіза до нормальної роботи
+      потрібно від шести до дванадцяти місяців стабільних умов.
+    </p>
+    <p class="hyp-body" style="margin-top:12px">
+      <b>Тепер про новий тривожний сигнал.</b> Між квітнем 2025 і травнем 2026 ліпідний профіль помітно
+      погіршився: ЛПНЩ виріс із 3.30 до 4.05 (це вже понад верхньою межею норми 3.0), не-ЛПВЩ із 3.45 до 4.15,
+      індекс атерогенності з 2.5 до 3.24 (тепер вище порогу 3.0), холестерин з 4.83 до 5.43. Окрім того,
+      вільний тироксин-3 (FT3) знизився з 4.17 до 2.73 — це попередній сигнал, що щитовидка починає працювати
+      менш активно. Усе разом виглядає як ранній метаболічний зсув: легке системне запалення, чутливість до
+      інсуліну на межі, гормональний фон вузький. У 33 роки це ще повністю зворотно дієтою і кардіо-навантаженням,
+      але вже не варто чекати ще рік.
+    </p>
+  </section>
+
+  <!-- ============ DOCTORS ============ -->
+  <section class="doctors">
+    <div class="doc-head">
+      <div class="doc-label">До яких лікарів і навіщо</div>
+      <div class="doc-sub">У порядку пріоритету. Один візит до хорошого ендокринолога може закрити приблизно 80% усіх питань.</div>
+    </div>
+    <div class="doc-grid">
+      <div class="doc-card priority-1">
+        <div class="doc-priority">Пріоритет 1 · протягом найближчого місяця</div>
+        <div class="doc-spec">Кардіолог або<br>сімейний лікар</div>
+        <div class="doc-why">
+          <b>Чому саме зараз:</b> ліпідний профіль за один рік помітно погіршився. ЛПНЩ виріс з 3.30 до 4.05,
+          індекс атерогенності пробив поріг 3.0 і досяг 3.24, холестерин піднявся з 4.83 до 5.43. Це не разовий
+          збіг показників, а синхронний рух кількох маркерів. У 33 роки це ще повністю зворотно, але саме зараз
+          важливо зрозуміти причину, поки тенденція не зміцніла.
+        </div>
+        <div class="doc-ask">
+          <b>Візьми з собою:</b> цей звіт із порівнянням ліпідограми за квітень 2025 і травень 2026, плюс
+          гомоцистеїн і HbA1c.<br><br>
+          <b>Попроси обговорити:</b> здати одноразово ліпопротеїн(а), скорочено Lp(a) — це генетично закладений
+          серцево-судинний ризик; здати апоВ і апоА1, які точніше відображають реальний ризик, ніж стандартний
+          ЛПНЩ; розрахувати коефіцієнт SCORE2 з урахуванням віку і поточних показників; чи варто вже думати про
+          статини, чи поки достатньо дієти і кардіо; який обсяг кардіо реально потрібен щотижня для розвороту
+          тенденції; як часто перездавати ліпідограму, щоб контролювати динаміку.
+        </div>
+      </div>
+
+      <div class="doc-card priority-2">
+        <div class="doc-priority">Пріоритет 2 · протягом найближчого місяця</div>
+        <div class="doc-spec">Ендокринолог<br><span class="doc-spec-sub">бажано з андрологічним досвідом</span></div>
+        <div class="doc-why">
+          <b>Чому саме він:</b> у тебе вже є кілька гормональних точок підряд — тестостерон рухається від 219
+          до 294 і назад до 275, а LH стабільно тримається близько 3 мОд/мл при низькому Т. Це класична картина
+          вторинного гіпогонадизму, який треба правильно інтерпретувати. Окремо насторожує, що FT3 знизився з
+          4.17 до 2.73 — попередній знак, що щитовидка починає працювати менш активно.
+        </div>
+        <div class="doc-ask">
+          <b>Візьми з собою:</b> повну гормональну динаміку за п'ять років, особливо тестостерон, LH, SHBG, TSH,
+          FT3, FT4 за два останні чекапи.<br><br>
+          <b>Попроси обговорити:</b> повторні ранкові заміри загального і вільного тестостерону (потрібно здати
+          двічі з інтервалом у два тижні, обидва рази між 7:00 і 10:00 ранку натще); пролактин у форматі з оцінкою
+          макропроформи; повторно ФСГ; антитіла до тиреопероксидази (АТ-ТПО) — щоб виключити аутоімунний тиреоїдит,
+          бо FT3 знижується; чи варто робити МРТ гіпофіза, якщо пролактин виявиться вище 25; яка стратегія
+          відновлення — спостереження чи активна підтримка.
+        </div>
+      </div>
+
+      <div class="doc-card priority-3">
+        <div class="doc-priority">Пріоритет 3 · протягом найближчих двох-трьох місяців</div>
+        <div class="doc-spec">Терапевт або<br>гастроентеролог</div>
+        <div class="doc-why">
+          <b>Чому:</b> у 2023 році ГГТ доходив до 129, а в січні 2025 АЛТ і АСТ підіймались до 77 і 52. Зараз
+          показники повернулися в норму, тому це вже не термінове питання. Але був явний епізод, і добре б
+          разово розібратися в його природі, щоб ситуація не повторилася в майбутньому.
+        </div>
+        <div class="doc-ask">
+          <b>Попроси обговорити:</b> УЗД органів черевної порожнини, щоб виключити стеатоз або жировий гепатоз —
+          враховуючи новий ліпідний профіль, це особливо актуально; контрольну здачу ГГТ через три місяці;
+          ФіброСкан, якщо лікар вважатиме за потрібне; як спортивні добавки, протеїнові суміші або препарати,
+          які ти приймав регулярно, могли вплинути на печінку.
+        </div>
+      </div>
+
+      <div class="doc-card priority-4">
+        <div class="doc-priority">За потреби · нутриціолог або дієтолог</div>
+        <div class="doc-spec">Спеціаліст з<br>харчування</div>
+        <div class="doc-why">
+          <b>Чому:</b> у тебе одночасно три нутрієнтні проблеми: цинк впав зі 117 до 84 між 2025 і 2026 (схоже,
+          ти кинув добавку), магній на нижній межі норми, B9 нестабільний. Поряд із цим починає рости ЛПНЩ, що
+          вказує на необхідність переглянути дієту. Один-два візити до грамотного нутриціолога можуть закрити
+          і дефіцити, і ліпіди разом.
+        </div>
+        <div class="doc-ask">
+          <b>Попроси обговорити:</b> як стабільно тримати цинк і Б12 із харчування, без різких циклів добавок;
+          норму омега-3 на день і чи треба її добирати з добавок; правильне дозування магнію (зазвичай гліцинат
+          або бісгліцинат, 300–400 міліграмів); скільки білка на кілограм ваги реально потрібно для гіпертрофії;
+          як перебудувати харчування, щоб опустити ЛПНЩ без жорстких обмежень — більше клітковини, менше насичених
+          жирів, більше риби; чи доцільні рослинні станоли.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ACTION CHECKLIST ============ -->
+  <section class="checklist">
+    <div class="check-head">
+      <div class="check-label">Що варто перездати найближчим часом</div>
+      <div class="check-sub">Контрольні точки через три і шість місяців, щоб побачити динаміку до наступного повного чекапу</div>
+    </div>
+    <div class="check-grid">
+      <div class="check-block">
+        <div class="check-title">Через 6–8 тижнів</div>
+        <ul class="check-list">
+          <li><b>Повна ліпідограма:</b> холестерин, ЛПНЩ, ЛПВЩ, тригліцериди та індекс атерогенності. Це найважливіша точка контролю — побачимо, чи ліпіди продовжують рости, чи це був разовий збіг.</li>
+          <li><b>Тестостерон загальний і вільний.</b> Здати двічі з інтервалом у два тижні, обидва рази вранці і натще — щоб виключити лабораторне коливання вільного Т, яке зараз виглядає підозріло.</li>
+          <li><b>СРБ кількісно</b> — переконатися, що хронічне запалення опускається до значень нижче одиниці.</li>
+          <li><b>Сечова кислота</b> — додатковий маркер метаболічного синдрому, разом з ліпідами дає повну картину.</li>
+        </ul>
+      </div>
+      <div class="check-block">
+        <div class="check-title">Через 3–4 місяці</div>
+        <ul class="check-list">
+          <li><b>Повторна гормональна панель:</b> ЛГ, ФСГ, пролактин, SHBG, ще раз тестостерон — щоб оцінити, як регуляторна вісь себе поводить через півроку від попереднього заміру.</li>
+          <li><b>Повторити TSH, FT4 і FT3, плюс антитіла АТ-ТПО</b> — бо FT3 уже знизився, треба зрозуміти, чи це початок аутоімунного процесу.</li>
+          <li><b>Гомоцистеїн разом із B9 і B12</b> — оцінити, чи покращилося метилування після стабілізації фолату.</li>
+          <li><b>HbA1c і інсулін натще</b> — це дозволить порахувати індекс HOMA-IR і побачити чутливість до інсуліну.</li>
+          <li><b>Цинк</b> — щоб зрозуміти, чи він тримається з харчування, чи потребує добавки.</li>
+        </ul>
+      </div>
+      <div class="check-block">
+        <div class="check-title">Що додати наступного разу</div>
+        <ul class="check-list">
+          <li><b>Ліпопротеїн(а), скорочено Lp(a)</b> — генетично закладений серцево-судинний ризик, який достатньо здати раз у житті. Враховуючи ріст ЛПНЩ, це особливо актуально.</li>
+          <li><b>АпоВ і апоА1</b> — точніше за стандартний ЛПНЩ відображають реальний кардіоваскулярний ризик.</li>
+          <li><b>ДГЕА-С</b> — показник роботи наднирників, який часто корелює з рівнем тестостерону.</li>
+          <li><b>Вільний кортизол у слині</b> — чотири рази на добу, щоб побачити циркадний ритм гормону стресу.</li>
+          <li><b>Залізо, ЗЗЗС і насичення трансферином</b> — щоб мати повну картину обміну заліза поряд із феритином.</li>
+          <li><b>Вітамін B6 і селен</b> — обидва є важливими кофакторами для синтезу гормонів і метилування.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LIFESTYLE LEVERS ============ -->
+  <section class="levers">
+    <div class="lev-label">Що можна змінити вже завтра</div>
+    <h3 class="lev-title">Без рецепта і без лікаря. <b>Перші зрушення по ліпідах зазвичай помітні через 6–8 тижнів, по гормональному фону — через 8–12.</b></h3>
+    <div class="lev-grid">
+      <div class="lev-item">
+        <div class="lev-num">▲</div>
+        <div class="lev-name">Спати 7 з половиною годин або більше</div>
+        <div class="lev-detail">Основна частина тестостерону виробляється під час REM-фази сну. Якщо спати лише по 5–6 годин два тижні поспіль, рівень тестостерону падає приблизно на 15%. Це найшвидший і найдешевший важіль для відновлення осі гіпофіз–яєчка.</div>
+      </div>
+      <div class="lev-item">
+        <div class="lev-num">▲</div>
+        <div class="lev-name">Кардіо 150 хвилин на тиждень</div>
+        <div class="lev-detail">Зональне кардіо середньої інтенсивності (зона 2) три-чотири рази на тиждень по 40 хвилин. Це найкраща стратегія, щоб опустити ЛПНЩ і підняти ЛПВЩ без статинів. Біг, велосипед, орбітрек — будь-що, де можна довго говорити, але не співати.</div>
+      </div>
+      <div class="lev-item">
+        <div class="lev-num">▲</div>
+        <div class="lev-name">Більше клітковини і омега-3</div>
+        <div class="lev-detail">Розчинна клітковина (овес, бобові, яблука, насіння льону) знижує ЛПНЩ. Жирна риба двічі на тиждень або 2 грами омега-3 на день покращує співвідношення ЛПНЩ до ЛПВЩ. Ці два кроки разом дають мінус 10–15% ЛПНЩ за 8 тижнів.</div>
+      </div>
+      <div class="lev-item">
+        <div class="lev-num">▲</div>
+        <div class="lev-name">Вітамін D3 з K2 продовжувати</div>
+        <div class="lev-detail">Орієнтовно 5000 одиниць D3 щодня плюс 100–200 мікрограмів K2. Мета — стабільно тримати рівень у крові між 40 і 60 нг/мл. К2 потрібен, щоб кальцій ішов у кістки, а не осідав у судинах — особливо актуально на фоні росту ЛПНЩ.</div>
+      </div>
+      <div class="lev-item">
+        <div class="lev-num">▲</div>
+        <div class="lev-name">Магній і цинк відновити</div>
+        <div class="lev-detail">Магній гліцинат 300–400 міліграмів за годину до сну — покращує сон, знижує кортизол. Цинк піколінат 15–25 міліграмів на день, не разом із кальцієм чи залізом. У тебе цинк впав зі 117 до 84 між двома вимірами — схоже, що в 2025 ти приймав добавку, а потім кинув. Поверни і тримай стабільно.</div>
+      </div>
+      <div class="lev-item">
+        <div class="lev-num">▼</div>
+        <div class="lev-name">Алкоголь — не більше трьох порцій на тиждень</div>
+        <div class="lev-detail">Алкоголь б'є одночасно по трьох фронтах: піднімає ЛПНЩ і тригліцериди, навантажує печінку (а вона в тебе вже постраждала у 2023–2025), пришвидшує перетворення тестостерону в естрадіол. З огляду на твою поточну ситуацію — це найдорожчий звичайний фактор.</div>
+      </div>
+      <div class="lev-item">
+        <div class="lev-num">▼</div>
+        <div class="lev-name">Менше насичених жирів і трансжирів</div>
+        <div class="lev-detail">Жирне м'ясо, ковбасні вироби, вершкове масло у великих кількостях, фабричні випічка і солодощі з пальмовою олією. Замінити на оливкову олію, авокадо, горіхи, рибу. Це найважливіше дієтичне втручання саме для ЛПНЩ.</div>
+      </div>
+      <div class="lev-item">
+        <div class="lev-num">▼</div>
+        <div class="lev-name">Менше швидких вуглеводів</div>
+        <div class="lev-detail">Зменшити цукор, білий хліб, солодке, газовані напої. Стабільна глюкоза протягом дня — основа збереження чутливості до інсуліну, без якої не йде ні гіпертрофія, ні нормалізація ліпідів. HbA1c у тебе ще нормальний, але дрейфує в гірший бік.</div>
+      </div>
+      <div class="lev-item">
+        <div class="lev-num">▼</div>
+        <div class="lev-name">Хронічний стрес</div>
+        <div class="lev-detail">Кортизол у тебе на верхній половині норми (16.6 і 17.6 — оптимум до 18). Хронічно підвищений кортизол прямо пригнічує тестостерон і дає набір вісцерального жиру. Будь-яка стабільна практика релаксації (медитація, дихальні вправи, прогулянки без телефону) дає реальний ефект через 4–6 тижнів.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DISCLAIMER ============ -->
+  <section class="disclaimer-section">
+    <div class="disc-icon">⚠</div>
+    <div class="disc-body">
+      <div class="disc-title">Це не медичний діагноз і не план лікування.</div>
+      <p>Аналіз — інструмент для розмови з лікарем, не його заміна. «Оптимальні» діапазони побудовані на endocrinology та nutrition literature (Endocrine Society, ESC, ADA), але остаточну інтерпретацію в контексті твого випадку дає лікар. Рекомендації по добавках — це загальні принципи, які можуть мати протипоказання саме для тебе.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ===================== DATA ===================== */
+const CATEGORIES = {
+  male:         { label: 'Чоловіча сила',     icon: '♂' },
+  liver:        { label: 'Печінка',           icon: '◐' },
+  inflammation: { label: 'Запалення',         icon: '◆' },
+  lipids:       { label: 'Ліпіди & цукор',    icon: '◊' },
+  vitamins:     { label: 'Вітаміни & мінерали', icon: '✶' },
+  blood:        { label: 'Кров',              icon: '●' }
+};
+
+const METRICS = [
+  { key: 'tes_total_ngdl', name: 'Тестостерон загальний', abbr: 'TES', unit: 'нг/дл', ref: [160, 726], optimal: [450, 700], higherBetter: true, category: 'male', desc: 'Анаболічний гормон', gymImpact: 'Прямо керує синтезом білка, м\'язовою масою, агресією, мотивацією до тренування.', values: [
+    { date: '2022-08-03', value: 394.8 },
+    { date: '2023-10-30', value: 339.7 },
+    { date: '2024-03-30', value: 219.0 },
+    { date: '2025-04-22', value: 294.0 },
+    { date: '2026-05-16', value: 275.0 }
+  ]},
+  { key: 'tes_free', name: 'Тестостерон вільний', abbr: 'FTES', unit: 'пг/мл', ref: [5.5, 42], optimal: [15, 30], higherBetter: true, category: 'male', desc: 'Активна фракція', gymImpact: 'Тільки вільний Т проникає в клітини й запускає білковий синтез. Найважливіший для зали.', values: [
+    { date: '2022-08-03', value: 34.68 },
+    { date: '2023-10-30', value: 21.60 },
+    { date: '2024-03-30', value: 6.54 },
+    { date: '2025-04-22', value: 12.516 },
+    { date: '2026-05-16', value: 3.82 }
+  ]},
+  { key: 'shbg', name: 'SHBG', abbr: 'SHBG', unit: 'нмоль/л', ref: [10, 57], optimal: [20, 45], higherBetter: null, category: ['male', 'liver'], desc: 'Глобулін, що зв\'язує статеві гормони', gymImpact: 'Високий SHBG = менше вільного Т. Низький — печінка або інсулінорезистентність.', values: [
+    { date: '2022-08-03', value: 18.5 },
+    { date: '2023-10-30', value: 20.0 },
+    { date: '2024-03-30', value: 21.5 },
+    { date: '2025-04-22', value: 14.6 },
+    { date: '2026-05-16', value: 17.1 }
+  ]},
+  { key: 'estradiol', name: 'Естрадіол E2', abbr: 'E2', unit: 'пг/мл', ref: [0, 56], optimal: [20, 40], higherBetter: null, category: ['male', 'liver'], desc: 'Жіночий гормон у чоловіків', gymImpact: 'Потрібен для лібідо й кісток. І надлишок, і дефіцит однаково гальмують прогрес.', values: [
+    { date: '2022-08-03', value: 21 },
+    { date: '2023-10-30', value: 32 },
+    { date: '2024-03-30', value: 20 },
+    { date: '2025-04-22', value: 36.5 },
+    { date: '2026-05-16', value: 20 }
+  ]},
+  { key: 'lh', name: 'Лютеїнізуючий гормон', abbr: 'LH', unit: 'мОд/мл', ref: [0.8, 7.6], optimal: [3, 6], higherBetter: null, category: 'male', desc: 'Стимул для яєчок', gymImpact: 'Запускає виробництво тестостерону. Низький при низькому Т — вторинний гіпогонадизм.', values: [
+    { date: '2025-04-22', value: 3.53 },
+    { date: '2026-05-16', value: 3.04 }
+  ]},
+  { key: 'prolactin', name: 'Пролактин', abbr: 'PRL', unit: 'нг/мл', ref: [2.5, 17], optimal: [3, 12], higherBetter: null, category: 'male', desc: 'Антагоніст тестостерону', gymImpact: 'Підвищений пролактин блокує дофамін і знижує лібідо. Поки в межах норми — добре.', values: [
+    { date: '2022-08-03', value: 5.7 },
+    { date: '2023-10-30', value: 7.1 },
+    { date: '2024-03-30', value: 4.56 },
+    { date: '2025-04-22', value: 6.98 },
+    { date: '2026-05-16', value: 5.43 }
+  ]},
+  { key: 'cortisol', name: 'Кортизол', abbr: 'CORT', unit: 'мкг/дл', ref: [5, 25], optimal: [8, 18], higherBetter: null, category: ['male', 'inflammation'], desc: 'Стресовий катаболік', gymImpact: 'Антагоніст тестостерону. Хронічно підвищений = блокування росту м\'язів і набір жиру.', values: [
+    { date: '2025-04-22', value: 16.6 },
+    { date: '2026-05-16', value: 17.6 }
+  ]},
+  { key: 'tsh', name: 'TSH', abbr: 'TSH', unit: 'мОд/мл', ref: [0.4, 4.0], optimal: [1, 2.5], higherBetter: null, category: 'male', desc: 'Тиреотропний гормон', gymImpact: 'Регулює щитоподібну функцію. Низько-нормальний — достатня щитовидка, основа метаболізму.', values: [
+    { date: '2025-04-22', value: 0.787 },
+    { date: '2026-05-16', value: 0.483 }
+  ]},
+
+  { key: 'alt', name: 'АЛТ', abbr: 'ALT', unit: 'Од/л', ref: [4, 45], optimal: [10, 30], higherBetter: false, category: 'liver', desc: 'Печінковий фермент', gymImpact: 'Підвищений = пошкодження гепатоцитів. Печінка метаболізує гормони — без неї м\'язи не ростуть.', values: [
+    { date: '2022-08-03', value: 41 },
+    { date: '2023-10-30', value: 39 },
+    { date: '2024-03-30', value: 58.84 },
+    { date: '2025-01-16', value: 77.53 },
+    { date: '2026-05-16', value: 39.13 }
+  ]},
+  { key: 'ast', name: 'АСТ', abbr: 'AST', unit: 'Од/л', ref: [4, 35], optimal: [10, 25], higherBetter: false, category: 'liver', desc: 'Аспартатамінотрансфераза', gymImpact: 'Реагує на пошкодження печінки, серця, м\'язів. Часто росте при надмірному тренуванні.', values: [
+    { date: '2022-08-03', value: 36 },
+    { date: '2023-10-30', value: 32 },
+    { date: '2024-03-30', value: 41.52 },
+    { date: '2025-01-16', value: 52.44 },
+    { date: '2026-05-16', value: 29.64 }
+  ]},
+  { key: 'ggt', name: 'ГГТ', abbr: 'GGT', unit: 'Од/л', ref: [8, 61], optimal: [10, 35], higherBetter: false, category: 'liver', desc: 'Гамма-глутамілтранспептидаза', gymImpact: 'Найчутливіший маркер навантаження на печінку: алкоголь, ліки, токсини.', values: [
+    { date: '2023-10-30', value: 129 }
+  ]},
+  { key: 'bilirubin', name: 'Білірубін загальний', abbr: 'BIL', unit: 'мкмоль/л', ref: [2, 21], optimal: [5, 15], higherBetter: null, category: 'liver', desc: 'Продукт розпаду гему', gymImpact: 'Антиоксидант у фізіологічних межах. Підвищений — гемоліз або жовчні проблеми.', values: [
+    { date: '2022-08-03', value: 14.1 },
+    { date: '2024-03-30', value: 13.46 },
+    { date: '2025-01-16', value: 8.42 },
+    { date: '2026-05-16', value: 11.86 }
+  ]},
+  { key: 'alk_phos', name: 'Лужна фосфатаза', abbr: 'ALP', unit: 'Од/л', ref: [30, 120], optimal: [40, 100], higherBetter: false, category: ['liver', 'vitamins'], desc: 'Жовчні шляхи + кістки', gymImpact: 'Підвищена — холестаз або активна перебудова кісток. У нормі — добре.', values: [
+    { date: '2025-01-16', value: 111.05 }
+  ]},
+
+  { key: 'crp', name: 'С-реактивний білок', abbr: 'CRP', unit: 'мг/л', ref: [0, 5], optimal: [0, 1], higherBetter: false, category: ['inflammation', 'lipids'], desc: 'Маркер гострого запалення', gymImpact: 'Хронічне (>3) пригнічує тестостерон, блокує синтез білка, скорочує час відновлення.', values: [
+    { date: '2025-01-16', value: 34.7 },
+    { date: '2025-04-22', value: 6.1 },
+    { date: '2026-05-16', value: 2.1 }
+  ]},
+  { key: 'esr', name: 'ШОЕ', abbr: 'ESR', unit: 'мм/год', ref: [1, 10], optimal: [1, 6], higherBetter: false, category: 'inflammation', desc: 'Швидкість осідання еритроцитів', gymImpact: 'Надійний маркер запалення. Високий — організм у "війні", не у відновленні.', values: [
+    { date: '2024-03-30', value: 4.51 },
+    { date: '2025-01-16', value: 27.67 },
+    { date: '2026-05-16', value: 6.43 }
+  ]},
+  { key: 'homocyst', name: 'Гомоцистеїн', abbr: 'HCY', unit: 'мкмоль/л', ref: [5, 12], optimal: [6, 9], higherBetter: false, category: ['inflammation', 'lipids', 'vitamins'], desc: 'Маркер метилування', gymImpact: 'Підвищений (>10) сигналізує про дефіцит B9/B12. Сповільнює відновлення, запалює судини.', values: [
+    { date: '2026-05-16', value: 12.6 }
+  ]},
+
+  { key: 'cholesterol', name: 'Холестерин загальний', abbr: 'CHOL', unit: 'ммоль/л', ref: [0, 5.2], optimal: [3.5, 5], higherBetter: false, category: ['lipids', 'male'], desc: 'Базовий маркер', gymImpact: 'Базис для синтезу стероїдів. Підвищення часто пов\'язане з печінкою.', values: [
+    { date: '2025-01-16', value: 4.92 },
+    { date: '2025-04-22', value: 4.83 },
+    { date: '2026-05-16', value: 5.43 }
+  ]},
+  { key: 'ldl', name: 'ЛПНЩ', abbr: 'LDL', unit: 'ммоль/л', ref: [0, 3], optimal: [1.5, 2.6], higherBetter: false, category: ['lipids', 'inflammation'], desc: '"Поганий" холестерин', gymImpact: 'Підвищений = ранній метаболічний зсув. Запалення судин обмежує доставку нутрієнтів.', values: [
+    { date: '2025-04-22', value: 3.30 },
+    { date: '2026-05-16', value: 4.05 }
+  ]},
+  { key: 'hdl', name: 'ЛПВЩ', abbr: 'HDL', unit: 'ммоль/л', ref: [1.0, 3.0], optimal: [1.2, 2.0], higherBetter: true, category: ['lipids', 'inflammation'], desc: '"Хороший" холестерин', gymImpact: 'Високий HDL — краща чутливість до інсуліну та опір запаленню.', values: [
+    { date: '2025-04-22', value: 1.38 },
+    { date: '2026-05-16', value: 1.28 }
+  ]},
+  { key: 'atherogen', name: 'Індекс атерогенності', abbr: 'AI', unit: '', ref: [0, 3], optimal: [0, 2.5], higherBetter: false, category: 'lipids', desc: 'Співвідношення ризику', gymImpact: 'Більше 3 — переглянь дієту й додай кардіо. Зв\'язок із інсуліном і запаленням.', values: [
+    { date: '2025-04-22', value: 2.5 },
+    { date: '2026-05-16', value: 3.24 }
+  ]},
+  { key: 'triglycerides', name: 'Тригліцериди', abbr: 'TG', unit: 'ммоль/л', ref: [0, 1.7], optimal: [0.5, 1.2], higherBetter: false, category: 'lipids', desc: 'Жирові ефіри', gymImpact: 'Підвищені — алкоголь, цукор, малорухливість. Маркер енергетичного перевантаження.', values: [
+    { date: '2025-04-22', value: 1.01 },
+    { date: '2026-05-16', value: 1.24 }
+  ]},
+  { key: 'glucose', name: 'Глюкоза натще', abbr: 'GLU', unit: 'ммоль/л', ref: [3.9, 6.4], optimal: [4.4, 5.5], higherBetter: null, category: ['lipids', 'inflammation', 'male'], desc: 'Цукор крові', gymImpact: 'Висока натще = ранні ознаки інсулінорезистентності — головний ворог гіпертрофії.', values: [
+    { date: '2025-04-22', value: 5.48 },
+    { date: '2026-05-16', value: 5.52 }
+  ]},
+  { key: 'hba1c', name: 'HbA1c', abbr: 'A1C', unit: '%', ref: [3.8, 5.8], optimal: [4.5, 5.2], higherBetter: false, category: ['lipids', 'inflammation', 'male'], desc: 'Глікований гемоглобін', gymImpact: 'Інтегральний цукор за 3 місяці. Низький — метаболічно здоровий.', values: [
+    { date: '2025-04-22', value: 5.44 },
+    { date: '2026-05-16', value: 4.75 }
+  ]},
+
+  { key: 'vitd', name: 'Вітамін D', abbr: 'VIT-D', unit: 'нг/мл', ref: [30, 100], optimal: [40, 60], higherBetter: true, category: ['vitamins', 'male', 'inflammation'], desc: '25(OH)D2+D3', gymImpact: 'Прямо корелює з тестостероном і м\'язовою силою. <30 = провал по силі й гормонах.', values: [
+    { date: '2024-03-30', value: 18.60 },
+    { date: '2025-04-22', value: 28.03 },
+    { date: '2026-05-16', value: 34.54 }
+  ]},
+  { key: 'b12', name: 'Вітамін B12', abbr: 'B12', unit: 'пг/мл', ref: [193, 982], optimal: [400, 800], higherBetter: true, category: ['vitamins', 'blood'], desc: 'Ціанокобаламін', gymImpact: 'Еритропоез і нервова система. Низький — втома і знижена витривалість.', values: [
+    { date: '2024-03-30', value: 262 },
+    { date: '2025-04-22', value: 559 },
+    { date: '2026-05-16', value: 533 }
+  ]},
+  { key: 'b9', name: 'Фолієва кислота B9', abbr: 'B9', unit: 'нг/мл', ref: [3, 17], optimal: [6, 14], higherBetter: true, category: 'vitamins', desc: 'Фолат', gymImpact: 'Метилування, синтез ДНК і креатину. Дефіцит = поганий ріст і високий гомоцистеїн.', values: [
+    { date: '2024-03-30', value: 2.69 },
+    { date: '2025-04-22', value: 6.39 },
+    { date: '2026-05-16', value: 5.00 }
+  ]},
+  { key: 'zinc', name: 'Цинк', abbr: 'Zn', unit: 'мкг/дл', ref: [80, 120], optimal: [90, 110], higherBetter: true, category: ['vitamins', 'male'], desc: 'Мікроелемент', gymImpact: 'Кофактор для синтезу тестостерону. Низький — Т не виробляється повноцінно.', values: [
+    { date: '2025-04-22', value: 117.3 },
+    { date: '2026-05-16', value: 84.1 }
+  ]},
+  { key: 'magnesium', name: 'Магній', abbr: 'Mg', unit: 'ммоль/л', ref: [0.73, 1.06], optimal: [0.85, 1.0], higherBetter: true, category: ['vitamins', 'male'], desc: 'Електроліт', gymImpact: 'Кофермент 300+ реакцій. Дефіцит — судоми, погана якість сну, підвищений кортизол.', values: [
+    { date: '2026-05-16', value: 0.8 }
+  ]},
+  { key: 'ferritin', name: 'Феритин', abbr: 'FER', unit: 'нг/мл', ref: [28, 365], optimal: [60, 200], higherBetter: null, category: ['vitamins', 'blood', 'inflammation'], desc: 'Запаси заліза', gymImpact: 'Залізо потрібно для кисню в м\'язи. Висока межа — можлива запальна реакція.', values: [
+    { date: '2025-04-22', value: 319 },
+    { date: '2026-05-16', value: 314 }
+  ]},
+  { key: 'calcium', name: 'Кальцій', abbr: 'Ca', unit: 'ммоль/л', ref: [2.20, 2.65], optimal: [2.25, 2.55], higherBetter: null, category: 'vitamins', desc: 'Електроліт', gymImpact: 'М\'язове скорочення, нервова провідність. В нормі — добре.', values: [
+    { date: '2026-05-16', value: 2.35 }
+  ]},
+
+  { key: 'hgb', name: 'Гемоглобін', abbr: 'HGB', unit: 'г/л', ref: [130, 160], optimal: [140, 158], higherBetter: true, category: 'blood', desc: 'Транспорт кисню', gymImpact: 'Прямий обмежувач VO2max і витривалості. Стабільність — добре.', values: [
+    { date: '2024-03-30', value: 154 },
+    { date: '2025-01-16', value: 167 },
+    { date: '2026-05-16', value: 154 }
+  ]},
+  { key: 'wbc', name: 'Лейкоцити', abbr: 'WBC', unit: '×10⁹/л', ref: [4, 10], optimal: [5, 8], higherBetter: null, category: ['blood', 'inflammation'], desc: 'Імунна охорона', gymImpact: 'Підвищені = інфекція або стрес. Хронічне підвищення гальмує адаптацію.', values: [
+    { date: '2024-03-30', value: 6.17 },
+    { date: '2025-01-16', value: 9.69 },
+    { date: '2026-05-16', value: 7.09 }
+  ]},
+  { key: 'plt', name: 'Тромбоцити', abbr: 'PLT', unit: '×10⁹/л', ref: [100, 300], optimal: [180, 280], higherBetter: null, category: 'blood', desc: 'Згортання', gymImpact: 'Без значного впливу на прогрес у залі, якщо в нормі.', values: [
+    { date: '2024-03-30', value: 220 },
+    { date: '2025-01-16', value: 197 },
+    { date: '2026-05-16', value: 210 }
+  ]},
+  { key: 'rbc', name: 'Еритроцити', abbr: 'RBC', unit: '×10¹²/л', ref: [3.9, 5.5], optimal: [4.5, 5.3], higherBetter: null, category: 'blood', desc: 'Транспорт', gymImpact: 'Корелює з аеробною витривалістю. Підвищені при зневодненні чи поліцитемії.', values: [
+    { date: '2024-03-30', value: 4.97 },
+    { date: '2025-01-16', value: 5.29 },
+    { date: '2026-05-16', value: 4.82 }
+  ]},
+  { key: 'lymph_pct', name: 'Лімфоцити %', abbr: 'LYM%', unit: '%', ref: [19, 37], optimal: [25, 35], higherBetter: null, category: ['blood', 'inflammation'], desc: 'Імунна формула', gymImpact: 'Знижені = гострий стрес/інфекція. Хронічно низькі — пригнічений імунітет.', values: [
+    { date: '2024-03-30', value: 40 },
+    { date: '2025-01-16', value: 14 },
+    { date: '2026-05-16', value: 40 }
+  ]},
+  { key: 'bands', name: 'Паличкоядерні нейтрофіли', abbr: 'BAND', unit: '%', ref: [1, 6], optimal: [1, 4], higherBetter: false, category: ['blood', 'inflammation'], desc: 'Зсув вліво', gymImpact: 'Високі = гостра інфекція. У січні 2025 — 25% при нормі до 6.', values: [
+    { date: '2024-03-30', value: 2 },
+    { date: '2025-01-16', value: 25 },
+    { date: '2026-05-16', value: 5 }
+  ]},
+
+  // ===== ДОДАНІ ПОКАЗНИКИ =====
+  { key: 'psa_total', name: 'PSA сумарний', abbr: 'PSA', unit: 'нг/мл', ref: [0, 1.5], optimal: [0, 1.0], higherBetter: false, category: ['male'], desc: 'Простат-специфічний антиген', gymImpact: 'Маркер здоров\'я простати. Підвищений — запалення, гіперплазія або (рідко в 33 р) онкологічна настороженість.', values: [
+    { date: '2026-05-16', value: 0.693 }
+  ]},
+  { key: 'psa_free', name: 'PSA вільний', abbr: 'fPSA', unit: 'нг/мл', ref: [0, 0.3], optimal: [0, 0.2], higherBetter: false, category: ['male'], desc: 'Вільна фракція PSA', gymImpact: 'Окремо мало інформативний — оцінюється тільки в співвідношенні з сумарним PSA.', values: [
+    { date: '2026-05-16', value: 0.185 }
+  ]},
+  { key: 'psa_ratio', name: 'Співвідношення PSA вільний/сум.', abbr: 'fPSA%', unit: '%', ref: [10, 100], optimal: [25, 100], higherBetter: true, category: ['male'], desc: 'Скринінг простати', gymImpact: 'Вище 25% — хороший знак (доброякісно). <10% — підозра на онкологію (потрібна биопсія).', values: [
+    { date: '2026-05-16', value: 27 }
+  ]},
+  { key: 'fti', name: 'Індекс вільного тестостерону', abbr: 'FTI', unit: '%', ref: [24, 122], optimal: [50, 100], higherBetter: true, category: ['male'], desc: 'Розрахунковий показник', gymImpact: 'Tестостерон ÷ SHBG × 100. Цей розрахунок чіткіший за чистий total Т, якщо SHBG нетиповий.', values: [
+    { date: '2024-03-30', value: 35.32 },
+    { date: '2025-04-22', value: 69.81 },
+    { date: '2026-05-16', value: 55.75 }
+  ]},
+  { key: 'ft4', name: 'Тироксин вільний', abbr: 'FT4', unit: 'нг/дл', ref: [0.89, 1.76], optimal: [1.0, 1.5], higherBetter: null, category: ['male'], desc: 'Гормон щитовидки', gymImpact: 'Регулює базальний метаболізм. Низький — втома, повільне відновлення, набір ваги.', values: [
+    { date: '2025-04-22', value: 1.14 },
+    { date: '2026-05-16', value: 1.24 }
+  ]},
+  { key: 'ft3', name: 'Трийодтиронін вільний', abbr: 'FT3', unit: 'пг/мл', ref: [1.8, 4.2], optimal: [2.8, 3.8], higherBetter: null, category: ['male'], desc: 'Активна форма тиреоїдного гормону', gymImpact: 'Реально працюючий гормон щитовидки. Низький FT3 при норм. TSH — субклінічний гіпотиреоз.', values: [
+    { date: '2025-04-22', value: 4.17 },
+    { date: '2026-05-16', value: 2.73 }
+  ]},
+
+  { key: 'creatinine', name: 'Креатинін', abbr: 'CREA', unit: 'мкмоль/л', ref: [70, 115], optimal: [75, 100], higherBetter: null, category: ['blood'], desc: 'Маркер функції нирок', gymImpact: 'Залежить від м\'язової маси. Помірно підвищений у тренованих — норма. Високий + низькі м\'язи — нирки.', values: [
+    { date: '2026-05-16', value: 82.86 }
+  ]},
+
+  { key: 'vldl', name: 'ЛПДНЩ', abbr: 'VLDL', unit: 'ммоль/л', ref: [0.26, 1.04], optimal: [0.3, 0.7], higherBetter: false, category: ['lipids'], desc: 'Дуже низької щільності', gymImpact: 'Носії тригліцеридів. Підвищені — надлишок цукру/алкоголю, інсулінорезистентність.', values: [
+    { date: '2025-04-22', value: 0.46 },
+    { date: '2026-05-16', value: 0.57 }
+  ]},
+  { key: 'non_hdl', name: 'Не-ЛПВЩ', abbr: 'nHDL', unit: 'ммоль/л', ref: [0, 3.8], optimal: [0, 3.0], higherBetter: false, category: ['lipids', 'inflammation'], desc: 'Сумарний атерогенний холестерин', gymImpact: 'Сума всіх "поганих" фракцій. Кращий за LDL для оцінки кардіо-ризику.', values: [
+    { date: '2025-04-22', value: 3.45 },
+    { date: '2026-05-16', value: 4.15 }
+  ]},
+
+  { key: 'hct', name: 'Гематокрит', abbr: 'HCT', unit: 'л/л', ref: [0.37, 0.54], optimal: [0.40, 0.50], higherBetter: null, category: ['blood'], desc: 'Об\'ємна частка еритроцитів', gymImpact: 'Зависокий — згущена кров, ризик тромбів. Занизький — анемія, поганий кисень у м\'язи.', values: [
+    { date: '2024-03-30', value: 0.439 },
+    { date: '2025-01-16', value: 0.471 },
+    { date: '2026-05-16', value: 0.422 }
+  ]},
+  { key: 'mcv', name: 'MCV', abbr: 'MCV', unit: 'фл', ref: [80, 100], optimal: [85, 95], higherBetter: null, category: ['blood'], desc: 'Середній об\'єм еритроцита', gymImpact: 'Підвищений — дефіцит B12/B9. Знижений — залізодефіцит.', values: [
+    { date: '2024-03-30', value: 88.2 },
+    { date: '2025-01-16', value: 89 },
+    { date: '2026-05-16', value: 87.6 }
+  ]},
+  { key: 'mch', name: 'MCH', abbr: 'MCH', unit: 'пг', ref: [27, 34], optimal: [28, 33], higherBetter: null, category: ['blood'], desc: 'Сер. вміст гемоглобіну в еритроциті', gymImpact: 'Доповнює MCV для діагностики типу анемії.', values: [
+    { date: '2024-03-30', value: 31.0 },
+    { date: '2025-01-16', value: 31.5 },
+    { date: '2026-05-16', value: 32 }
+  ]},
+  { key: 'mchc', name: 'MCHC', abbr: 'MCHC', unit: 'г/л', ref: [320, 360], optimal: [325, 355], higherBetter: null, category: ['blood'], desc: 'Сер. концентрація гемоглобіну в еритроцитах', gymImpact: 'Висока — згущення/зневоднення. Низька — гіпохромія, дефіцит заліза.', values: [
+    { date: '2024-03-30', value: 352 },
+    { date: '2025-01-16', value: 355 },
+    { date: '2026-05-16', value: 365 }
+  ]},
+
+  { key: 'seg', name: 'Сегментоядерні нейтрофіли %', abbr: 'SEG%', unit: '%', ref: [47, 72], optimal: [50, 65], higherBetter: null, category: ['blood', 'inflammation'], desc: 'Зрілі нейтрофіли', gymImpact: 'Основні бійці імунітету. Підвищені при бактеріальних інфекціях.', values: [
+    { date: '2024-03-30', value: 48 },
+    { date: '2025-01-16', value: 45 },
+    { date: '2026-05-16', value: 49 }
+  ]},
+  { key: 'eos_pct', name: 'Еозинофіли %', abbr: 'EOS%', unit: '%', ref: [0.5, 5], optimal: [1, 4], higherBetter: null, category: ['blood', 'inflammation'], desc: 'Алергія / паразити', gymImpact: 'Підвищені — алергія, астма, паразити. Низькі (0) — гострий стрес.', values: [
+    { date: '2024-03-30', value: 2 },
+    { date: '2025-01-16', value: 3 },
+    { date: '2026-05-16', value: 0 }
+  ]},
+  { key: 'mon_pct', name: 'Моноцити %', abbr: 'MON%', unit: '%', ref: [3, 11], optimal: [4, 9], higherBetter: null, category: ['blood', 'inflammation'], desc: 'Великі імунні клітини', gymImpact: 'Підвищені при хронічних інфекціях, аутоімунних станах. У 2025 — 12% (вище норми).', values: [
+    { date: '2024-03-30', value: 8 },
+    { date: '2025-01-16', value: 12 },
+    { date: '2026-05-16', value: 6 }
+  ]},
+  { key: 'neu_abs', name: 'Нейтрофіли (абсолютна)', abbr: 'NEU#', unit: '×10⁹/л', ref: [2.0, 7.0], optimal: [2.5, 5.5], higherBetter: null, category: ['blood', 'inflammation'], desc: 'Абсолютна кількість нейтрофілів', gymImpact: 'Точніший показник за %. Високі — інфекція; низькі — пригнічений імунітет.', values: [
+    { date: '2024-03-30', value: 3.22 },
+    { date: '2025-01-16', value: 6.68 },
+    { date: '2026-05-16', value: 3.62 }
+  ]},
+  { key: 'lym_abs', name: 'Лімфоцити (абсолютна)', abbr: 'LYM#', unit: '×10⁹/л', ref: [0.8, 4.0], optimal: [1.5, 3.5], higherBetter: null, category: ['blood', 'inflammation'], desc: 'Абсолютна кількість лімфоцитів', gymImpact: 'Точніший за %. Низькі при стресі/інфекції. У 2025 був стрес-патерн.', values: [
+    { date: '2024-03-30', value: 2.51 },
+    { date: '2025-01-16', value: 1.9 },
+    { date: '2026-05-16', value: 2.92 }
+  ]},
+  { key: 'mon_abs', name: 'Моноцити (абсолютна)', abbr: 'MON#', unit: '×10⁹/л', ref: [0.12, 1.20], optimal: [0.2, 0.8], higherBetter: null, category: ['blood', 'inflammation'], desc: 'Абсолютна кількість моноцитів', gymImpact: 'У 2025 — 0.98 (вище оптимуму), сигнал запалення.', values: [
+    { date: '2024-03-30', value: 0.36 },
+    { date: '2025-01-16', value: 0.98 },
+    { date: '2026-05-16', value: 0.45 }
+  ]}
+];
+
+/* ===================== TIMELINE ===================== */
+const TIMELINE_DATES = [...new Set(METRICS.flatMap(m => m.values.map(v => v.date)))].sort();
+const TIMELINE_TS = TIMELINE_DATES.map(d => new Date(d).getTime());
+// Шкала: повні роки від першого до останнього (рівномірні мітки років)
+const FIRST_YEAR = new Date(TIMELINE_DATES[0]).getUTCFullYear();
+const LAST_YEAR = new Date(TIMELINE_DATES[TIMELINE_DATES.length - 1]).getUTCFullYear();
+const YEAR_LABELS = [];
+for (let y = FIRST_YEAR; y <= LAST_YEAR; y++) YEAR_LABELS.push(y);
+const T_MIN = new Date(`${FIRST_YEAR}-01-01`).getTime();
+const T_MAX = new Date(`${LAST_YEAR + 1}-01-01`).getTime();
+const T_RANGE = T_MAX - T_MIN || 1;
+
+/* ===================== UTILS ===================== */
+function metricCats(m) {
+  return Array.isArray(m.category) ? m.category : [m.category];
+}
+function metricInCategory(m, cat) {
+  return metricCats(m).includes(cat);
+}
+
+function statusFor(metric, value) {
+  const [lo, hi] = metric.ref;
+  if (value < lo * 0.7 || value > hi * 1.3) return 'critical';
+  if (value < lo || value > hi) return 'warning';
+  const [oLo, oHi] = metric.optimal;
+  if (value >= oLo && value <= oHi) return 'good';
+  return 'warning';
+}
+
+function formatNum(v) {
+  if (v === 0) return '0';
+  const abs = Math.abs(v);
+  if (Number.isInteger(v) && abs < 10000) return v.toString();
+  if (abs >= 1000) return Math.round(v).toString();
+  if (abs >= 100) return v.toFixed(0);
+  if (abs >= 10) return v.toFixed(1);
+  if (abs >= 1) return v.toFixed(2);
+  return v.toFixed(3);
+}
+
+function formatDate(iso) {
+  const [y, m, d] = iso.split('-');
+  const months = ['січ','лют','бер','кві','тра','чер','лип','сер','вер','жов','лис','гру'];
+  return `${parseInt(d,10)} ${months[parseInt(m,10)-1]} '${y.slice(2)}`;
+}
+
+function trendData(metric) {
+  if (metric.values.length < 2) return null;
+  const first = metric.values[0].value;
+  const last = metric.values[metric.values.length - 1].value;
+  const delta = first === 0 ? 0 : ((last - first) / first) * 100;
+  let dir;
+  if (Math.abs(delta) < 3) dir = 'flat';
+  else if (metric.higherBetter === null) {
+    const mid = (metric.optimal[0] + metric.optimal[1]) / 2;
+    dir = Math.abs(last - mid) < Math.abs(first - mid) ? 'up' : 'down';
+  } else {
+    const good = metric.higherBetter ? delta > 0 : delta < 0;
+    dir = good ? 'up' : 'down';
+  }
+  return { dir, delta, first, last };
+}
+
+function trendLabel(metric) {
+  const t = trendData(metric);
+  if (!t) return '<span style="color:var(--ink-soft)">одиничне вимірювання</span>';
+  const arrow = t.delta > 0 ? '↑' : t.delta < 0 ? '↓' : '→';
+  const sign = t.delta > 0 ? '+' : '';
+  return `<span class="trend-${t.dir}">${arrow} ${sign}${t.delta.toFixed(0)}%</span> <span style="color:var(--ink-soft)">за період</span>`;
+}
+
+/* ===================== CURSOR STATE ===================== */
+let cursorIdx = null;
+let cursorSubscribers = [];
+
+function broadcastCursor(idx) {
+  if (idx === cursorIdx) return;
+  cursorIdx = idx;
+  cursorSubscribers.forEach(fn => fn(idx));
+}
+
+/* ===================== CARD BUILDER ===================== */
+function buildCard(metric) {
+  const card = document.createElement('div');
+  const lastVal = metric.values[metric.values.length - 1];
+  const lastStatus = statusFor(metric, lastVal.value);
+  card.className = `card ${lastStatus === 'critical' ? 'alert' : lastStatus === 'warning' ? 'warn' : ''}`;
+
+  card.innerHTML = `
+    <div class="card-head">
+      <div class="card-name-block">
+        <div class="card-name">${metric.name}</div>
+        <div class="card-desc">${metric.abbr} · ${metric.desc}</div>
+      </div>
+      <div class="status-dot" data-status="${lastStatus}" title="${lastStatus === 'critical' ? 'критично' : lastStatus === 'warning' ? 'поза оптимумом' : 'в нормі'}"></div>
+    </div>
+    <div class="card-value-row">
+      <span class="card-value" data-status="${lastStatus}">${formatNum(lastVal.value)}</span>
+      <span class="card-unit">${metric.unit}</span>
+      <span class="card-date">${formatDate(lastVal.date)}</span>
+    </div>
+    <div class="card-trend">${trendLabel(metric)}</div>
+    <div class="card-chart"></div>
+    <div class="card-meta">
+      <span><i class="meta-swatch sw-ref"></i>норма ${formatNum(metric.ref[0])}–${formatNum(metric.ref[1])} ${metric.unit}</span>
+      <span><i class="meta-swatch sw-opt"></i>опт ${formatNum(metric.optimal[0])}–${formatNum(metric.optimal[1])}</span>
+    </div>
+    <div class="card-impact">${metric.gymImpact}</div>
+  `;
+
+  const chartContainer = card.querySelector('.card-chart');
+  const valueEl = card.querySelector('.card-value');
+  const dateEl = card.querySelector('.card-date');
+  const trendEl = card.querySelector('.card-trend');
+  const statusDot = card.querySelector('.status-dot');
+
+  /* SVG dimensions in viewBox units */
+  const VBW = 440, VBH = 240;
+  const padL = 8, padR = 60, padT = 12, padB = 22;
+  const chartL = padL;
+  const chartR = VBW - padR;
+  const chartT = padT;
+  const chartB = VBH - padB;
+  const chartW = chartR - chartL;
+  const chartH = chartB - chartT;
+
+  // values filtered by year range
+  const valsInRange = metric.values.filter(v => {
+    const y = parseInt(v.date.slice(0, 4), 10);
+    return y >= yearRange.from && y <= yearRange.to;
+  });
+  const dataVals = valsInRange.map(v => v.value);
+  const fallbackVals = dataVals.length ? dataVals : metric.values.map(v => v.value);
+  const yMinRaw = Math.min(metric.ref[0], metric.optimal[0], ...fallbackVals);
+  const yMaxRaw = Math.max(metric.ref[1], metric.optimal[1], ...fallbackVals);
+  const yPad = (yMaxRaw - yMinRaw) * 0.08 || 1;
+  const yMin = yMinRaw - yPad;
+  const yMax = yMaxRaw + yPad;
+  const yRange = yMax - yMin || 1;
+
+  // X-scale honors the active year range
+  const tMinCard = new Date(`${yearRange.from}-01-01`).getTime();
+  const tMaxCard = new Date(`${yearRange.to + 1}-01-01`).getTime();
+  const tRangeCard = tMaxCard - tMinCard || 1;
+
+  const yToPx = v => chartB - ((v - yMin) / yRange) * chartH;
+  const tsToPx = ts => chartL + ((ts - tMinCard) / tRangeCard) * chartW;
+
+  const optY1 = yToPx(metric.optimal[1]);
+  const optY2 = yToPx(metric.optimal[0]);
+  const refY1 = yToPx(metric.ref[1]);
+  const refY2 = yToPx(metric.ref[0]);
+
+  const points = valsInRange.map(v => {
+    const status = statusFor(metric, v.value);
+    return {
+      x: tsToPx(new Date(v.date).getTime()),
+      y: yToPx(v.value),
+      value: v.value,
+      date: v.date,
+      status
+    };
+  });
+
+  const linePath = points.length > 1
+    ? 'M' + points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' L')
+    : '';
+
+  let svg = `<svg viewBox="0 0 ${VBW} ${VBH}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">`;
+
+  // optimal zone
+  const optTop = Math.max(chartT, Math.min(optY1, optY2));
+  const optBot = Math.min(chartB, Math.max(optY1, optY2));
+  if (optBot > optTop) {
+    svg += `<rect x="${chartL}" y="${optTop.toFixed(1)}" width="${chartW}" height="${(optBot - optTop).toFixed(1)}" fill="rgba(79,141,90,0.12)"/>`;
+    // label "опт N–N" inside the zone, right side
+    const labelY = optTop + Math.min(12, (optBot - optTop) / 2 + 4);
+    svg += `<text x="${(chartR + 4).toFixed(1)}" y="${labelY.toFixed(1)}" font-size="9" fill="rgba(31,93,84,0.85)" font-family="JetBrains Mono, monospace">опт ${formatNum(metric.optimal[0])}–${formatNum(metric.optimal[1])}</text>`;
+  }
+
+  // ref lines + inline labels
+  const refLines = [
+    { y: refY1, label: 'max ' + formatNum(metric.ref[1]) },
+    { y: refY2, label: 'min ' + formatNum(metric.ref[0]) }
+  ];
+  refLines.forEach(({ y, label }) => {
+    if (y >= chartT && y <= chartB) {
+      svg += `<line x1="${chartL}" y1="${y.toFixed(1)}" x2="${chartR}" y2="${y.toFixed(1)}" stroke="rgba(180,57,30,0.55)" stroke-width="1" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>`;
+      svg += `<text x="${(chartR + 4).toFixed(1)}" y="${(y + 3).toFixed(1)}" font-size="9" fill="rgba(180,57,30,0.85)" font-family="JetBrains Mono, monospace">${label}</text>`;
+    }
+  });
+
+  // vertical year guides — on Jan 1 of each year (within range)
+  const visibleYears = YEAR_LABELS.filter(y => y >= yearRange.from && y <= yearRange.to);
+  visibleYears.forEach(year => {
+    const ts = new Date(`${year}-01-01`).getTime();
+    const x = tsToPx(ts);
+    if (x >= chartL && x <= chartR) {
+      svg += `<line x1="${x.toFixed(1)}" y1="${chartT}" x2="${x.toFixed(1)}" y2="${chartB}" stroke="rgba(14,24,32,0.06)" stroke-width="0.6" vector-effect="non-scaling-stroke"/>`;
+    }
+  });
+
+  // data line
+  if (linePath) {
+    svg += `<path d="${linePath}" fill="none" stroke="#1F5D54" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+  }
+
+  // data points
+  points.forEach((p, i) => {
+    const color = p.status === 'critical' ? '#B4391E' : p.status === 'warning' ? '#C6883D' : '#4F8D5A';
+    svg += `<circle class="data-point" data-idx="${i}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="${color}" stroke="#FFFFFF" stroke-width="1.5" vector-effect="non-scaling-stroke"/>`;
+  });
+
+  // year labels — center of each year (within range)
+  visibleYears.forEach(year => {
+    const ts = new Date(`${year}-07-01`).getTime();
+    const x = tsToPx(ts);
+    svg += `<text x="${x.toFixed(1)}" y="${(VBH - 5).toFixed(1)}" font-size="10" fill="#8A95A3" text-anchor="middle" font-family="JetBrains Mono, monospace">${year}</text>`;
+  });
+
+  // cursor line (hidden initially)
+  svg += `<line class="cursor-line" x1="0" y1="${chartT}" x2="0" y2="${chartB}" stroke="#0E1820" stroke-width="1" stroke-dasharray="2,2" vector-effect="non-scaling-stroke" opacity="0"/>`;
+
+  // cursor marker (will be positioned when hovering)
+  svg += `<circle class="cursor-dot" cx="0" cy="0" r="0" fill="#0E1820" stroke="#FFFFFF" stroke-width="2" opacity="0" vector-effect="non-scaling-stroke"/>`;
+
+  svg += `</svg><div class="chart-overlay"></div>`;
+
+  chartContainer.innerHTML = svg;
+
+  const svgEl = chartContainer.querySelector('svg');
+  const cursorLine = svgEl.querySelector('.cursor-line');
+  const cursorDot = svgEl.querySelector('.cursor-dot');
+  const overlay = chartContainer.querySelector('.chart-overlay');
+  const allPoints = svgEl.querySelectorAll('.data-point');
+
+  function update(idx) {
+    if (idx === null) {
+      // reset to last value
+      valueEl.textContent = formatNum(lastVal.value);
+      valueEl.dataset.status = lastStatus;
+      dateEl.textContent = formatDate(lastVal.date);
+      trendEl.innerHTML = trendLabel(metric);
+      cursorLine.setAttribute('opacity', '0');
+      cursorDot.setAttribute('opacity', '0');
+      cursorDot.setAttribute('r', '0');
+      allPoints.forEach(p => p.classList.remove('active'));
+      statusDot.dataset.status = lastStatus;
+    } else {
+      const date = TIMELINE_DATES[idx];
+      const ts = TIMELINE_TS[idx];
+      const y = parseInt(date.slice(0, 4), 10);
+      // outside range — reset display
+      if (y < yearRange.from || y > yearRange.to) {
+        update(null);
+        return;
+      }
+      const found = metric.values.find(v => v.date === date);
+      const xPos = tsToPx(ts);
+
+      cursorLine.setAttribute('x1', xPos.toFixed(1));
+      cursorLine.setAttribute('x2', xPos.toFixed(1));
+      cursorLine.setAttribute('opacity', '0.55');
+
+      allPoints.forEach(p => p.classList.remove('active'));
+
+      if (found) {
+        const s = statusFor(metric, found.value);
+        valueEl.textContent = formatNum(found.value);
+        valueEl.dataset.status = s;
+        dateEl.textContent = formatDate(date);
+        const color = s === 'critical' ? '#B4391E' : s === 'warning' ? '#C6883D' : '#4F8D5A';
+        cursorDot.setAttribute('cx', xPos.toFixed(1));
+        cursorDot.setAttribute('cy', yToPx(found.value).toFixed(1));
+        cursorDot.setAttribute('r', '5.5');
+        cursorDot.setAttribute('fill', color);
+        cursorDot.setAttribute('opacity', '1');
+        const matchIdx = metric.values.findIndex(v => v.date === date);
+        if (matchIdx >= 0) allPoints[matchIdx]?.classList.add('active');
+        trendEl.innerHTML = `<span class="trend-${s === 'critical' ? 'down' : s === 'warning' ? 'down' : 'up'}">●</span> <span>${s === 'critical' ? 'критично' : s === 'warning' ? 'поза оптимумом' : 'в нормі'}</span>`;
+        statusDot.dataset.status = s;
+      } else {
+        valueEl.textContent = '—';
+        valueEl.dataset.status = 'empty';
+        dateEl.textContent = formatDate(date);
+        trendEl.innerHTML = '<span style="color:var(--ink-soft)">немає вимірювання</span>';
+        cursorDot.setAttribute('opacity', '0');
+        cursorDot.setAttribute('r', '0');
+      }
+    }
+  }
+
+  overlay.addEventListener('mousemove', e => {
+    const rect = overlay.getBoundingClientRect();
+    const xRel = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const ts = tMinCard + xRel * tRangeCard;
+    // snap до найближчої дати, що знаходиться у поточному діапазоні
+    let bestI = -1, bestD = Infinity;
+    for (let i = 0; i < TIMELINE_TS.length; i++) {
+      const y = parseInt(TIMELINE_DATES[i].slice(0, 4), 10);
+      if (y < yearRange.from || y > yearRange.to) continue;
+      const d = Math.abs(TIMELINE_TS[i] - ts);
+      if (d < bestD) { bestD = d; bestI = i; }
+    }
+    if (bestI >= 0) broadcastCursor(bestI);
+  });
+  overlay.addEventListener('mouseleave', () => broadcastCursor(null));
+
+  cursorSubscribers.push(update);
+  return card;
+}
+
+/* ===================== STATE & FILTERS ===================== */
+let categoryFilter = 'all';
+let customFilter = new Set();
+let yearRange = { from: YEAR_LABELS[0], to: YEAR_LABELS[YEAR_LABELS.length - 1] };
+
+function metricHasDataInRange(m, from, to) {
+  return m.values.some(v => {
+    const y = parseInt(v.date.slice(0, 4), 10);
+    return y >= from && y <= to;
+  });
+}
+
+function metricHasIssue(m) {
+  return m.values.some(v => v.value < m.ref[0] || v.value > m.ref[1]);
+}
+
+function getVisibleMetrics() {
+  let list;
+  if (categoryFilter === 'custom') {
+    list = METRICS.filter(m => customFilter.has(m.key));
+  } else if (categoryFilter === 'all') {
+    list = METRICS.slice();
+  } else if (categoryFilter === 'issues') {
+    list = METRICS.filter(metricHasIssue);
+  } else {
+    list = METRICS.filter(m => metricInCategory(m, categoryFilter));
+  }
+  // year range filter: keep metrics that have at least one value in range
+  return list.filter(m => metricHasDataInRange(m, yearRange.from, yearRange.to));
+}
+
+function renderCards() {
+  cursorSubscribers = [];
+  cursorIdx = null;
+  const grid = document.getElementById('cardsGrid');
+  grid.innerHTML = '';
+  const list = getVisibleMetrics();
+  if (list.length === 0) {
+    if (categoryFilter === 'custom' && customFilter.size === 0) {
+      grid.innerHTML = `
+        <div class="empty-state-big">
+          <div class="es-icon">⊕</div>
+          <div class="es-title">Свій набір порожній</div>
+          <div class="es-sub">Натисни кнопку нижче і обери будь-які показники з 55 доступних — лише ті, що цікавлять тебе зараз.</div>
+          <button class="es-cta" id="esCta">+ Додати показник</button>
+        </div>`;
+      document.getElementById('esCta').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const btn = document.getElementById('customBtn');
+        const panel = document.getElementById('customPanel');
+        panel.dataset.open = 'true';
+        btn.setAttribute('aria-expanded', 'true');
+        setTimeout(() => document.getElementById('customSearch').focus(), 50);
+      });
+    } else {
+      grid.innerHTML = `<div class="empty-state">Немає показників за обраним фільтром</div>`;
+    }
+    return;
+  }
+  list.forEach(m => grid.appendChild(buildCard(m)));
+}
+
+/* ===================== CATEGORY CHIPS ===================== */
+function renderCategoryChips() {
+  const wrap = document.getElementById('categoryChips');
+  const issuesCount = METRICS.filter(metricHasIssue).length;
+  let html = `<button class="chip chip-issues ${categoryFilter === 'issues' ? 'active' : ''}" data-cat="issues"><span class="icon" style="color:var(--critical);opacity:1">●</span> Не в нормі <span class="count">${issuesCount}</span></button>`;
+  html += `<button class="chip ${categoryFilter === 'all' ? 'active' : ''}" data-cat="all">Усі <span class="count">${METRICS.length}</span></button>`;
+  Object.entries(CATEGORIES).forEach(([key, cfg]) => {
+    const count = METRICS.filter(m => metricInCategory(m, key)).length;
+    html += `<button class="chip ${categoryFilter === key ? 'active' : ''}" data-cat="${key}"><span class="icon">${cfg.icon}</span> ${cfg.label} <span class="count">${count}</span></button>`;
+  });
+  html += `<button class="chip ${categoryFilter === 'custom' ? 'active' : ''}" data-cat="custom" style="border-style:dashed">⊕ Свій набір <span class="count">${customFilter.size}</span></button>`;
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.chip').forEach(ch => {
+    ch.addEventListener('click', () => {
+      const newCat = ch.dataset.cat;
+      categoryFilter = newCat;
+      if (newCat !== 'custom') customFilter.clear();
+      renderCategoryChips();
+      renderCustomChips();
+      renderCustomList();
+      renderCards();
+    });
+  });
+}
+
+/* ===================== CUSTOM CHIPS ===================== */
+function renderCustomChips() {
+  const wrap = document.getElementById('customChips');
+  const clearBtn = document.getElementById('customClear');
+  wrap.innerHTML = '';
+  if (customFilter.size === 0) {
+    clearBtn.style.display = 'none';
+    return;
+  }
+  clearBtn.style.display = '';
+  [...customFilter].forEach(key => {
+    const m = METRICS.find(x => x.key === key);
+    if (!m) return;
+    const ch = document.createElement('button');
+    ch.className = 'chip chip-removable';
+    ch.innerHTML = `${m.name} <span class="x">×</span>`;
+    ch.addEventListener('click', () => {
+      customFilter.delete(key);
+      renderCategoryChips();
+      renderCustomChips();
+      renderCustomList();
+      renderCards();
+    });
+    wrap.appendChild(ch);
+  });
+}
+
+/* ===================== CUSTOM PANEL ===================== */
+function renderCustomList(searchTerm = '') {
+  const list = document.getElementById('customList');
+  list.innerHTML = '';
+  const term = searchTerm.toLowerCase().trim();
+
+  Object.entries(CATEGORIES).forEach(([catKey, cfg]) => {
+    const items = METRICS.filter(m => metricInCategory(m, catKey) && (
+      !term || m.name.toLowerCase().includes(term) || m.abbr.toLowerCase().includes(term) || m.desc.toLowerCase().includes(term)
+    ));
+    if (!items.length) return;
+    const group = document.createElement('div');
+    group.className = 'custom-group';
+    group.innerHTML = `<div class="custom-group-title">${cfg.icon} ${cfg.label}</div>`;
+    items.forEach(m => {
+      const item = document.createElement('div');
+      item.className = 'custom-item';
+      item.dataset.selected = customFilter.has(m.key);
+      item.innerHTML = `
+        <span class="checkbox"></span>
+        <span class="custom-item-name">${m.name}</span>
+        <span class="custom-item-meta">${m.abbr} · ${m.unit || '—'}</span>
+      `;
+      item.addEventListener('click', () => {
+        if (customFilter.has(m.key)) customFilter.delete(m.key);
+        else customFilter.add(m.key);
+        item.dataset.selected = customFilter.has(m.key);
+        // when user picks individual metrics, switch to 'custom' view
+        if (customFilter.size > 0) categoryFilter = 'custom';
+        renderCategoryChips();
+        renderCustomChips();
+        renderCards();
+      });
+      group.appendChild(item);
+    });
+    list.appendChild(group);
+  });
+}
+
+/* ===================== YEAR PICKER ===================== */
+let yrPickerAnchor = null; // якщо клік 1й — це майбутній from; 2й — закриває діапазон
+
+function renderYearPicker() {
+  const wrap = document.getElementById('yearPicker');
+  let html = `<span class="yp-label">Роки</span>`;
+  YEAR_LABELS.forEach(y => {
+    let cls = '';
+    if (y === yearRange.from && y === yearRange.to) cls = 'active endpoint';
+    else if (y === yearRange.from || y === yearRange.to) cls = 'endpoint';
+    else if (y > yearRange.from && y < yearRange.to) cls = 'in-range';
+    html += `<button class="${cls}" data-year="${y}">${String(y).slice(2)}</button>`;
+  });
+  html += `<button data-year="reset" title="Скинути до повного діапазону" style="opacity:0.5;font-size:13px;padding:5px 10px">×</button>`;
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('button[data-year]').forEach(b => {
+    b.addEventListener('click', () => {
+      if (b.dataset.year === 'reset') {
+        yearRange = { from: YEAR_LABELS[0], to: YEAR_LABELS[YEAR_LABELS.length - 1] };
+        yrPickerAnchor = null;
+      } else {
+        const y = parseInt(b.dataset.year, 10);
+        if (yrPickerAnchor === null) {
+          // start new selection
+          yrPickerAnchor = y;
+          yearRange = { from: y, to: y };
+        } else {
+          // close range
+          yearRange = { from: Math.min(yrPickerAnchor, y), to: Math.max(yrPickerAnchor, y) };
+          yrPickerAnchor = null;
+        }
+      }
+      renderYearPicker();
+      renderCards();
+    });
+  });
+}
+
+/* ===================== INIT ===================== */
+renderCategoryChips();
+renderCustomChips();
+renderCustomList();
+renderYearPicker();
+renderCards();
+
+/* ===== custom dropdown toggle ===== */
+const customBtn = document.getElementById('customBtn');
+const customPanel = document.getElementById('customPanel');
+const customSearch = document.getElementById('customSearch');
+const customClear = document.getElementById('customClear');
+
+customBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const open = customPanel.dataset.open === 'true';
+  customPanel.dataset.open = (!open).toString();
+  customBtn.setAttribute('aria-expanded', (!open).toString());
+  if (!open) setTimeout(() => customSearch.focus(), 50);
+});
+
+document.addEventListener('click', e => {
+  if (!customPanel.contains(e.target) && e.target !== customBtn) {
+    customPanel.dataset.open = 'false';
+    customBtn.setAttribute('aria-expanded', 'false');
+  }
+});
+
+customSearch.addEventListener('input', e => renderCustomList(e.target.value));
+
+customClear.addEventListener('click', () => {
+  customFilter.clear();
+  renderCustomChips();
+  renderCustomList();
+  renderCards();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (customPanel.dataset.open === 'true') {
+      customPanel.dataset.open = 'false';
+      customBtn.setAttribute('aria-expanded', 'false');
+    } else if (customFilter.size > 0) {
+      customFilter.clear();
+      renderCustomChips();
+      renderCustomList();
+      renderCards();
+    }
+  }
+});
+</script>
+</body>
+</html>
