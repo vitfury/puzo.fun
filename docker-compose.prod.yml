@@ -12,6 +12,7 @@ services:
     volumes:
       - ./docker/nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
       - ./frontend/dist:/var/www/html:ro
+      - ./backend/public/diagram-of-the-approaching-death.html:/var/www/lab.html:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - php
