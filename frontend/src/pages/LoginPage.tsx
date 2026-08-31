@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import LanguageSwitcher from '../components/LanguageSwitcher';
@@ -94,15 +94,6 @@ export const LoginPage: React.FC = () => {
             >
               {loading ? t('common.loading') : t('auth.loginButton')}
             </button>
-          </div>
-
-          <div className="text-center">
-            <Link
-              to="/register"
-              className="text-sm text-purple-400 hover:text-purple-300"
-            >
-              {t('auth.dontHaveAccount')} {t('auth.registerButton')}
-            </Link>
           </div>
         </form>
       </div>
