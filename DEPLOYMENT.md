@@ -28,6 +28,36 @@ A     www    -> YOUR_DROPLET_IP
 
 **Propagation time**: 5-30 minutes
 
+## 🏠 Mac mini deployment (current production)
+
+puzo.fun actually runs on a Mac mini behind a Cloudflare tunnel, not on
+DigitalOcean. TLS is terminated at the Cloudflare edge and the origin listens on
+plain HTTP at `localhost:8080`, so the certbot and 443 parts of this guide do
+not apply there.
+
+Two things differ from local development:
+
+- nginx serves the **built** bundle from `frontend/dist` as static files, using
+  `docker/nginx/tunnel.conf`. The Vite dev server is not used — it would publish
+  all of `frontend/src` to anyone who asks. It is parked behind the `dev`
+  compose profile and only starts with `docker compose --profile dev up -d`.
+- The host has no node, so the bundle is built in a container.
+
+Deploying a frontend change:
+
+```bash
+git pull
+./scripts/build-frontend.sh          # writes frontend/dist
+docker compose up -d --force-recreate nginx
+```
+
+`VITE_API_URL` defaults to `/api/v1` in the build script. It has to be set at
+build time, because Vite inlines `import.meta.env` and the fallback in
+`src/api/client.ts` points at `http://localhost/api/v1` — which in a production
+bundle means the visitor's own machine.
+
+---
+
 ## 🛠️ Step-by-Step Deployment
 
 ### 1️⃣ Initial Server Setup (Run Once)
